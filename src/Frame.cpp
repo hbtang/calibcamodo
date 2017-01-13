@@ -36,6 +36,11 @@ KeyFrame::KeyFrame(const Frame& _f,
                    double _marksize):
     Frame(_f), mpMsrOdoNext(nullptr), mpMsrOdoLast(nullptr) {
 
+    mrvec_wc = Mat::zeros(3,1,CV_32FC1);
+    mtvec_wc = Mat::zeros(3,1,CV_32FC1);
+    mrvec_wb = Mat::zeros(3,1,CV_32FC1);
+    mtvec_wb = Mat::zeros(3,1,CV_32FC1);
+
     _MarkerDetector.detect(mImg, mvecMsrAruco, _CamParam, _marksize);
     mImg.copyTo(mImgAruco);
     for (auto mk : mvecMsrAruco) {

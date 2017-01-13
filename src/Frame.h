@@ -67,6 +67,11 @@ private:
 
     PtrMsrSe2Kf2Kf mpMsrOdoNext;
     PtrMsrSe2Kf2Kf mpMsrOdoLast;
+
+    Mat mrvec_wc;
+    Mat mtvec_wc;
+    Mat mrvec_wb;
+    Mat mtvec_wb;
 };
 
 }

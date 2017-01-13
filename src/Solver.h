@@ -26,16 +26,19 @@ public:
     Solver();
     ~Solver() {}
 
+    // InitMk: using 3D translational mark measurements, non-iterative
     void CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo);
     void ComputeGrndPlane(const set<PtrMsrKf2AMk> &_measure, Mat &nvec_cg);
-    void ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc, int flag);
-    void Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
+    void ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc, int flag = 0);
+    double Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
                             const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd);
 
+    // JointOptMk: using 3D translational mark measurements, iterative optimize SLAM and calibration
     void CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo);
 
-    int FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> &_setpairMsr);
 
+    // other functions ...
+    int FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> &_setpairMsr);
     void GetResult(Mat &rvec_bc, Mat &tvec_bc) const {
         mrvec_bc.copyTo(rvec_bc);
         mtvec_bc.copyTo(tvec_bc);

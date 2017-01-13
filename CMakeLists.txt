@@ -29,8 +29,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 include_directories(
-    include/
-    include/aruco
+    src/
+    src/aruco
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${catkin_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIRS}
