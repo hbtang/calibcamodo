@@ -12,31 +12,37 @@ Solver::Solver() {
 }
 
 void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo) {
-    // TODO ...
+    // calibrate the ground plane, return 3-by-1 norm vector in camera frame
     Mat nvec_cg;
     ComputeGrndPlane(_measuremk, nvec_cg);
 
-    Mat rvec_dc, tvec_dc;
-    ComputeCamProjFrame(nvec_cg, rvec_dc, tvec_dc, 0);
-    Mat T_dc;
-    Vec2MatSe3(rvec_dc, tvec_dc, T_dc);
+    // compute camera projection frame, with 2 solutions on 2 direction of ground
+    Mat rvec_dc_1, tvec_dc_1, rvec_dc_2, tvec_dc_2;
+    ComputeCamProjFrame(nvec_cg, rvec_dc_1, tvec_dc_1);
+    ComputeCamProjFrame(-nvec_cg, rvec_dc_2, tvec_dc_2);
 
-    Mat rvec_bd, tvec_bd;
-    Compute2DExtrinsic(_measuremk, _measureodo, rvec_dc, tvec_dc, rvec_bd, tvec_bd);
-    Mat T_bd;
-    Vec2MatSe3(rvec_bd, tvec_bd, T_bd);
-
-    Mat T_bc = T_bd*T_dc;
+    // compute xyyaw between based frame and camera projection frame,
+    // choose the solution with smaller residual
+    Mat rvec_bd_1, tvec_bd_1, rvec_bd_2, tvec_bd_2;
+    double norm_res_1 = Compute2DExtrinsic(_measuremk, _measureodo, rvec_dc_1, tvec_dc_1, rvec_bd_1, tvec_bd_1);
+    double norm_res_2 = Compute2DExtrinsic(_measuremk, _measureodo, rvec_dc_2, tvec_dc_2, rvec_bd_2, tvec_bd_2);
+    Mat T_dc, T_bd, T_bc;
+    if (norm_res_1 < norm_res_2) {
+        Vec2MatSe3(rvec_dc_1, tvec_dc_1, T_dc);
+        Vec2MatSe3(rvec_bd_1, tvec_bd_1, T_bd);
+    }
+    else {
+        Vec2MatSe3(rvec_dc_2, tvec_dc_2, T_dc);
+        Vec2MatSe3(rvec_bd_2, tvec_bd_2, T_bd);
+    }
+    T_bc = T_bd*T_dc;
     Mat2VecSe3(T_bc, mrvec_bc, mtvec_bc);
 
-    cerr << T_dc << endl;
-    cerr << T_bd << endl;
-    cerr << T_bc << endl;
-
-
+    // print calibration result
     cerr << "Calibration wth InitMk finished!" << endl;
-    cerr << "rvec_bc" << mrvec_bc.t() << endl;
-    cerr << "tvec_bc" << mtvec_bc.t() << endl;
+    cerr << "rvec_bc: " << mrvec_bc.t() << endl;
+    cerr << "tvec_bc: " << mtvec_bc.t() << endl;
+    cerr << endl;
 }
 
 void Solver::ComputeGrndPlane(const set<PtrMsrKf2AMk> &_setmeasure, Mat &nvec_cg) {
@@ -107,27 +113,43 @@ void Solver::ComputeGrndPlane(const set<PtrMsrKf2AMk> &_setmeasure, Mat &nvec_cg
 }
 
 void Solver::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc, int flag) {
-    Mat nvecApprox = Mat::zeros(3,1,CV_32FC1);
-    // Use flag to define the direction of camera
-    // 0: upward; 1: downward; ...
-    Mat rz;
-    switch(flag) {
-    case 0:
-        if (nvec_cg.at<float>(2) < 0)
-            rz = -nvec_cg;
-        else
-            rz = nvec_cg;
+
+    // define an approximate norm vector "nvecApprox" with a large angle with ground norm
+    Mat nvecApprox;
+    Mat rz = nvec_cg;
+    float rz0 = rz.at<float>(0);
+    float rz1 = rz.at<float>(1);
+    float rz2 = rz.at<float>(2);
+    if (abs(rz0) < abs(rz1) && abs(rz0) < abs(rz2)) {
         nvecApprox = (Mat_<float>(3,1) << 1, 0, 0);
-        break;
-    case 1:
-        if (nvec_cg.at<float>(2) > 0)
-            rz = -nvec_cg;
-        else
-            rz = nvec_cg;
-        nvecApprox = (Mat_<float>(3,1) << 1, 0, 0);
-        break;
+    }
+    else if (abs(rz1) < abs(rz2)) {
+        nvecApprox = (Mat_<float>(3,1) << 0, 1, 0);
+    }
+    else {
+        nvecApprox = (Mat_<float>(3,1) << 0, 0, 1);
     }
 
+    // Use flag to define the direction of camera
+    // 0: upward; 1: downward; ...
+    //    switch(flag) {
+    //    case 0:
+    //        if (nvec_cg.at<float>(2) < 0)
+    //            rz = -nvec_cg;
+    //        else
+    //            rz = nvec_cg;
+    //        nvecApprox = (Mat_<float>(3,1) << 1, 0, 0);
+    //        break;
+    //    case 1:
+    //        if (nvec_cg.at<float>(2) > 0)
+    //            rz = -nvec_cg;
+    //        else
+    //            rz = nvec_cg;
+    //        nvecApprox = (Mat_<float>(3,1) << 1, 0, 0);
+    //        break;
+    //    }
+
+    // create the roation matrix
     Mat rx = rz.cross(nvecApprox);
     rx = rx/norm(rx);
     Mat ry = rz.cross(rx);
@@ -139,12 +161,11 @@ void Solver::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc,
     Rodrigues(Rdc, rvec_dc);
 
     tvec_dc = Mat::zeros(3,1,CV_32FC1);
-
     //    cerr << "rvec_dc" << rvec_dc << endl;
     //    cerr << "tvec_dc" << tvec_dc << endl;
 }
 
-void Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
+double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
                                 const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd) {
 
     double threshSmallRotation = 1.0/5000;
@@ -162,8 +183,14 @@ void Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<P
 
         set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> setpairMsrMk;
         FindCovisMark(pKf1, pKf2, setpairMsrMk);
-
+        set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> setpairMsrMkInSet;
         for (auto pairMsrMk : setpairMsrMk) {
+            if( _measuremk.count(pairMsrMk.first) && _measuremk.count(pairMsrMk.second) ) {
+                setpairMsrMkInSet.insert(pairMsrMk);
+            }
+        }
+
+        for (auto pairMsrMk : setpairMsrMkInSet) {
             HyperEdgeOdoMk edge(pMsrOdo, pairMsrMk.first, pairMsrMk.second);
             vecHyperEdge.push_back(edge);
             if (abs(odo_ratio) < threshSmallRotation) {
@@ -175,9 +202,9 @@ void Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<P
         }
     }
 
-//    cerr << "Number of hyper edges: " << vecHyperEdge.size() << endl;
-//    cerr << "Number of hyper edges with small rotation: " << vecHyperEdgeSmallRot.size() << endl;
-//    cerr << "Number of hyper edges with large rotation: " << vecHyperEdgeLargeRot.size() << endl;
+    //    cerr << "Number of hyper edges: " << vecHyperEdge.size() << endl;
+    //    cerr << "Number of hyper edges with small rotation: " << vecHyperEdgeSmallRot.size() << endl;
+    //    cerr << "Number of hyper edges with large rotation: " << vecHyperEdgeLargeRot.size() << endl;
 
     // COMPUTE YAW ANGLE
     Mat R_dc;
@@ -216,7 +243,7 @@ void Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<P
         //        cerr << endl;
     }
     double yawavr = yawsum/yawcount;
-//    cerr << "Yaw: " << yawavr << endl;
+    //    cerr << "Yaw: " << yawavr << endl;
     rvec_bd = ( Mat_<float>(3,1) << 0, 0, yawavr);
 
     // COMPUTE XY TRANSLATION
@@ -259,13 +286,11 @@ void Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<P
         countEdge++;
     }
 
-//    cerr << "A:" << endl << A << endl;
-//    cerr << "b:" << endl << b << endl;
-
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::MatrixXd x = svd.solve(b);
-//    cerr << "x:" << endl << x << endl;
     tvec_bd = ( Mat_<float>(3,1) << x(0), x(1), 0 );
+    Eigen::VectorXd residual = A*x - b;
+    return residual.norm();
 }
 
 int Solver::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> &_setpairMsrMk) {
