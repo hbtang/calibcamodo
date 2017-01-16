@@ -1,8 +1,8 @@
-#include "Dataset.h"
-#include "Frame.h"
-#include "Measure.h"
-#include "Mark.h"
-#include "Config.h"
+#include "dataset.h"
+#include "frame.h"
+#include "measure.h"
+#include "mark.h"
+#include "config.h"
 
 namespace calibcamodo {
 
@@ -47,12 +47,12 @@ void Dataset::CreateFrame() {
     }
 
     // load odometry
-    map<int, XYTheta> mapId2Odo;
+    map<int, Se2> mapId2Odo;
     ifstream logFile_stream(mstrFilePathOdo);
     string str_tmp;
     while(getline(logFile_stream, str_tmp)) {
         // read time info
-        XYTheta odo_tmp;
+        Se2 odo_tmp;
         int id_tmp;
         if (ParseOdoData(str_tmp, odo_tmp, id_tmp)) {
             mapId2Odo[id_tmp] = odo_tmp;
@@ -75,7 +75,7 @@ void Dataset::CreateFrame() {
     return;
 }
 
-bool Dataset::ParseOdoData(const string _str, XYTheta &_odo, int &_id) {
+bool Dataset::ParseOdoData(const string _str, Se2 &_odo, int &_id) {
     vector<string> vec_str = SplitString(_str, " ");
 
     // fail
@@ -110,9 +110,9 @@ void Dataset::CreateKeyFrame() {
     PtrKeyFrame pKeyFrameLast = make_shared<KeyFrame>(**msetpFrame.cbegin(), mCamParam, mMDetector, mMarkerSize);
     InsertKf(pKeyFrameLast);
 
-    for (auto pFrameNew : msetpFrame) {
-
-        XYTheta dodo = pKeyFrameLast->RelOdoTo(*pFrameNew);
+    for (auto ptr : msetpFrame) {
+        PtrFrame pFrameNew = ptr;
+        Se2 dodo = pFrameNew->GetOdo() - pKeyFrameLast->GetOdo();
         double dl = sqrt(dodo.x*dodo.x + dodo.y*dodo.y);
         double dr = abs(dodo.theta);
         Mat info = Mat::eye(3,3,CV_32FC1);

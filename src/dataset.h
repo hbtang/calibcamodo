@@ -1,17 +1,10 @@
 #ifndef DATASET_H
 #define DATASET_H
 
-#include "Type.h"
-
-#include "aruco.h"
-
-#include "stdafx.h"
+#include "type.h"
+#include "aruco/aruco.h"
 
 namespace calibcamodo {
-
-using namespace std;
-using namespace cv;
-using namespace aruco;
 
 class Frame;
 class KeyFrame;
@@ -65,8 +58,8 @@ private:
     bool InsertMsrOdo(PtrMsrKf2AMk ptr);
     bool DeleteMsrOdo(PtrMsrKf2AMk ptr);
 
-    CameraParameters mCamParam;
-    MarkerDetector mMDetector;
+    aruco::CameraParameters mCamParam;
+    aruco::MarkerDetector mMDetector;
 
     string mstrFoldPathMain;
     string mstrFoldPathImg;
@@ -80,7 +73,7 @@ private:
     double mThreshOdoRot;
 
     vector<string> SplitString(const string _str, const string _separator);
-    bool ParseOdoData(const string _str, XYTheta &_odo, int &_id);
+    bool ParseOdoData(const string _str, Se2 &_odo, int &_id);
 };
 
 }

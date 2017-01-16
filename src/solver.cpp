@@ -1,15 +1,14 @@
-#include "Solver.h"
+#include "solver.h"
+#include "adapter.h"
+#include "g2o/g2o_api.h"
 
 namespace calibcamodo {
+
 using namespace cv;
 using namespace std;
+using namespace g2o;
 
-
-
-Solver::Solver() {
-    mrvec_bc.create(3,1,CV_32FC1);
-    mtvec_bc.create(3,1,CV_32FC1);
-}
+Solver::Solver() {}
 
 void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo) {
     // calibrate the ground plane, return 3-by-1 norm vector in camera frame
@@ -36,12 +35,12 @@ void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe
         Vec2MatSe3(rvec_bd_2, tvec_bd_2, T_bd);
     }
     T_bc = T_bd*T_dc;
-    Mat2VecSe3(T_bc, mrvec_bc, mtvec_bc);
+    mSe3cb = Se3(T_bc);
 
     // print calibration result
     cerr << "Calibration wth InitMk finished!" << endl;
-    cerr << "rvec_bc: " << mrvec_bc.t() << endl;
-    cerr << "tvec_bc: " << mtvec_bc.t() << endl;
+    cerr << "rvec_bc: " << mSe3cb.rvec.t() << endl;
+    cerr << "tvec_bc: " << mSe3cb.tvec.t() << endl;
     cerr << endl;
 }
 
@@ -129,25 +128,6 @@ void Solver::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc,
     else {
         nvecApprox = (Mat_<float>(3,1) << 0, 0, 1);
     }
-
-    // Use flag to define the direction of camera
-    // 0: upward; 1: downward; ...
-    //    switch(flag) {
-    //    case 0:
-    //        if (nvec_cg.at<float>(2) < 0)
-    //            rz = -nvec_cg;
-    //        else
-    //            rz = nvec_cg;
-    //        nvecApprox = (Mat_<float>(3,1) << 1, 0, 0);
-    //        break;
-    //    case 1:
-    //        if (nvec_cg.at<float>(2) > 0)
-    //            rz = -nvec_cg;
-    //        else
-    //            rz = nvec_cg;
-    //        nvecApprox = (Mat_<float>(3,1) << 1, 0, 0);
-    //        break;
-    //    }
 
     // create the roation matrix
     Mat rx = rz.cross(nvecApprox);
@@ -274,11 +254,8 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
         Mat A_blk_trim = A_blk.rowRange(0,2).colRange(0,2);
         Mat b_blk_trim = b_blk.rowRange(0,2);
 
-        Eigen::MatrixXd A_blk_trim_eigen;
-        Eigen::MatrixXd b_blk_trim_eigen;
-
-        Cv2Eigen(A_blk_trim, A_blk_trim_eigen);
-        Cv2Eigen(b_blk_trim, b_blk_trim_eigen);
+        Eigen::MatrixXd A_blk_trim_eigen = toEigenMatrixXd(A_blk_trim);
+        Eigen::MatrixXd b_blk_trim_eigen = toEigenMatrixXd(b_blk_trim);
 
         A.block(countEdge*2,0,2,2) = A_blk_trim_eigen;
         b.block(countEdge*2,0,2,1) = b_blk_trim_eigen;
@@ -321,5 +298,20 @@ int Solver::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<
     return 0;
 }
 
+void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo) {
+
+    //! Set optimizer
+    SparseOptimizer optimizer;
+    optimizer.setVerbose(true);    
+    InitOptimizerCalib(optimizer);
+
+    //! Set vertices
+
+//    AddVertexSE3(optimizer, const g2o::Isometry3D &pose, int id, bool fixed);
+
+
+    optimizer.initializeOptimization();
+    optimizer.optimize(30);
+}
 
 }

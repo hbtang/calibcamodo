@@ -1,13 +1,26 @@
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <string>
 
-#include "aruco.h"
-#include "cvdrawingutils.h"
-#include "stdafx.h"
+#include "dataset.h"
+#include "frame.h"
+#include "measure.h"
+#include "mark.h"
+#include "solver.h"
+#include "adapter.h"
 
-#include "Dataset.h"
-#include "Frame.h"
-#include "Measure.h"
-#include "Mark.h"
-#include "Solver.h"
+#include <ros/ros.h>
+#include <nav_msgs/Odometry.h>
+#include <std_msgs/Header.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <geometry_msgs/Pose.h>
+#include <sensor_msgs/Image.h>
+#include <visualization_msgs/Marker.h>
+//#include <tf/transform_broadcaster.h>
+//#include <tf/transform_datatypes.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
 
 using namespace std;
 using namespace cv;
@@ -16,12 +29,7 @@ using namespace calibcamodo;
 
 int main(int argc, char **argv) {
 
-//    Mat m1 = (Mat_<float>(2,2)  << 1, 2, 3, 4);
-//    Mat m2 = fun(m1);
-//    m2.at<float>(0,0) = 5;
-//    cerr << m1 << endl << m2 << endl;
-
-    // INIT ROS
+    //! Init ros
     ros::init(argc, argv, "pub");
     ros::start();
     ros::NodeHandle nh;
@@ -29,7 +37,7 @@ int main(int argc, char **argv) {
     image_transport::ImageTransport it(nh);
     image_transport::Publisher pub = it.advertise("/camera/image_raw",1);
 
-    // INIT DATASET
+    //! Init dataset
     string strFolderPathMain = argv[1];
     int numFrame = atoi(argv[2]);
     double markerSize = atof(argv[3]);
@@ -39,15 +47,13 @@ int main(int argc, char **argv) {
     dataset.CreateKeyFrame();
     dataset.CreateMarkMeasure();
 
-    // INIT SOLVER
+    //! Init solver
     Solver solver;
 
-    // DO CALIBRATE
+    //! Do calibrate
     solver.CalibInitMk(dataset.GetMsrMk(), dataset.GetMsrOdo());
 
-
-
-    // DEBUG: SHOW SOMETHING
+    //! DEBUG: SHOW SOMETHING
 //    for (auto pair : dataset.GetKeyFrameMap()) {
 //        auto pf = pair.second;
 //        Mat img = pf->GetImg();

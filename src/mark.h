@@ -1,13 +1,10 @@
 #ifndef MARK_H
 #define MARK_H
 
-#include "Type.h"
-#include "stdafx.h"
+#include "type.h"
+#include <opencv2/core/core.hpp>
 
 namespace calibcamodo {
-
-using namespace std;
-using namespace cv;
 
 class Mark {
 public:
@@ -20,8 +17,8 @@ public:
 
 protected:
     int mId;
-    Mat mrvec_wm;
-    Mat mtvec_wm;
+    cv::Mat mrvec_wm;
+    cv::Mat mtvec_wm;
 };
 
 class ArucoMark : public Mark {
@@ -33,15 +30,15 @@ public:
     void InsertMsrMk(PtrMsrKf2AMk pmsr);
     void DeleteMsrMk(PtrMsrKf2AMk pmsr);    
 
-    set<PtrMsrKf2AMk> GetMsr() const {return msetpMsr;}
-    set<PtrMsrKf2AMk> GetMsr(set<PtrKeyFrame> _setpKf) const; // return measure from given kfs
-    set<PtrKeyFrame> GetKf() const {return msetpKf;}
+    std::set<PtrMsrKf2AMk> GetMsr() const {return msetpMsr;}
+    std::set<PtrMsrKf2AMk> GetMsr(std::set<PtrKeyFrame> _setpKf) const; // return measure from given kfs
+    std::set<PtrKeyFrame> GetKf() const {return msetpKf;}
 
 protected:
 
-    set<PtrMsrKf2AMk> msetpMsr;
-    set<PtrKeyFrame> msetpKf;
-    map<PtrKeyFrame, PtrMsrKf2AMk> mmappKf2pMsr;
+    std::set<PtrMsrKf2AMk> msetpMsr;
+    std::set<PtrKeyFrame> msetpKf;
+    std::map<PtrKeyFrame, PtrMsrKf2AMk> mmappKf2pMsr;
 };
 
 }

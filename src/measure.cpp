@@ -1,5 +1,5 @@
-#include "Measure.h"
-#include "Frame.h"
+#include "measure.h"
+#include "frame.h"
 
 namespace calibcamodo {
 
@@ -53,7 +53,7 @@ MeasureSe2::MeasureSe2(Mat _measure, Mat _info) : Measure(_measure, _info) {
     Period(theta, PI, -PI);
 }
 
-MeasureSe2::MeasureSe2(XYTheta _odo, Mat _info) {
+MeasureSe2::MeasureSe2(Se2 _odo, Mat _info) {
     _info.copyTo(info);
     x = _odo.x;
     y = _odo.y;
@@ -115,7 +115,7 @@ MeasureSe2Kf2Kf::MeasureSe2Kf2Kf(Mat _measure, Mat _info, PtrKeyFrame _pKfHead, 
 
 }
 
-MeasureSe2Kf2Kf::MeasureSe2Kf2Kf(XYTheta _odo, Mat _info, PtrKeyFrame _pKfHead, PtrKeyFrame _pKfTail) : MeasureSe2(_odo, _info),
+MeasureSe2Kf2Kf::MeasureSe2Kf2Kf(Se2 _odo, Mat _info, PtrKeyFrame _pKfHead, PtrKeyFrame _pKfTail) : MeasureSe2(_odo, _info),
     pKfHead(_pKfHead), pKfTail(_pKfTail) {
 
 }

@@ -1,15 +1,11 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
-#include "Measure.h"
-#include "Frame.h"
-#include "Type.h"
-#include "stdafx.h"
+#include "measure.h"
+#include "frame.h"
+#include "type.h"
 
 namespace calibcamodo {
-
-using namespace std;
-using namespace cv;
 
 struct HyperEdgeOdoMk {
 
@@ -28,10 +24,10 @@ public:
 
     // InitMk: using 3D translational mark measurements, non-iterative
     void CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo);
-    void ComputeGrndPlane(const set<PtrMsrKf2AMk> &_measure, Mat &nvec_cg);
-    void ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc, int flag = 0);
+    void ComputeGrndPlane(const set<PtrMsrKf2AMk> &_measure, cv::Mat &nvec_cg);
+    void ComputeCamProjFrame(const cv::Mat &nvec_cg, cv::Mat &rvec_dc, cv::Mat &tvec_dc, int flag = 0);
     double Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
-                            const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd);
+                            const cv::Mat &rvec_dc, const cv::Mat &tvec_dc, cv::Mat &rvec_bd, cv::Mat &tvec_bd);
 
     // JointOptMk: using 3D translational mark measurements, iterative optimize SLAM and calibration
     void CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo);
@@ -39,15 +35,15 @@ public:
 
     // other functions ...
     int FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> &_setpairMsr);
-    void GetResult(Mat &rvec_bc, Mat &tvec_bc) const {
-        mrvec_bc.copyTo(rvec_bc);
-        mtvec_bc.copyTo(tvec_bc);
+    void GetResult(cv::Mat &rvec_bc, cv::Mat &tvec_bc) const {
+        mSe3cb.rvec.copyTo(rvec_bc);
+        mSe3cb.tvec.copyTo(tvec_bc);
     }
 
 private:
+    Se3 mSe3cb;
 
-    Mat mrvec_bc;
-    Mat mtvec_bc;
+
 
 };
 
