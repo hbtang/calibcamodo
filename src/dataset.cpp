@@ -227,4 +227,46 @@ bool Dataset::InsertMsrMk(PtrMsrKf2AMk pmsr) {
     pMk->InsertMsrMk(pmsr);
 }
 
+void Dataset::InitKf(Se3 _se3bc) {
+    for(auto ptr : msetpKf) {
+        PtrKeyFrame pKf = ptr;
+
+        Se2 se2odo = pKf->GetOdo();
+        Se2 se2wb = se2odo;
+        Se3 se3wb = Se3(se2wb);
+        Se3 se3wc = se3wb+_se3bc;
+
+        //        cerr << "se2odo:" << se2odo << endl;
+        //        cerr << "se3wb:" << se3wb << endl;
+        //        cerr << "se3wc:" << se3wc << endl;
+
+        pKf->SetPoseBase(se2odo);
+        pKf->SetPoseCamera(se3wc);
+
+        //        Se3 se3wc_b = pKf->GetPoseCamera();
+        //        cerr << "se3wc:" << se3wc_b << endl;
+        //        cerr << endl;
+    }
+}
+
+void Dataset::InitMk() {
+    for(auto ptr : msetpMk) {
+        PtrArucoMark pMk = ptr;
+        set<PtrMsrKf2AMk> setpMsr = pMk->GetMsr();
+        if(!setpMsr.empty()) {
+            PtrKeyFrame pKf = (*setpMsr.cbegin())->pKf;
+            Se3 se3wc = pKf->GetPoseCamera();
+            Se3 se3cm = (*setpMsr.cbegin())->se3;
+            Se3 se3wm = se3wc+se3cm;
+            pMk->SetPose(se3wm);
+
+            // DEBUG
+            //            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
+            //            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
+            //            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
+            //            cerr << endl;
+        }
+    }
+}
+
 }

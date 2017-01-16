@@ -6,6 +6,7 @@ namespace calibcamodo{
 
 using namespace cv;
 
+
 cv::Mat toT4x4(cv::Mat R, cv::Mat T){
     cv::Mat T4x4 = cv::Mat::eye(4,4,R.type());
     R.copyTo(T4x4.rowRange(0,3).colRange(0,3));
@@ -34,12 +35,16 @@ Eigen::Vector2d toEigenVector2d(const cv::Point2f &cvVector){
 g2o::Isometry3D toG2oIsometry3D(const cv::Mat &T){
     Eigen::Matrix<double,3,3> R;
     R << T.at<float>(0,0), T.at<float>(0,1), T.at<float>(0,2),
-         T.at<float>(1,0), T.at<float>(1,1), T.at<float>(1,2),
-         T.at<float>(2,0), T.at<float>(2,1), T.at<float>(2,2);
+            T.at<float>(1,0), T.at<float>(1,1), T.at<float>(1,2),
+            T.at<float>(2,0), T.at<float>(2,1), T.at<float>(2,2);
     g2o::Isometry3D ret = (g2o::Isometry3D) Eigen::Quaterniond(R);
     Eigen::Vector3d t(T.at<float>(0,3), T.at<float>(1,3), T.at<float>(2,3));
     ret.translation() = t;
     return ret;
+}
+
+g2o::Isometry3D toG2oIsometry3D(const Se3& _se3) {
+    return toG2oIsometry3D(_se3.T());
 }
 
 cv::Mat toCvMatf(const g2o::Isometry3D &t){
@@ -78,6 +83,13 @@ g2o::Matrix6d toG2oMatrix6f(const cv::Mat &cvMat6f){
         for(int j = 0; j < 6; j++)
             m(i,j) = cvMat6f.at<float>(i,j);
     return m;
+}
+
+g2o::Vector3D toG2oVector3D(const cv::Mat &cvmat) {
+    g2o::Vector3D v;
+    for(int i; i<3; i++)
+        v(i) = cvmat.at<float>(i);
+    return v;
 }
 
 // below from ORB_SLAM: https://github.com/raulmur/ORB_SLAM
@@ -192,8 +204,8 @@ Eigen::Matrix<double,3,3> toEigenMatrix3d(const cv::Mat &cvMat3)
     Eigen::Matrix<double,3,3> M;
 
     M << cvMat3.at<float>(0,0), cvMat3.at<float>(0,1), cvMat3.at<float>(0,2),
-         cvMat3.at<float>(1,0), cvMat3.at<float>(1,1), cvMat3.at<float>(1,2),
-         cvMat3.at<float>(2,0), cvMat3.at<float>(2,1), cvMat3.at<float>(2,2);
+            cvMat3.at<float>(1,0), cvMat3.at<float>(1,1), cvMat3.at<float>(1,2),
+            cvMat3.at<float>(2,0), cvMat3.at<float>(2,1), cvMat3.at<float>(2,2);
 
     return M;
 }
@@ -249,6 +261,15 @@ void Mat2VecSe3(const Mat &T, Mat &rvec, Mat &tvec) {
 
 g2o::SE2 toG2oSE2(const Se2 &in) {
     return g2o::SE2(in.x, in.y, in.theta);
+}
+
+Se3 toSe3(const g2o::Isometry3D &in) {
+    return Se3(toCvMatf(in));
+}
+
+Se2 toSe2(const g2o::SE2 &in) {
+    g2o::Vector3D v = in.toVector();
+    return Se2(v(0), v(1), v(2));
 }
 
 

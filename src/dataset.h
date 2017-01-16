@@ -21,6 +21,13 @@ public:
     void CreateKeyFrame();
     void CreateMarkMeasure();
 
+    void InitKf(Se3 _se3bc);
+    void InitMk();
+    void InitAll(Se3 _se3bc) {
+        InitKf(_se3bc);
+        InitMk();
+    }
+
     inline const set<PtrFrame> & GetFrame() const { return msetpFrame; }
 
     inline const set<PtrKeyFrame> & GetKfSet() const { return msetpKf; }

@@ -4,6 +4,7 @@
 #include "measure.h"
 #include "frame.h"
 #include "type.h"
+#include "dataset.h"
 
 namespace calibcamodo {
 
@@ -19,8 +20,7 @@ struct HyperEdgeOdoMk {
 
 class Solver {
 public:
-    Solver();
-    ~Solver() {}
+    Solver(Dataset *_pDataset);
 
     // InitMk: using 3D translational mark measurements, non-iterative
     void CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo);
@@ -35,15 +35,15 @@ public:
 
     // other functions ...
     int FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> &_setpairMsr);
-    void GetResult(cv::Mat &rvec_bc, cv::Mat &tvec_bc) const {
-        mSe3cb.rvec.copyTo(rvec_bc);
-        mSe3cb.tvec.copyTo(tvec_bc);
-    }
+//    void GetResult(cv::Mat &rvec_bc, cv::Mat &tvec_bc) const {
+//        mSe3cb.rvec.copyTo(rvec_bc);
+//        mSe3cb.tvec.copyTo(tvec_bc);
+//    }
+    inline Se3 GetResult() const {return mSe3cb;}
 
 private:
     Se3 mSe3cb;
-
-
+    Dataset *mpDataset;
 
 };
 

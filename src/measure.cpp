@@ -17,58 +17,68 @@ Measure::Measure(Mat _measure, Mat _info) {
 }
 
 MeasureSe3::MeasureSe3(const MeasureSe3 &_m) : Measure(_m) {
-    _m.rvec.copyTo(rvec);
-    _m.tvec.copyTo(tvec);
+    se3 = _m.se3;
 }
 
 MeasureSe3::MeasureSe3(Mat _measure, Mat _info) : Measure(_measure, _info) {
-    rvec.create(3,1,CV_32FC1);
-    tvec.create(3,1,CV_32FC1);
+    Mat rvec = Mat::zeros(3,1,CV_32FC1);
+    Mat tvec = Mat::zeros(3,1,CV_32FC1);
     for (int i=0; i<3; i++) {
         rvec.at<float>(i) = _measure.at<float>(i);
         tvec.at<float>(i) = _measure.at<float>(i+3);
     }
+    se3 = Se3(rvec, tvec);
 }
 
 MeasureSe3::MeasureSe3(Mat _rvec, Mat _tvec, Mat _info) {
-    _rvec.copyTo(rvec);
-    _tvec.copyTo(tvec);
     _info.copyTo(info);
     measure.create(6,1,CV_32FC1);
     for (int i=0; i<3; i++) {
         measure.at<float>(i,0) = _rvec.at<float>(i,0);
         measure.at<float>(i+3,0) = _tvec.at<float>(i,0);
     }
+    se3 = Se3(_rvec, _tvec);
+}
+
+cv::Mat MeasureSe3::rvec() const {
+    Mat rvec = se3.rvec.clone();
+    return rvec;
+}
+cv::Mat MeasureSe3::tvec() const {
+    Mat tvec = se3.tvec.clone();
+    return tvec;
+}
+cv::Mat MeasureSe3::matR() const {
+    return se3.R();
+}
+cv::Mat MeasureSe3::matT() const {
+    return se3.T();
 }
 
 MeasureSe2::MeasureSe2(const MeasureSe2 &_m) : Measure(_m),
-    x(_m.x), y(_m.y), theta(_m.theta){
-    Period(theta, PI, -PI);
-}
+    se2(_m.se2){}
 
 MeasureSe2::MeasureSe2(Mat _measure, Mat _info) : Measure(_measure, _info) {
-    x = _measure.at<float>(0);
-    y = _measure.at<float>(1);
-    theta = _measure.at<float>(2);
+    float x = _measure.at<float>(0);
+    float y = _measure.at<float>(1);
+    float theta = _measure.at<float>(2);
     Period(theta, PI, -PI);
+    se2 = Se2(x,y,theta);
 }
 
 MeasureSe2::MeasureSe2(Se2 _odo, Mat _info) {
     _info.copyTo(info);
-    x = _odo.x;
-    y = _odo.y;
-    theta = _odo.theta;
-    Period(theta, PI, -PI);
-    measure = (Mat_<float>(3,1) << x, y, theta);
+    se2 = _odo;
+    measure = (Mat_<float>(3,1) << _odo.x, _odo.y, _odo.theta);
 }
 
 Mat MeasureSe2::rvec() const {
-    Mat r = ( Mat_<float>(3,1) << 0, 0, theta);
+    Mat r = ( Mat_<float>(3,1) << 0, 0, se2.theta);
     return r;
 }
 
 Mat MeasureSe2::tvec() const {
-    Mat t = (Mat_<float>(3,1) << x, y, 0 );
+    Mat t = (Mat_<float>(3,1) << se2.x, se2.y, 0 );
     return t;
 }
 
@@ -86,6 +96,9 @@ Mat MeasureSe2::matT() const {
 }
 
 double MeasureSe2::ratio() const {
+    double x = se2.x;
+    double y = se2.y;
+    double theta = se2.theta;
     double l = sqrt(x*x + y*y);
     return theta/l;
 }

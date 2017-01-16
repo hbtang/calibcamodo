@@ -13,12 +13,14 @@ public:
     Mark(const Mark &_mk);
     ~Mark() {}
 
-    int GetId() const {return mId;}
+    inline int GetId() const {return mId;}
+    inline Se3 GetPose() const {return mSe3wm;}
+    inline void SetPose(Se3 _in) { mSe3wm = _in; }
+    void SetPoseTranslation(cv::Mat _tvec);
 
 protected:
     int mId;
-    cv::Mat mrvec_wm;
-    cv::Mat mtvec_wm;
+    Se3 mSe3wm;
 };
 
 class ArucoMark : public Mark {

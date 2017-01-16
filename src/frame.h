@@ -49,6 +49,15 @@ public:
     PtrMsrSe2Kf2Kf GetMsrOdoNext() const {return mpMsrOdoNext;}
     PtrMsrSe2Kf2Kf GetMsrOdoLast() const {return mpMsrOdoLast;}
 
+    inline void SetPoseBase(Se2 _in) { mSe2wb = _in; }
+    inline Se2 GetPoseBase() const { return mSe2wb; }
+    inline void SetPoseCamera(Se3 _in) { mSe3wc = _in; }
+    inline Se3 GetPoseCamera() const { return mSe3wc; }
+
+    void SetPoseAllbyB(Se2 _wb, Se3 _bc);
+    void SetPoseAllbyC(Se3 _wc, Se3 _bc);
+
+
 private:
     std::vector<aruco::Marker> mvecMsrAruco;  // vector of aruco measurements in this KF
     cv::Mat mImgAruco;

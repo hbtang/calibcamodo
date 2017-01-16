@@ -20,35 +20,39 @@
 
 #include <opencv2/core/core.hpp>
 
+#include "edge_xyz_calibcamodo.h"
+
 namespace calibcamodo{
 
-typedef g2o::BlockSolverX SlamBlockSolver;
-typedef g2o::LinearSolverCholmod<SlamBlockSolver::PoseMatrixType> SlamLinearSolver;
-typedef g2o::OptimizationAlgorithmLevenberg SlamAlgorithm;
-typedef g2o::SparseOptimizer SlamOptimizer;
+typedef g2o::BlockSolverX BlockSolver;
+typedef g2o::LinearSolverCholmod<BlockSolver::PoseMatrixType> LinearSolver;
+typedef g2o::OptimizationAlgorithmLevenberg Algorithm;
+typedef g2o::SparseOptimizer Optimizer;
 typedef g2o::CameraParameters CamPara;
 
-void InitOptimizerSlam(SlamOptimizer &opt, bool verbose=false);
-void InitOptimizerCalib(g2o::SparseOptimizer& optimizer);
+void InitOptimizerSlam(Optimizer &opt, bool verbose=false);
+void InitOptimizerCalib(Optimizer &opt);
 
-CamPara* AddCamPara(SlamOptimizer &opt, const cv::Mat& K, int id);
-g2o::ParameterSE3Offset* AddParaSE3Offset(SlamOptimizer &opt, const g2o::Isometry3D& se3offset, int id);
+CamPara* AddCamPara(Optimizer &opt, const cv::Mat& K, int id);
+g2o::ParameterSE3Offset* AddParaSE3Offset(Optimizer &opt, const g2o::Isometry3D& se3offset, int id);
 
-void AddVertexSE3Expmap(SlamOptimizer &opt, const g2o::SE3Quat& pose, int id, bool fixed=false);
-void AddVertexSBAXYZ(SlamOptimizer &opt, const Eigen::Vector3d &xyz, int id, bool marginal=true, bool fixed=false);
-void AddVertexSE3(SlamOptimizer &opt, const g2o::Isometry3D &pose, int id, bool fixed=false);
-void AddVertexSE2(SlamOptimizer &opt, const g2o::SE2 &pose, int id, bool fixed=false);
-void AddVertexPointXYZ(SlamOptimizer &opt, const g2o::Vector3D &xyz, int id, bool marginal=true);
+void AddVertexSE3Expmap(Optimizer &opt, const g2o::SE3Quat& pose, int id, bool fixed=false);
+void AddVertexSBAXYZ(Optimizer &opt, const Eigen::Vector3d &xyz, int id, bool marginal=true, bool fixed=false);
+void AddVertexSE3(Optimizer &opt, const g2o::Isometry3D &pose, int id, bool fixed=false);
+void AddVertexSE2(Optimizer &opt, const g2o::SE2 &pose, int id, bool fixed=false);
+void AddVertexPointXYZ(Optimizer &opt, const g2o::Vector3D &xyz, int id, bool marginal=false);
 
-g2o::EdgeSE3Expmap* AddEdgeSE3Expmap(SlamOptimizer &opt, const g2o::SE3Quat& measure, int id0, int id1, const g2o::Matrix6d& info);
-g2o::EdgeProjectXYZ2UV* AddEdgeXYZ2UV(SlamOptimizer &opt, const Eigen::Vector2d& measure, int id0, int id1, int paraId, const Eigen::Matrix2d &info, double thHuber);
-g2o::EdgeSE3* AddEdgeSE3(SlamOptimizer &opt, const g2o::Isometry3D &measure, int id0, int id1, const g2o::Matrix6d& info);
-g2o::EdgeSE3PointXYZ* AddEdgeSE3XYZ(SlamOptimizer &opt, const g2o::Vector3D& measure, int idse3, int idxyz, int paraSE3OffsetId, const g2o::Matrix3D &info, double thHuber);
+g2o::EdgeSE3Expmap* AddEdgeSE3Expmap(Optimizer &opt, int id0, int id1, const g2o::SE3Quat& measure, const g2o::Matrix6d& info);
+g2o::EdgeProjectXYZ2UV* AddEdgeXYZ2UV(Optimizer &opt, int id0, int id1, int paraId, const Eigen::Vector2d& measure, const Eigen::Matrix2d &info, double thHuber);
+g2o::EdgeSE3* AddEdgeSE3(Optimizer &opt, int id0, int id1, const g2o::Isometry3D &measure, const g2o::Matrix6d& info);
+g2o::EdgeSE2* AddEdgeSE2(Optimizer &opt, int id0, int id1, const g2o::SE2 &measure, const g2o::Matrix3D &info);
+g2o::EdgeSE3PointXYZ* AddEdgeSE3XYZ(Optimizer &opt, int idse3, int idxyz, int paraSE3OffsetId, const g2o::Vector3D& measure, const g2o::Matrix3D &info, double thHuber);
+g2o::EdgeXYZCalibCamOdo* AddEdgeXYZCalibCamOdo(Optimizer &opt, int idKf, int idMk, int idCalib, const g2o::Vector3D &measure, const g2o::Matrix3D &info);
 
-g2o::Isometry3D EstimateVertexSE3(SlamOptimizer &opt, int id);
-Eigen::Vector3d EstimateVertexXYZ(SlamOptimizer &opt, int id);
-g2o::SE3Quat EstimateVertexSE3Expmap(SlamOptimizer &opt, int id);
-g2o::Vector3D EstimateVertexSBAXYZ(SlamOptimizer &opt, int id);
+g2o::Isometry3D EstimateVertexSE3(Optimizer &opt, int id);
+Eigen::Vector3d EstimateVertexXYZ(Optimizer &opt, int id);
+g2o::SE3Quat EstimateVertexSE3Expmap(Optimizer &opt, int id);
+g2o::Vector3D EstimateVertexSBAXYZ(Optimizer &opt, int id);
 
 }
 

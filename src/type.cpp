@@ -55,7 +55,7 @@ Se3::Se3(cv::Mat &_rvec, cv::Mat &_tvec) {
 
 Se3::Se3(const Se3 &_in) {
     rvec = _in.rvec.clone();
-    tvec = _in.rvec.clone();
+    tvec = _in.tvec.clone();
 }
 
 Se3::Se3(const Se2 &_in) {
@@ -96,6 +96,16 @@ Se3 Se3::operator+ (const Se3 &_that) {
     Mat Tthat = _that.T();
     Mat Tresult = Tthis*Tthat;
     return Se3(Tresult);
+}
+
+std::ostream &operator<< (std::ostream &os, Se3 &se3) {
+    os << "rvec:" << se3.rvec << " tvec:" << se3.tvec;
+    return os;
+}
+
+std::ostream &operator<< (std::ostream &os, Se2 &se2) {
+    os << "[" << se2.x << "," << se2.y << "," << se2.theta << "]";
+    return os;
 }
 
 }

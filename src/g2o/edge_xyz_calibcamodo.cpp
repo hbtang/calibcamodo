@@ -29,7 +29,7 @@ void EdgeXYZCalibCamOdo::computeError() {
     Vector4D xyz1_wm;
     xyz1_wm << xyz_wm(0), xyz_wm(1), xyz_wm(2), 1;
     Vector4D xyz1_cm_measure;
-    xyz1_wm << xyz_cm_measure(0), xyz_cm_measure(1), xyz_cm_measure(2), 1;
+    xyz1_cm_measure << xyz_cm_measure(0), xyz_cm_measure(1), xyz_cm_measure(2), 1;
     Vector4D delta = (T3_wb*T3_bc).inverse() * xyz1_wm - xyz1_cm_measure;
     _error << delta(0), delta(1), delta(2);
 }

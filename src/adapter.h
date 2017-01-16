@@ -14,6 +14,10 @@
 
 namespace calibcamodo{
 
+// Convert to my type
+Se3 toSe3(const g2o::Isometry3D &in);
+Se2 toSe2(const g2o::SE2 &in);
+
 // Convert to cv
 cv::Mat toCvMatf(const g2o::SE3Quat &SE3);
 cv::Mat toCvMatf(const Eigen::Matrix<double,4,4> &m);
@@ -21,11 +25,12 @@ cv::Mat toCvMatf(const Eigen::Matrix3d &m);
 cv::Mat toCvMatf(const Eigen::Matrix<double,3,1> &m);
 cv::Mat toCvMatf(const g2o::Matrix6d& m);
 cv::Mat toCvMatf(const Eigen::MatrixXd &eigenMat);
+cv::Mat toCvMatf(const g2o::Isometry3D& t);
 
 cv::Mat toT4x4(cv::Mat R, cv::Mat T);
 cv::Mat toT4x4(float x, float y, float theta);
 
-cv::Mat toCvMatf(const g2o::Isometry3D& t);
+
 cv::Point2f toCvPt2f(const Eigen::Vector2d& vec);
 cv::Point3f toCvPt3f(const Eigen::Vector3d& vec);
 
@@ -49,9 +54,11 @@ Eigen::Vector2d toEigenVector2d(const cv::Point2f &cvVector);
 g2o::SE2 toG2oSE2(const Se2 &in);
 g2o::Isometry3D toG2oIsometry3D(const cv::Mat& T);
 g2o::Isometry3D toG2oIsometry3D(const g2o::SE3Quat& se3quat);
+g2o::Isometry3D toG2oIsometry3D(const Se3& _se3);
 g2o::SE3Quat toG2oSE3Quat(const g2o::Isometry3D&  iso);
 g2o::SE3Quat toG2oSE3Quat(const cv::Mat &cvT);
 g2o::Matrix6d toG2oMatrix6f(const cv::Mat& cvMat6f);
+g2o::Vector3D toG2oVector3D(const cv::Mat &cvmat);
 
 
 // other functions

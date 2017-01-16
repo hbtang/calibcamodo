@@ -16,8 +16,8 @@ public:
     void setMeasurement(const Vector3D& m){
         _measurement = m;
     }
-    virtual bool read(std::istream& is) {}
-    virtual bool write(std::ostream& os) {}
+    virtual bool read(std::istream& is) {return false;}
+    virtual bool write(std::ostream& os) const {return false;}
 protected:
 };
 

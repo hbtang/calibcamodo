@@ -1,5 +1,6 @@
 #include "solver.h"
 #include "adapter.h"
+#include "mark.h"
 #include "g2o/g2o_api.h"
 
 namespace calibcamodo {
@@ -8,7 +9,7 @@ using namespace cv;
 using namespace std;
 using namespace g2o;
 
-Solver::Solver() {}
+Solver::Solver(Dataset *_pDataset): mpDataset(_pDataset) {}
 
 void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo) {
     // calibrate the ground plane, return 3-by-1 norm vector in camera frame
@@ -36,12 +37,6 @@ void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe
     }
     T_bc = T_bd*T_dc;
     mSe3cb = Se3(T_bc);
-
-    // print calibration result
-    cerr << "Calibration wth InitMk finished!" << endl;
-    cerr << "rvec_bc: " << mSe3cb.rvec.t() << endl;
-    cerr << "tvec_bc: " << mSe3cb.tvec.t() << endl;
-    cerr << endl;
 }
 
 void Solver::ComputeGrndPlane(const set<PtrMsrKf2AMk> &_setmeasure, Mat &nvec_cg) {
@@ -70,7 +65,7 @@ void Solver::ComputeGrndPlane(const set<PtrMsrKf2AMk> &_setmeasure, Mat &nvec_cg
         int lclIdMk = mapMk2LclId[pAMk];
         int lclIdKf = mapKf2LclId[pKf];
 
-        Mat tvec = ptrmeasure->tvec;
+        Mat tvec = ptrmeasure->tvec();
         A(lclIdKf,0) = tvec.at<float>(0);
         A(lclIdKf,1) = tvec.at<float>(1);
         A(lclIdKf,2) = tvec.at<float>(2);
@@ -146,7 +141,7 @@ void Solver::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc,
 }
 
 double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
-                                const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd) {
+                                  const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd) {
 
     double threshSmallRotation = 1.0/5000;
 
@@ -200,8 +195,8 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
 
         Mat R_b1b2 = pMsrOdo->matR();
         Mat tvec_b1b2 = pMsrOdo->tvec();
-        Mat tvec_c1m = pMsrMk1->tvec;
-        Mat tvec_c2m = pMsrMk2->tvec;
+        Mat tvec_c1m = pMsrMk1->tvec();
+        Mat tvec_c2m = pMsrMk2->tvec();
         Mat tvec_b1b2_bar = R_dc*tvec_c1m - R_b1b2*R_dc*tvec_c2m;
 
         double xb = tvec_b1b2.at<float>(0);
@@ -245,8 +240,8 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
 
         Mat R_b1b2 = pMsrOdo->matR();
         Mat tvec_b1b2 = pMsrOdo->tvec();
-        Mat tvec_c1m = pMsrMk1->tvec;
-        Mat tvec_c2m = pMsrMk2->tvec;
+        Mat tvec_c1m = pMsrMk1->tvec();
+        Mat tvec_c2m = pMsrMk2->tvec();
 
         Mat A_blk = Mat::eye(3,3,CV_32FC1) - R_b1b2;
         Mat b_blk = R_b1b2*R_bc*tvec_c2m - R_bc*tvec_c1m + tvec_b1b2;
@@ -302,16 +297,92 @@ void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2
 
     //! Set optimizer
     SparseOptimizer optimizer;
-    optimizer.setVerbose(true);    
+    optimizer.setVerbose(true);
     InitOptimizerCalib(optimizer);
 
-    //! Set vertices
+    //! Set extrinsic vertex
+    int idVertexMax = 0;
+    Isometry3D Iso3_bc = toG2oIsometry3D(mSe3cb);
+    AddVertexSE3(optimizer, Iso3_bc, idVertexMax++);
 
-//    AddVertexSE3(optimizer, const g2o::Isometry3D &pose, int id, bool fixed);
+    //! Set keyframe vertices
+    map<PtrKeyFrame,int> mappKf2IdOpt;
+    for (auto ptr : mpDataset->GetKfSet()) {
+        PtrKeyFrame pKf = ptr;
+        AddVertexSE2(optimizer, toG2oSE2(pKf->GetPoseBase()), idVertexMax);
+        mappKf2IdOpt[pKf] = idVertexMax++;
+    }
 
+    //! Set mark vertices
+    map<PtrArucoMark,int> mappMk2IdOpt;
+    for (auto ptr : mpDataset->GetMkSet()) {
+        PtrArucoMark pMk = ptr;
+        //! NEED TO ADD INIT MK POSE HERE !!!
+        AddVertexPointXYZ(optimizer, toG2oVector3D(pMk->GetPose().tvec), idVertexMax);
+        mappMk2IdOpt[pMk] = idVertexMax++;
+    }
 
+    g2o::Matrix3D matEye3;
+    matEye3 << 1,0,0,
+            0,1,0,
+            0,0,1;
+
+    //! Set odometry edges
+    for (auto ptr : _measureodo) {
+        PtrMsrSe2Kf2Kf pMsrOdo = ptr;
+        PtrKeyFrame pKf0 = pMsrOdo->pKfHead;
+        PtrKeyFrame pKf1 = pMsrOdo->pKfTail;
+        int id0 = mappKf2IdOpt[pKf0];
+        int id1 = mappKf2IdOpt[pKf1];
+
+        g2o::SE2 measure = toG2oSE2(pMsrOdo->se2);
+        g2o::Matrix3D info = 1e-4 * matEye3;
+        info(2,2) = 1/(3*PI/180)/(3*PI/180);
+
+        AddEdgeSE2(optimizer, id0, id1, measure, info);
+    }
+
+    //! Set mark measurement edges
+    for (auto ptr : _measuremk) {
+        PtrMsrKf2AMk pMsrMk = ptr;
+        PtrKeyFrame pKf = pMsrMk->pKf;
+        PtrArucoMark pMk = pMsrMk->pMk;
+
+        int idKf = mappKf2IdOpt[pKf];
+        int idMk = mappMk2IdOpt[pMk];
+
+        g2o::Vector3D measure = toG2oVector3D(pMsrMk->tvec());
+        g2o::Matrix3D info = 0.02 * matEye3;
+
+        AddEdgeXYZCalibCamOdo(optimizer, idKf, idMk, 0, measure, info);
+    }
+
+    //! Do optimize
     optimizer.initializeOptimization();
     optimizer.optimize(30);
+
+
+    //! Refresh calibration results
+    g2o::VertexSE3* v = static_cast<g2o::VertexSE3*>(optimizer.vertex(0));
+    Isometry3D Iso3_bc_opt = v->estimate();
+    mSe3cb = toSe3(Iso3_bc_opt);
+
+    //! Refresh keyframe
+    for (auto pair : mappKf2IdOpt) {
+        PtrKeyFrame pKf = pair.first;
+        int idOpt = pair.second;
+        VertexSE2* pVertex = static_cast<VertexSE2*>(optimizer.vertex(idOpt));
+        pKf->SetPoseAllbyB(toSe2(pVertex->estimate()), mSe3cb);
+    }
+
+    //! Refresh landmark
+    for (auto pair : mappMk2IdOpt) {
+        PtrArucoMark pMk = pair.first;
+        int idOpt = pair.second;
+        VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
+        Mat tvec_wm = toCvMatf(pVertex->estimate());
+        pMk->SetPoseTranslation(tvec_wm);
+    }
 }
 
 }

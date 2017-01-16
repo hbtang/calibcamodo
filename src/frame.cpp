@@ -24,9 +24,8 @@ KeyFrame::KeyFrame(const Frame& _f,
                    double _marksize):
     Frame(_f), mpMsrOdoNext(nullptr), mpMsrOdoLast(nullptr) {
 
-    mSe2wb = Se2();
+    mSe2wb = mOdo;
     mSe3wc = Se3();
-
     _MarkerDetector.detect(mImg, mvecMsrAruco, _CamParam, _marksize);
     mImg.copyTo(mImgAruco);
     for (auto mk : mvecMsrAruco) {
@@ -59,6 +58,12 @@ set<PtrMsrKf2AMk> KeyFrame::GetMsrMk(set<PtrArucoMark> _setpMk) const {
         }
     }
     return setRet;
+}
+
+void KeyFrame::SetPoseAllbyB(Se2 _wb, Se3 _bc) {
+    mSe2wb = _wb;
+    Se3 se3wb = Se3(_wb);
+    mSe3wc = se3wb + _bc;
 }
 
 

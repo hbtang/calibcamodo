@@ -25,10 +25,15 @@ public:
     MeasureSe3(const MeasureSe3 &_m);
     MeasureSe3(cv::Mat _measure, cv::Mat _info);
     MeasureSe3(cv::Mat _rvec, cv::Mat _tvec, cv::Mat _info);
+    MeasureSe3(Se3 _se3, cv::Mat _info);
     ~MeasureSe3() = default;
 
-    cv::Mat rvec;
-    cv::Mat tvec;
+    cv::Mat rvec() const;
+    cv::Mat tvec() const;
+    cv::Mat matR() const;
+    cv::Mat matT() const;
+
+    Se3 se3;
 };
 
 class MeasureSe2 : public Measure {
@@ -45,9 +50,7 @@ public:
     cv::Mat matT() const;
     double ratio() const;
 
-    double x;
-    double y;
-    double theta;
+    Se2 se2;
 };
 
 class MeasureKf2AMk : public MeasureSe3 {

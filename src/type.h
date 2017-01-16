@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <iostream>
 
 #include <opencv2/core/core.hpp>
 
@@ -66,6 +67,9 @@ struct Se3{
     cv::Mat rvec;
     cv::Mat tvec;
 };
+
+std::ostream &operator<< (std::ostream &os, Se3 &se3);
+std::ostream &operator<< (std::ostream &os, Se2 &se2);
 
 // Math functions:
 const double PI = 3.1415926;
