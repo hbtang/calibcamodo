@@ -37,6 +37,10 @@ void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe
     ComputeCamProjFrame(nvec_cg, rvec_dc_1, tvec_dc_1);
     ComputeCamProjFrame(-nvec_cg, rvec_dc_2, tvec_dc_2);
 
+    cerr << "nvec_cg" << nvec_cg << endl;
+    cerr << "rvec_dc_1" << rvec_dc_1 << endl;
+    cerr << "rvec_dc_2" << rvec_dc_2 << endl;
+
     // compute xyyaw between based frame and camera projection frame,
     // choose the solution with smaller residual
     Mat rvec_bd_1, tvec_bd_1, rvec_bd_2, tvec_bd_2;
@@ -145,15 +149,18 @@ void Solver::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc,
     rx = rx/norm(rx);
     Mat ry = rz.cross(rx);
 
-    Mat Rdc = Mat::zeros(3,3,CV_32FC1);
-    rx.copyTo(Rdc.colRange(0,1));
-    ry.copyTo(Rdc.colRange(1,2));
-    rz.copyTo(Rdc.colRange(2,3));
-    Rodrigues(Rdc, rvec_dc);
+    Mat Rcd = Mat::zeros(3,3,CV_32FC1);
+    rx.copyTo(Rcd.colRange(0,1));
+    ry.copyTo(Rcd.colRange(1,2));
+    rz.copyTo(Rcd.colRange(2,3));
+    Rodrigues(Rcd.t(), rvec_dc);
 
     tvec_dc = Mat::zeros(3,1,CV_32FC1);
-    //    cerr << "rvec_dc" << rvec_dc << endl;
-    //    cerr << "tvec_dc" << tvec_dc << endl;
+
+//    cerr << "nvec_cg" << endl << nvec_cg << endl;
+//    cerr << "Rdc" << endl << Rcd.t() << endl;
+//    cerr << "rvec_dc" << rvec_dc << endl;
+//    cerr << "tvec_dc" << tvec_dc << endl;
 }
 
 double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
@@ -226,15 +233,16 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
         yawcount++;
 
         // DEBUG:
-        //        cerr << tvec_c1m.t() << endl;
-        //        cerr << tvec_c2m.t() << endl;
-        //        cerr << tvec_b1b2.t() << endl;
-        //        cerr << tvec_b1b2_bar.t() << endl;
-        //        cerr << xb << " " << yb << " " << xbbar << " " << ybbar << " " << yaw << endl;
-        //        cerr << endl;
+//        cerr << "R_dc" << endl << R_dc << endl;
+//        cerr << "tvec_c1m" << endl << tvec_c1m.t() << endl;
+//        cerr << "tvec_c2m" << endl << tvec_c2m.t() << endl;
+//        cerr << "tvec_b1b2" << endl << tvec_b1b2.t() << endl;
+//        cerr << "tvec_b1b2_bar" << endl << tvec_b1b2_bar.t() << endl;
+//        cerr << xb << " " << yb << " " << xbbar << " " << ybbar << " " << yaw << endl;
+//        cerr << endl;
     }
     double yawavr = yawsum/yawcount;
-    //    cerr << "Yaw: " << yawavr << endl;
+    cerr << "Yaw: " << yawavr << endl;
     rvec_bd = ( Mat_<float>(3,1) << 0, 0, yawavr);
 
     // COMPUTE XY TRANSLATION
@@ -276,8 +284,18 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
 
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::MatrixXd x = svd.solve(b);
-    tvec_bd = ( Mat_<float>(3,1) << x(0), x(1), 0 );
     Eigen::VectorXd residual = A*x - b;
+    tvec_bd = ( Mat_<float>(3,1) << x(0), x(1), 0 );
+
+    // DEBUG
+//    Mat rvec_bc;
+//    Rodrigues(R_bc, rvec_bc);
+//    cerr << "rvec_bc:" << endl << rvec_bc << endl;
+//    cerr << "x:" << endl << x << endl;
+//    cerr << "A:" << endl << A << endl;
+//    cerr << "b:" << endl << b << endl;
+//    cerr << "residual:" << endl << residual << endl;
+
     return residual.norm();
 }
 
