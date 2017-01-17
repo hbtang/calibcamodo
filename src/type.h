@@ -44,6 +44,9 @@ struct Se2{
     Se2 operator- (const Se2& tominus);
     Se2 operator+ (const Se2& toadd);
 
+    float dist();
+    float ratio();
+
     float x;
     float y;
     float theta;

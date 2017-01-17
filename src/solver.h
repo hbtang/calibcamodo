@@ -45,6 +45,16 @@ private:
     Se3 mSe3cb;
     Dataset *mpDataset;
 
+    double mOdoLinErrR;
+    double mOdoLinErrMin;
+    double mOdoRotErrR;
+    double mOdoRotErrRLin;
+    double mOdoRotErrMin;
+    double mAmkZErrRZ;
+    double mAmkZErrMin;
+    double mAmkXYErrRZ;
+    double mAmkXYErrMin;
+
 };
 
 }

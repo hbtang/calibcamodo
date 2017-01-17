@@ -41,6 +41,16 @@ Se2 Se2::operator -(const Se2& tominus){
     return Se2(cost*dx+sint*dy, -sint*dx+cost*dy, dtheta);
 }
 
+
+
+float Se2::dist() {
+    return sqrt(x*x+y*y);
+}
+
+float Se2::ratio() {
+    return theta/dist();
+}
+
 //! Class Se3
 
 Se3::Se3() {

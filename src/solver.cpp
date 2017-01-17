@@ -2,6 +2,7 @@
 #include "adapter.h"
 #include "mark.h"
 #include "g2o/g2o_api.h"
+#include "config.h"
 
 namespace calibcamodo {
 
@@ -9,7 +10,22 @@ using namespace cv;
 using namespace std;
 using namespace g2o;
 
-Solver::Solver(Dataset *_pDataset): mpDataset(_pDataset) {}
+Solver::Solver(Dataset *_pDataset): mpDataset(_pDataset) {
+
+    // load odometry error configure
+    mOdoLinErrR     = Config::CALIB_ODOLIN_ERRR;
+    mOdoLinErrMin   = Config::CALIB_ODOLIN_ERRMIN;
+    mOdoRotErrR     = Config::CALIB_ODOLIN_ERRR;
+    mOdoRotErrRLin  = Config::CALIB_ODOROT_ERRRLIN;
+    mOdoRotErrMin   = Config::CALIB_ODOROT_ERRMIN;
+
+    // load mark error configure
+    mAmkZErrRZ      = Config::CALIB_AMKZ_ERRRZ;
+    mAmkZErrMin     = Config::CALIB_AMKZ_ERRMIN;
+    mAmkXYErrRZ     = Config::CALIB_AMKXY_ERRRZ;
+    mAmkXYErrMin    = Config::CALIB_AMKXY_ERRMIN;
+
+}
 
 void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo) {
     // calibrate the ground plane, return 3-by-1 norm vector in camera frame
@@ -322,11 +338,6 @@ void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2
         mappMk2IdOpt[pMk] = idVertexMax++;
     }
 
-    g2o::Matrix3D matEye3;
-    matEye3 << 1,0,0,
-            0,1,0,
-            0,0,1;
-
     //! Set odometry edges
     for (auto ptr : _measureodo) {
         PtrMsrSe2Kf2Kf pMsrOdo = ptr;
@@ -336,8 +347,18 @@ void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2
         int id1 = mappKf2IdOpt[pKf1];
 
         g2o::SE2 measure = toG2oSE2(pMsrOdo->se2);
-        g2o::Matrix3D info = 1e-4 * matEye3;
-        info(2,2) = 1/(3*PI/180)/(3*PI/180);
+
+        // compute information matrix
+        double dist = pMsrOdo->se2.dist();
+        double stdlin = max(dist*mOdoLinErrR, mOdoLinErrMin);
+        double theta = pMsrOdo->se2.theta;
+        double stdrot = max(max(abs(theta)*mOdoRotErrR, mOdoRotErrMin), dist*mOdoRotErrRLin);
+
+        g2o::Matrix3D info;
+        info.setZero();
+        info(0,0) = 1/stdlin/stdlin;
+        info(1,1) = 1/stdlin/stdlin;
+        info(2,2) = 1/stdrot/stdrot;
 
         AddEdgeSE2(optimizer, id0, id1, measure, info);
     }
@@ -352,7 +373,15 @@ void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2
         int idMk = mappMk2IdOpt[pMk];
 
         g2o::Vector3D measure = toG2oVector3D(pMsrMk->tvec());
-        g2o::Matrix3D info = 0.02 * matEye3;
+        double z = abs(measure(2));
+        double stdxy = max(z*mAmkXYErrRZ, mAmkXYErrMin);
+        double stdz = max(z*mAmkZErrRZ, mAmkZErrMin);
+
+        g2o::Matrix3D info;
+        info.setZero();
+        info(0,0) = 1/stdxy/stdxy;
+        info(1,1) = 1/stdxy/stdxy;
+        info(2,2) = 1/stdz/stdz;
 
         AddEdgeXYZCalibCamOdo(optimizer, idKf, idMk, 0, measure, info);
     }

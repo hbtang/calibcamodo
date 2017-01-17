@@ -10,14 +10,16 @@ using namespace std;
 using namespace cv;
 using namespace aruco;
 
-Dataset::Dataset(string _strFolderPathMain, int _numFrame, double _markerSize):
-    mNumFrame(_numFrame), mMarkerSize(_markerSize),
-    mstrFoldPathMain(_strFolderPathMain),
-    mstrFoldPathImg(_strFolderPathMain + "image/"),
-    mstrFilePathOdo(_strFolderPathMain + "/rec/Odo.rec"),
-    mstrFilePathCam(_strFolderPathMain + "config/CamConfig.yml") {
+Dataset::Dataset() {
 
-    // load camera intrinsics
+    mNumFrame = Config::NUM_FRAME;
+    mMarkerSize = Config::MARK_SIZE;
+    mstrFoldPathMain = Config::STR_FOLDERPATH_MAIN;
+    mstrFoldPathImg = Config::STR_FOlDERPATH_IMG;
+    mstrFilePathCam = Config::STR_FILEPATH_CAM;
+    mstrFilePathOdo = Config::STR_FILEPATH_ODO;
+
+ // load camera intrinsics
     mCamParam.readFromXMLFile(mstrFilePathCam);
 
     // set aruco mark detector
@@ -29,8 +31,8 @@ Dataset::Dataset(string _strFolderPathMain, int _numFrame, double _markerSize):
     mMDetector.setThresholdParams(ThresParam1, ThresParam2);
 
     // select keyframe
-    mThreshOdoLin = 100;
-    mThreshOdoRot = PI*10/180;
+    mThreshOdoLin = Config::DATASET_THRESH_KF_ODOLIN;
+    mThreshOdoRot = Config::DATASET_THRESH_KF_ODOROT;
 }
 
 Dataset::~Dataset(){}
