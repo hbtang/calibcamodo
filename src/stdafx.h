@@ -52,6 +52,7 @@
 #include <g2o/types/sim3/types_seven_dof_expmap.h>
 #include <g2o/types/slam3d/dquat2mat.h>
 #include <g2o/types/slam3d/types_slam3d.h>
+#include <g2o/types/slam2d/edge_se2.h>
 
 
 

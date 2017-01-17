@@ -1,22 +1,22 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(calibcamodo)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)
+PROJECT(calibcamodo)
 
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules/)
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules/)
 
 # c++ 11 support for g2o, multi-thread and shared_ptr
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
 
 # Find third party packages
-find_package(Eigen REQUIRED)
-find_package(OpenCV REQUIRED)
-find_package(CSparse REQUIRED)
-find_package(Cholmod REQUIRED)
-find_package(G2O REQUIRED)
+FIND_PACKAGE(Eigen REQUIRED)
+FIND_PACKAGE(OpenCV REQUIRED)
+FIND_PACKAGE(CSparse REQUIRED)
+FIND_PACKAGE(Cholmod REQUIRED)
+FIND_PACKAGE(G2O REQUIRED)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
+FIND_PACKAGE(catkin REQUIRED COMPONENTS
     geometry_msgs
     nav_msgs
     roscpp
@@ -28,9 +28,8 @@ find_package(catkin REQUIRED COMPONENTS
     image_transport
 )
 
-include_directories(
+INCLUDE_DIRECTORIES(
     src/
-    src/aruco
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${catkin_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIRS}
@@ -40,12 +39,12 @@ include_directories(
     ${G2O_INCLUDE_DIR}
 )
 
-list(APPEND LINK_LIBS
+LIST(APPEND LINK_LIBS
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
 )
 
-list(APPEND G2O_LIBS
+LIST(APPEND G2O_LIBS
     cxsparse
     cholmod
     g2o_cli g2o_ext_freeglut_minimal g2o_simulator
@@ -58,17 +57,14 @@ list(APPEND G2O_LIBS
 )
 
 ## Declare a C++ executable
-# file(GLOB_RECURSE FILE_INCLUDE "include/*.h")
-aux_source_directory(./src SRC_DIR)
-aux_source_directory(./src/aruco SRC_DIR_ARUCO)
-add_executable(calibcamodo ${SRC_DIR} ${SRC_DIR_ARUCO})
+AUX_SOURCE_DIRECTORY(./src SRC_DIR )
+AUX_SOURCE_DIRECTORY(./src/aruco SRC_DIR_ARUCO)
+AUX_SOURCE_DIRECTORY(./src/g2o SRC_DIR_G2O)
+ADD_EXECUTABLE(calibcamodo ${SRC_DIR} ${SRC_DIR_ARUCO} ${SRC_DIR_G2O})
 
 # message("SRC_DIR: ${SRC_DIR}")
 # message("SRC_DIR_ARUCO: ${SRC_DIR_ARUCO}")
 # message("FILE_INCLUDE: ${FILE_INCLUDE}")
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(calibcamodo
-    ${LINK_LIBS}
-    ${G2O_LIBS}
-)
+TARGET_LINK_LIBRARIES(calibcamodo ${LINK_LIBS} ${G2O_LIBS} )

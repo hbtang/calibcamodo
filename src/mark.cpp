@@ -1,5 +1,5 @@
-#include "Mark.h"
-#include "Frame.h"
+#include "mark.h"
+#include "frame.h"
 
 namespace calibcamodo {
 
@@ -7,24 +7,11 @@ using namespace std;
 using namespace cv;
 
 
-Mark::Mark() : mId(0) {
-    mrvec_wm.create(3, 1, CV_32FC1);
-    mtvec_wm.create(3, 1, CV_32FC1);
-    for (int i=0;i<3;i++)
-        mrvec_wm.at<float>(i,0)=mtvec_wm.at<float>(i,0)=-999999;
-}
+Mark::Mark() : mId(-1) {}
 
-Mark::Mark(int _id) : mId(_id) {
-    mrvec_wm.create(3, 1, CV_32FC1);
-    mtvec_wm.create(3, 1, CV_32FC1);
-    for (int i=0;i<3;i++)
-        mrvec_wm.at<float>(i,0)=mtvec_wm.at<float>(i,0)=-999999;
-}
+Mark::Mark(int _id) : mId(_id) {}
 
-Mark::Mark(const Mark &_mk) : mId(_mk.mId) {
-    _mk.mrvec_wm.copyTo(mrvec_wm);
-    _mk.mtvec_wm.copyTo(mtvec_wm);
-}
+Mark::Mark(const Mark &_mk) : mId(_mk.mId), mSe3wm(_mk.mSe3wm) {}
 
 void ArucoMark::InsertMsrMk(PtrMsrKf2AMk pmsr) {
     if(msetpKf.count(pmsr->pKf)) {
@@ -51,6 +38,10 @@ set<PtrMsrKf2AMk> ArucoMark::GetMsr(set<PtrKeyFrame> _setpKf) const {
         }
     }
     return setRet;
+}
+
+void Mark::SetPoseTranslation(Mat _tvec) {
+    mSe3wm.tvec = _tvec.clone();
 }
 
 }

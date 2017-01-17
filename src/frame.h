@@ -1,36 +1,28 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include "Type.h"
-#include "Measure.h"
-#include "aruco.h"
-#include "stdafx.h"
+#include "type.h"
+#include "measure.h"
+#include "aruco/aruco.h"
 
 namespace calibcamodo {
-
-using namespace std;
-using namespace cv;
-using namespace aruco;
 
 class Frame {
 public:
     Frame() = default;
-    Frame(const cv::Mat &im, const XYTheta& odo, int id);
+    Frame(const cv::Mat &im, const Se2& odo, int id);
     Frame(const Frame& _f);
     Frame& operator= (const Frame& f);
     ~Frame() = default;
 
     virtual int GetId() const { return mId; }
-    virtual Mat GetImg() const { return mImg; }
-    virtual XYTheta GetOdo() const { return mOdo; }
-
-    XYTheta RelOdoTo(const Frame &_f) const;
-    XYTheta RelOdoFrom(const Frame &_f) const;
+    virtual cv::Mat GetImg() const { return mImg; }
+    virtual Se2 GetOdo() const { return mOdo; }
 
 protected:
     int mId;
-    Mat mImg;
-    XYTheta mOdo;    
+    cv::Mat mImg;
+    Se2 mOdo;
 };
 
 class KeyFrame: public Frame
@@ -38,14 +30,14 @@ class KeyFrame: public Frame
 public:
     KeyFrame() {}
     KeyFrame(const Frame& _f,
-             CameraParameters &_CamParam,
-             MarkerDetector &_MarkerDetector,
+             aruco::CameraParameters &_CamParam,
+             aruco::MarkerDetector &_MarkerDetector,
              double markSize);
 
     ~KeyFrame() {}
 
-    inline const vector<Marker> & GetMsrAruco() const { return mvecMsrAruco; }
-    inline const Mat GetImgAruco() const { return mImgAruco; }
+    inline const std::vector<aruco::Marker> & GetMsrAruco() const { return mvecMsrAruco; }
+    inline const cv::Mat GetImgAruco() const { return mImgAruco; }
 
     void InsertMsrMk(PtrMsrKf2AMk pmsr);
     void DeleteMsrMk(PtrMsrKf2AMk pmsr);
@@ -57,9 +49,18 @@ public:
     PtrMsrSe2Kf2Kf GetMsrOdoNext() const {return mpMsrOdoNext;}
     PtrMsrSe2Kf2Kf GetMsrOdoLast() const {return mpMsrOdoLast;}
 
+    inline void SetPoseBase(Se2 _in) { mSe2wb = _in; }
+    inline Se2 GetPoseBase() const { return mSe2wb; }
+    inline void SetPoseCamera(Se3 _in) { mSe3wc = _in; }
+    inline Se3 GetPoseCamera() const { return mSe3wc; }
+
+    void SetPoseAllbyB(Se2 _wb, Se3 _bc);
+    void SetPoseAllbyC(Se3 _wc, Se3 _bc);
+
+
 private:
-    vector<Marker> mvecMsrAruco;  // vector of aruco measurements in this KF
-    Mat mImgAruco;
+    std::vector<aruco::Marker> mvecMsrAruco;  // vector of aruco measurements in this KF
+    cv::Mat mImgAruco;
 
     set<PtrMsrKf2AMk> msetpMsrMk;
     set<PtrArucoMark> msetpMk;
@@ -68,10 +69,8 @@ private:
     PtrMsrSe2Kf2Kf mpMsrOdoNext;
     PtrMsrSe2Kf2Kf mpMsrOdoLast;
 
-    Mat mrvec_wc;
-    Mat mtvec_wc;
-    Mat mrvec_wb;
-    Mat mtvec_wb;
+    Se2 mSe2wb;
+    Se3 mSe3wc;
 };
 
 }

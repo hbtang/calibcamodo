@@ -1,8 +1,8 @@
-#include "Dataset.h"
-#include "Frame.h"
-#include "Measure.h"
-#include "Mark.h"
-#include "Config.h"
+#include "dataset.h"
+#include "frame.h"
+#include "measure.h"
+#include "mark.h"
+#include "config.h"
 
 namespace calibcamodo {
 
@@ -10,14 +10,16 @@ using namespace std;
 using namespace cv;
 using namespace aruco;
 
-Dataset::Dataset(string _strFolderPathMain, int _numFrame, double _markerSize):
-    mNumFrame(_numFrame), mMarkerSize(_markerSize),
-    mstrFoldPathMain(_strFolderPathMain),
-    mstrFoldPathImg(_strFolderPathMain + "image/"),
-    mstrFilePathOdo(_strFolderPathMain + "/rec/Odo.rec"),
-    mstrFilePathCam(_strFolderPathMain + "config/CamConfig.yml") {
+Dataset::Dataset() {
 
-    // load camera intrinsics
+    mNumFrame = Config::NUM_FRAME;
+    mMarkerSize = Config::MARK_SIZE;
+    mstrFoldPathMain = Config::STR_FOLDERPATH_MAIN;
+    mstrFoldPathImg = Config::STR_FOlDERPATH_IMG;
+    mstrFilePathCam = Config::STR_FILEPATH_CAM;
+    mstrFilePathOdo = Config::STR_FILEPATH_ODO;
+
+ // load camera intrinsics
     mCamParam.readFromXMLFile(mstrFilePathCam);
 
     // set aruco mark detector
@@ -29,8 +31,8 @@ Dataset::Dataset(string _strFolderPathMain, int _numFrame, double _markerSize):
     mMDetector.setThresholdParams(ThresParam1, ThresParam2);
 
     // select keyframe
-    mThreshOdoLin = 100;
-    mThreshOdoRot = PI*10/180;
+    mThreshOdoLin = Config::DATASET_THRESH_KF_ODOLIN;
+    mThreshOdoRot = Config::DATASET_THRESH_KF_ODOROT;
 }
 
 Dataset::~Dataset(){}
@@ -47,12 +49,12 @@ void Dataset::CreateFrame() {
     }
 
     // load odometry
-    map<int, XYTheta> mapId2Odo;
+    map<int, Se2> mapId2Odo;
     ifstream logFile_stream(mstrFilePathOdo);
     string str_tmp;
     while(getline(logFile_stream, str_tmp)) {
         // read time info
-        XYTheta odo_tmp;
+        Se2 odo_tmp;
         int id_tmp;
         if (ParseOdoData(str_tmp, odo_tmp, id_tmp)) {
             mapId2Odo[id_tmp] = odo_tmp;
@@ -75,7 +77,7 @@ void Dataset::CreateFrame() {
     return;
 }
 
-bool Dataset::ParseOdoData(const string _str, XYTheta &_odo, int &_id) {
+bool Dataset::ParseOdoData(const string _str, Se2 &_odo, int &_id) {
     vector<string> vec_str = SplitString(_str, " ");
 
     // fail
@@ -110,9 +112,9 @@ void Dataset::CreateKeyFrame() {
     PtrKeyFrame pKeyFrameLast = make_shared<KeyFrame>(**msetpFrame.cbegin(), mCamParam, mMDetector, mMarkerSize);
     InsertKf(pKeyFrameLast);
 
-    for (auto pFrameNew : msetpFrame) {
-
-        XYTheta dodo = pKeyFrameLast->RelOdoTo(*pFrameNew);
+    for (auto ptr : msetpFrame) {
+        PtrFrame pFrameNew = ptr;
+        Se2 dodo = pFrameNew->GetOdo() - pKeyFrameLast->GetOdo();
         double dl = sqrt(dodo.x*dodo.x + dodo.y*dodo.y);
         double dr = abs(dodo.theta);
         Mat info = Mat::eye(3,3,CV_32FC1);
@@ -225,6 +227,48 @@ bool Dataset::InsertMsrMk(PtrMsrKf2AMk pmsr) {
     PtrArucoMark pMk = pmsr->pMk;
     pKf->InsertMsrMk(pmsr);
     pMk->InsertMsrMk(pmsr);
+}
+
+void Dataset::InitKf(Se3 _se3bc) {
+    for(auto ptr : msetpKf) {
+        PtrKeyFrame pKf = ptr;
+
+        Se2 se2odo = pKf->GetOdo();
+        Se2 se2wb = se2odo;
+        Se3 se3wb = Se3(se2wb);
+        Se3 se3wc = se3wb+_se3bc;
+
+        //        cerr << "se2odo:" << se2odo << endl;
+        //        cerr << "se3wb:" << se3wb << endl;
+        //        cerr << "se3wc:" << se3wc << endl;
+
+        pKf->SetPoseBase(se2odo);
+        pKf->SetPoseCamera(se3wc);
+
+        //        Se3 se3wc_b = pKf->GetPoseCamera();
+        //        cerr << "se3wc:" << se3wc_b << endl;
+        //        cerr << endl;
+    }
+}
+
+void Dataset::InitMk() {
+    for(auto ptr : msetpMk) {
+        PtrArucoMark pMk = ptr;
+        set<PtrMsrKf2AMk> setpMsr = pMk->GetMsr();
+        if(!setpMsr.empty()) {
+            PtrKeyFrame pKf = (*setpMsr.cbegin())->pKf;
+            Se3 se3wc = pKf->GetPoseCamera();
+            Se3 se3cm = (*setpMsr.cbegin())->se3;
+            Se3 se3wm = se3wc+se3cm;
+            pMk->SetPose(se3wm);
+
+            // DEBUG
+            //            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
+            //            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
+            //            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
+            //            cerr << endl;
+        }
+    }
 }
 
 }

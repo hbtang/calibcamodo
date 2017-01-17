@@ -1,4 +1,4 @@
-#include "Frame.h"
+#include "frame.h"
 
 namespace calibcamodo {
 
@@ -7,7 +7,7 @@ using namespace std;
 using namespace aruco;
 
 // Class Frame
-Frame::Frame(const cv::Mat &_im, const XYTheta& _odo, int _id) :
+Frame::Frame(const cv::Mat &_im, const Se2& _odo, int _id) :
     mOdo(_odo), mId(_id) {
     _im.copyTo(mImg);
 }
@@ -17,18 +17,6 @@ Frame::Frame(const Frame &_f) :
     _f.mImg.copyTo(mImg);
 }
 
-XYTheta Frame::RelOdoTo(const Frame &_f) const {
-    XYTheta odo_to = _f.mOdo;
-    XYTheta odo_from = mOdo;
-    return (odo_to - odo_from);
-}
-
-XYTheta Frame::RelOdoFrom(const Frame &_f) const {
-    XYTheta odo_to = mOdo;
-    XYTheta odo_from = _f.mOdo;
-    return (odo_to - odo_from);
-}
-
 // Class KeyFrame
 KeyFrame::KeyFrame(const Frame& _f,
                    CameraParameters &_CamParam,
@@ -36,11 +24,8 @@ KeyFrame::KeyFrame(const Frame& _f,
                    double _marksize):
     Frame(_f), mpMsrOdoNext(nullptr), mpMsrOdoLast(nullptr) {
 
-    mrvec_wc = Mat::zeros(3,1,CV_32FC1);
-    mtvec_wc = Mat::zeros(3,1,CV_32FC1);
-    mrvec_wb = Mat::zeros(3,1,CV_32FC1);
-    mtvec_wb = Mat::zeros(3,1,CV_32FC1);
-
+    mSe2wb = mOdo;
+    mSe3wc = Se3();
     _MarkerDetector.detect(mImg, mvecMsrAruco, _CamParam, _marksize);
     mImg.copyTo(mImgAruco);
     for (auto mk : mvecMsrAruco) {
@@ -73,6 +58,12 @@ set<PtrMsrKf2AMk> KeyFrame::GetMsrMk(set<PtrArucoMark> _setpMk) const {
         }
     }
     return setRet;
+}
+
+void KeyFrame::SetPoseAllbyB(Se2 _wb, Se3 _bc) {
+    mSe2wb = _wb;
+    Se3 se3wb = Se3(_wb);
+    mSe3wc = se3wb + _bc;
 }
 
 
