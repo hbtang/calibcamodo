@@ -10,7 +10,7 @@ public:
 
     static void InitConfig(std::string _strfolderpathmain, int numframe, double marksize);
 
-    //! IO
+    //! Read dataset
     static int NUM_FRAME;    
     static std::string STR_FOLDERPATH_MAIN;
     static std::string STR_FOlDERPATH_IMG;
@@ -34,6 +34,9 @@ public:
     static double CALIB_AMKZ_ERRMIN;
     static double CALIB_AMKXY_ERRRZ;
     static double CALIB_AMKXY_ERRMIN;
+
+    //! Output using ROS
+    static double MAPPUB_SCALE_RATIO;
 };
 
 }

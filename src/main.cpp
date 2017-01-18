@@ -11,6 +11,7 @@
 #include "adapter.h"
 #include "type.h"
 #include "config.h"
+#include "ros/mappublish.h"
 
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
@@ -66,33 +67,10 @@ int main(int argc, char **argv) {
     Se3 se3bc_optmk = solver.GetResult();
     cerr << "optmk se3bc: " << se3bc_optmk << endl;
 
-    //! DEBUG: show something here ...
-//    for (auto pair : dataset.GetKeyFrameMap()) {
-//        auto pf = pair.second;
-//        Mat img = pf->GetImg();
+    //! Debug: Show something here, with ros viewer
+    MapPublish mappublish(&dataset);
+    mappublish.run();
 
-//        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-//        pub.publish(msg);
-
-//        cerr << pf->GetId() << " "
-//             << pf->GetOdo().x << " "
-//             << pf->GetOdo().y << " "
-//             << pf->GetOdo().theta << endl;
-
-//        rate.sleep();
-//    }
-//    for (auto ptr_measure : dataset.GetMeasureKf2AMk()) {
-//        PtrKeyFrame pKf = ptr_measure->pKf;
-//        PtrArucoMark pAMk = ptr_measure->pAMk;
-//        cerr << pKf->GetId() << " " << pAMk->GetId() << " " << endl;
-//        cerr << ptr_measure->measure << endl;
-//    }
-//    for (auto ptr_measure : dataset.GetMeasureKf2KfOdo()) {
-//        PtrKeyFrame pKfHead = ptr_measure->pKfHead;
-//        PtrKeyFrame pKfTail = ptr_measure->pKfTail;
-//        cerr << pKfHead->GetId() << " " << pKfTail->GetId() << " " << endl;
-//        cerr << ptr_measure->measure << endl;
-//    }
 
     return 0;
 }

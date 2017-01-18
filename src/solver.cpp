@@ -429,6 +429,9 @@ void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2
         VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
         Mat tvec_wm = toCvMatf(pVertex->estimate());
         pMk->SetPoseTranslation(tvec_wm);
+
+        // DEBUG:
+//        cerr << "tvec_wm: " << tvec_wm.t() << endl;
     }
 }
 

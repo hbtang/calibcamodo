@@ -28,6 +28,9 @@ double Config::CALIB_AMKZ_ERRMIN;
 double Config::CALIB_AMKXY_ERRRZ;
 double Config::CALIB_AMKXY_ERRMIN;
 
+//! ROS PUBLISHER
+double Config::MAPPUB_SCALE_RATIO;
+
 void Config::InitConfig(std::string _strfolderpathmain,
                    int numframe, double marksize) {
 
@@ -51,6 +54,8 @@ void Config::InitConfig(std::string _strfolderpathmain,
     CALIB_AMKZ_ERRMIN = 1;
     CALIB_AMKXY_ERRRZ = 0.01;
     CALIB_AMKXY_ERRMIN = 1;
+
+    MAPPUB_SCALE_RATIO = 300;
 }
 
 }
