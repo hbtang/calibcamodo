@@ -12,26 +12,27 @@ FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(CSparse REQUIRED)
 FIND_PACKAGE(Cholmod REQUIRED)
 FIND_PACKAGE(G2O REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS system REQUIRED)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-FIND_PACKAGE(catkin REQUIRED COMPONENTS
-    geometry_msgs
-    nav_msgs
-    roscpp
-    rospy
-    tf
-    roslib
-    cv_bridge
-    cmake_modules
-    image_transport
-)
+#FIND_PACKAGE(catkin REQUIRED COMPONENTS
+#    geometry_msgs
+#    nav_msgs
+#    roscpp
+#    rospy
+#    tf
+#    roslib
+#    cv_bridge
+#    cmake_modules
+#    image_transport
+#)
 
 INCLUDE_DIRECTORIES(
     src/
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${catkin_INCLUDE_DIRS}
+#    ${catkin_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${CSPARSE_INCLUDE_DIR}
@@ -40,8 +41,9 @@ INCLUDE_DIRECTORIES(
 )
 
 LIST(APPEND LINK_LIBS
-    ${catkin_LIBRARIES}
+#    ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
+    ${Boost_SYSTEM_LIBRARY}
 )
 
 LIST(APPEND G2O_LIBS
