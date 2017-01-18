@@ -12,20 +12,31 @@ Frame::Frame(const cv::Mat &_im, const Se2& _odo, int _id) :
     _im.copyTo(mImg);
 }
 
+Frame::Frame(const Se2& _odo, int _id) :
+    mOdo(_odo), mId(_id) {
+    mImg.create(0,0,CV_32FC1);
+}
+
 Frame::Frame(const Frame &_f) :
     mOdo(_f.mOdo), mId(_f.mId) {
     _f.mImg.copyTo(mImg);
 }
 
-// Class KeyFrame
-KeyFrame::KeyFrame(const Frame& _f,
-                   CameraParameters &_CamParam,
-                   MarkerDetector &_MarkerDetector,
-                   double _marksize):
-    Frame(_f), mpMsrOdoNext(nullptr), mpMsrOdoLast(nullptr) {
+void Frame::SetImg(cv::Mat &_img) {
+    mImg = _img.clone();
+}
 
+// Class KeyFrame
+KeyFrame::KeyFrame(const Frame& _f):
+    Frame(_f), mpMsrOdoNext(nullptr), mpMsrOdoLast(nullptr) {
     mSe2wb = mOdo;
     mSe3wc = Se3();
+}
+
+void KeyFrame::ComputeAruco(CameraParameters &_CamParam,
+                            MarkerDetector &_MarkerDetector,
+                            double _marksize) {
+
     _MarkerDetector.detect(mImg, mvecMsrAruco, _CamParam, _marksize);
     mImg.copyTo(mImgAruco);
     for (auto mk : mvecMsrAruco) {

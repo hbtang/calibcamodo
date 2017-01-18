@@ -81,6 +81,8 @@ private:
 
     vector<string> SplitString(const string _str, const string _separator);
     bool ParseOdoData(const string _str, Se2 &_odo, int &_id);
+    void LoadKfImage(const set<PtrKeyFrame> &_setpKF);
+    void ComputeKfAruco(const set<PtrKeyFrame> &_setpKF);
 };
 
 }

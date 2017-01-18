@@ -40,12 +40,15 @@ Dataset::~Dataset(){}
 void Dataset::CreateFrame() {
 
     // load image
-    map<int, Mat> mapId2Img;
+    set<int> setIdImgExist;
+//    map<int, bool> mapId2ImgExist;
     for (int i = 0; i < mNumFrame; ++i) {
         string strImgPath = mstrFoldPathImg + to_string(i) + ".bmp";
         Mat img = imread(strImgPath);
-        if (!img.empty())
-            mapId2Img[i] = img;
+        if (!img.empty()) {
+            setIdImgExist.insert(i);
+//            mapId2Img[i] = img;
+        }
     }
 
     // load odometry
@@ -62,14 +65,14 @@ void Dataset::CreateFrame() {
     }
 
     // build frame vector
-    int maxIdImg = mapId2Img.crbegin()->first;
+    int maxIdImg = *setIdImgExist.crbegin();
     int maxIdOdo = mapId2Odo.crbegin()->first;
     int maxId = maxIdImg > maxIdOdo ? maxIdImg : maxIdOdo;
     for (int i = 0; i <= maxId; ++i) {
-        const auto iterImg = mapId2Img.find(i);
+        const auto iterImg = setIdImgExist.find(i);
         const auto iterOdo = mapId2Odo.find(i);
-        if (iterImg != mapId2Img.cend() && iterOdo != mapId2Odo.cend()) {
-            PtrFrame pf = make_shared<Frame>(iterImg->second, iterOdo->second, i);
+        if (iterImg != setIdImgExist.cend() && iterOdo != mapId2Odo.cend()) {
+            PtrFrame pf = make_shared<Frame>(iterOdo->second, i);
             InsertFrame(pf);
         }
     }
@@ -109,7 +112,7 @@ vector<string> Dataset::SplitString(const string _str, const string _separator) 
 
 void Dataset::CreateKeyFrame() {
 
-    PtrKeyFrame pKeyFrameLast = make_shared<KeyFrame>(**msetpFrame.cbegin(), mCamParam, mMDetector, mMarkerSize);
+    PtrKeyFrame pKeyFrameLast = make_shared<KeyFrame>(**msetpFrame.cbegin());
     InsertKf(pKeyFrameLast);
 
     for (auto ptr : msetpFrame) {
@@ -119,13 +122,16 @@ void Dataset::CreateKeyFrame() {
         double dr = abs(dodo.theta);
         Mat info = Mat::eye(3,3,CV_32FC1);
         if (dl > mThreshOdoLin || dr > mThreshOdoRot) {
-            PtrKeyFrame pKeyFrameNew = make_shared<KeyFrame>(*pFrameNew, mCamParam, mMDetector, mMarkerSize);
+            PtrKeyFrame pKeyFrameNew = make_shared<KeyFrame>(*pFrameNew);
             InsertKf(pKeyFrameNew);
             PtrMsrSe2Kf2Kf pMeasureOdo = make_shared<MeasureSe2Kf2Kf>(dodo, info, pKeyFrameLast, pKeyFrameNew);
             msetMsrOdo.insert(pMeasureOdo);
             pKeyFrameLast = pKeyFrameNew;
         }
     }
+
+    LoadKfImage(msetpKf);
+    ComputeKfAruco(msetpKf);
 }
 
 bool Dataset::InsertFrame(PtrFrame ptr) {
@@ -268,6 +274,23 @@ void Dataset::InitMk() {
             //            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
             //            cerr << endl;
         }
+    }
+}
+
+void Dataset::LoadKfImage(const set<PtrKeyFrame> &_setpKF) {
+    for (auto ptr : _setpKF) {
+        PtrKeyFrame pKf = ptr;
+        int id = pKf->GetId();
+        string strImgPath = mstrFoldPathImg + to_string(id) + ".bmp";
+        Mat img = imread(strImgPath);
+        pKf->SetImg(img);
+    }
+}
+
+void Dataset::ComputeKfAruco(const set<PtrKeyFrame> &_setpKF) {
+    for (auto ptr : _setpKF) {
+        PtrKeyFrame pKf = ptr;
+        pKf->ComputeAruco(mCamParam, mMDetector, mMarkerSize);
     }
 }
 

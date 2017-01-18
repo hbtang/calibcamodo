@@ -11,6 +11,7 @@ class Frame {
 public:
     Frame() = default;
     Frame(const cv::Mat &im, const Se2& odo, int id);
+    Frame(const Se2 &odo, int id);
     Frame(const Frame& _f);
     Frame& operator= (const Frame& f);
     ~Frame() = default;
@@ -18,6 +19,8 @@ public:
     virtual int GetId() const { return mId; }
     virtual cv::Mat GetImg() const { return mImg; }
     virtual Se2 GetOdo() const { return mOdo; }
+
+    void SetImg(cv::Mat &_img);
 
 protected:
     int mId;
@@ -29,12 +32,12 @@ class KeyFrame: public Frame
 {
 public:
     KeyFrame() {}
-    KeyFrame(const Frame& _f,
-             aruco::CameraParameters &_CamParam,
-             aruco::MarkerDetector &_MarkerDetector,
-             double markSize);
-
+    KeyFrame(const Frame &_f);
     ~KeyFrame() {}
+
+    void ComputeAruco(aruco::CameraParameters &_CamParam,
+                      aruco::MarkerDetector &_MarkerDetector,
+                      double _marksize);
 
     inline const std::vector<aruco::Marker> & GetMsrAruco() const { return mvecMsrAruco; }
     inline const cv::Mat GetImgAruco() const { return mImgAruco; }

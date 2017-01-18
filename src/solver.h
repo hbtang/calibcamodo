@@ -32,13 +32,9 @@ public:
     // JointOptMk: using 3D translational mark measurements, iterative optimize SLAM and calibration
     void CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo);
 
-
     // other functions ...
     int FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> &_setpairMsr);
-//    void GetResult(cv::Mat &rvec_bc, cv::Mat &tvec_bc) const {
-//        mSe3cb.rvec.copyTo(rvec_bc);
-//        mSe3cb.tvec.copyTo(tvec_bc);
-//    }
+
     inline Se3 GetResult() const {return mSe3cb;}
 
 private:
@@ -54,7 +50,6 @@ private:
     double mAmkZErrMin;
     double mAmkXYErrRZ;
     double mAmkXYErrMin;
-
 };
 
 }
