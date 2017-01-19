@@ -37,9 +37,9 @@ void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe
     ComputeCamProjFrame(nvec_cg, rvec_dc_1, tvec_dc_1);
     ComputeCamProjFrame(-nvec_cg, rvec_dc_2, tvec_dc_2);
 
-    cerr << "nvec_cg" << nvec_cg << endl;
-    cerr << "rvec_dc_1" << rvec_dc_1 << endl;
-    cerr << "rvec_dc_2" << rvec_dc_2 << endl;
+//    cerr << "nvec_cg" << nvec_cg << endl;
+//    cerr << "rvec_dc_1" << rvec_dc_1 << endl;
+//    cerr << "rvec_dc_2" << rvec_dc_2 << endl;
 
     // compute xyyaw between based frame and camera projection frame,
     // choose the solution with smaller residual
@@ -242,7 +242,7 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
 //        cerr << endl;
     }
     double yawavr = yawsum/yawcount;
-    cerr << "Yaw: " << yawavr << endl;
+//    cerr << "Yaw: " << yawavr << endl;
     rvec_bd = ( Mat_<float>(3,1) << 0, 0, yawavr);
 
     // COMPUTE XY TRANSLATION

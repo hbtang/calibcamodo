@@ -49,28 +49,34 @@ int main(int argc, char **argv) {
 
     //! Init dataset
     Dataset dataset;
+    cerr << "Dataset: creating frames ..." << endl;
     dataset.CreateFrame();
+    cerr << "Dataset: creating keyframes ..." << endl;
     dataset.CreateKeyFrame();
+    cerr << "Dataset: creating measurements ..." << endl;
     dataset.CreateMarkMeasure();    
+    cerr << "Dataset: dataset created!" << endl << endl;
 
     //! Init solver
+    cerr << "Solver: init solver ..." << endl;
     Solver solver(&dataset);
 
     //! Do calibrate with "initmk" algorithm
+    cerr << "Solver: calibrate by initmk ..." << endl;
     solver.CalibInitMk(dataset.GetMsrMk(), dataset.GetMsrOdo());
     Se3 se3bc_initmk = solver.GetResult();
-    cerr << "initmk se3bc: " << se3bc_initmk << endl;
+    cerr << "Solver: calibration done! " << se3bc_initmk << endl << endl;
 
     //! Do calibrate with "optmk" algorithm
+    cerr << "Solver: calibrate by optmk ..." << endl;
     dataset.InitAll(solver.GetResult());
     solver.CalibOptMk(dataset.GetMsrMk(), dataset.GetMsrOdo());
     Se3 se3bc_optmk = solver.GetResult();
-    cerr << "optmk se3bc: " << se3bc_optmk << endl;
+    cerr << "Solver: calibration done! " << se3bc_optmk << endl << endl;
 
     //! Debug: Show something here, with ros viewer
     MapPublish mappublish(&dataset);
     mappublish.run();
-
 
     return 0;
 }
