@@ -12,26 +12,15 @@ FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(CSparse REQUIRED)
 FIND_PACKAGE(Cholmod REQUIRED)
 FIND_PACKAGE(G2O REQUIRED)
-
+FIND_PACKAGE(Boost COMPONENTS system REQUIRED)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-FIND_PACKAGE(catkin REQUIRED COMPONENTS
-    geometry_msgs
-    nav_msgs
-    roscpp
-    rospy
-    tf
-    roslib
-    cv_bridge
-    cmake_modules
-    image_transport
-)
 
 INCLUDE_DIRECTORIES(
     src/
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${catkin_INCLUDE_DIRS}
+#    ${catkin_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${CSPARSE_INCLUDE_DIR}
@@ -40,7 +29,8 @@ INCLUDE_DIRECTORIES(
 )
 
 LIST(APPEND LINK_LIBS
-    ${catkin_LIBRARIES}
+#    ${catkin_LIBRARIES}
+    ${Boost_SYSTEM_LIBRARY}
     ${OpenCV_LIBS}
 )
 
@@ -60,13 +50,13 @@ LIST(APPEND G2O_LIBS
 AUX_SOURCE_DIRECTORY(./src SRC_DIR )
 AUX_SOURCE_DIRECTORY(./src/aruco SRC_DIR_ARUCO)
 AUX_SOURCE_DIRECTORY(./src/g2o SRC_DIR_G2O)
-AUX_SOURCE_DIRECTORY(./src/ros SRC_DIR_ROS)
+#AUX_SOURCE_DIRECTORY(./src/ros SRC_DIR_ROS)
 ADD_EXECUTABLE(
     calibcamodo
     ${SRC_DIR}
     ${SRC_DIR_ARUCO}
     ${SRC_DIR_G2O}
-    ${SRC_DIR_ROS}
+ #   ${SRC_DIR_ROS}
 )
 
 # message("SRC_DIR: ${SRC_DIR}")

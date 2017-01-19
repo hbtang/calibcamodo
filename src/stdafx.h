@@ -25,17 +25,6 @@
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <ros/ros.h>
-#include <nav_msgs/Odometry.h>
-#include <std_msgs/Header.h>
-#include <std_msgs/Float32MultiArray.h>
-#include <geometry_msgs/Pose.h>
-#include <sensor_msgs/Image.h>
-#include <visualization_msgs/Marker.h>
-#include <tf/transform_broadcaster.h>
-#include <tf/transform_datatypes.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
 
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
