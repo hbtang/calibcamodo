@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
     cerr << "SolverOptmk: result = " << se3_cb << endl;
 
     //! Debug: Show something here, with ros viewer
-//    MapPublish mappublish(&dataset);
-//    mappublish.run();
+    MapPublish mappublish(&datasetAruco);
+    mappublish.run();
 
     return 0;
 }
