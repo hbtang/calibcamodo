@@ -231,8 +231,10 @@ void Dataset::CreateFrames() {
     //    map<int, bool> mapId2ImgExist;
     for (int i = 0; i < mNumFrame; ++i) {
         string strImgPath = mstrFoldPathImg + to_string(i) + ".bmp";
-        Mat img = imread(strImgPath);
-        if (!img.empty()) {
+
+        // DEBUG
+        ifstream fileImg(strImgPath);
+        if (fileImg) {
             setIdImgExist.insert(i);
             //            mapId2Img[i] = img;
         }
