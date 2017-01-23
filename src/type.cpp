@@ -58,7 +58,7 @@ Se3::Se3() {
     tvec = Mat::zeros(3,1,CV_32FC1);
 }
 
-Se3::Se3(cv::Mat &_rvec, cv::Mat &_tvec) {
+Se3::Se3(const cv::Mat& _rvec, const cv::Mat& _tvec) {
     rvec = _rvec.clone();
     tvec = _tvec.clone();
 }
@@ -116,6 +116,41 @@ std::ostream &operator<< (std::ostream &os, Se3 &se3) {
 std::ostream &operator<< (std::ostream &os, Se2 &se2) {
     os << "[" << se2.x << "," << se2.y << "," << se2.theta << "]";
     return os;
+}
+
+//! Class Pt3
+
+Pt3::Pt3(const Pt3 &_in) {
+    x = _in.x;
+    y = _in.y;
+    z = _in.z;
+}
+
+
+Pt3::Pt3(float _x, float _y, float _z) {
+    x = _x; y = _y; z = _z;
+}
+
+Pt3::Pt3(const cv::Mat &_tvec) {
+    x = _tvec.at<float>(0);
+    y = _tvec.at<float>(1);
+    z = _tvec.at<float>(2);
+}
+
+Pt3 Pt3::operator - (const Pt3 &rhs) {
+    return Pt3(x-rhs.x, y-rhs.y, z-rhs.z);
+}
+
+Pt3 Pt3::operator + (const Pt3 &rhs) {
+    return Pt3(x+rhs.x, y+rhs.y, z+rhs.z);
+}
+
+Pt3& Pt3::operator = (const Pt3 &rhs) {
+    x = rhs.x;
+    y = rhs.y;
+    z = rhs.z;
+    return *this;
+
 }
 
 }

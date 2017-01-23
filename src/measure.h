@@ -3,6 +3,8 @@
 
 #include <opencv2/core/core.hpp>
 #include "type.h"
+#include "frame.h"
+#include "mark.h"
 
 namespace calibcamodo {
 
@@ -10,61 +12,63 @@ class Measure {
 
 public:
     Measure() = default;
-    Measure(const Measure &_m);
-    Measure(cv::Mat _measure, cv::Mat _info);
     ~Measure() = default;
+    Measure(const Measure &_m);
+    Measure(const cv::Mat& _measure, const cv::Mat& _info);
 
     cv::Mat measure;
     cv::Mat info;
+};
+
+class MeasureSe2 : public Measure {
+public:
+    MeasureSe2() = default;
+    ~MeasureSe2() = default;
+    MeasureSe2(const MeasureSe2 &_m);
+    MeasureSe2(const cv::Mat& _measure, const cv::Mat& _info);
+    MeasureSe2(Se2 _odo, const cv::Mat& _info);
+
+    Se2 se2;
 };
 
 class MeasureSe3 : public Measure {
 
 public:
     MeasureSe3() = default;
-    MeasureSe3(const MeasureSe3 &_m);
-    MeasureSe3(cv::Mat _measure, cv::Mat _info);
-    MeasureSe3(cv::Mat _rvec, cv::Mat _tvec, cv::Mat _info);
-    MeasureSe3(Se3 _se3, cv::Mat _info);
     ~MeasureSe3() = default;
-
-    cv::Mat rvec() const;
-    cv::Mat tvec() const;
-    cv::Mat matR() const;
-    cv::Mat matT() const;
+    MeasureSe3(const MeasureSe3 &_m);
+    MeasureSe3(const cv::Mat& _measure, const cv::Mat& _info);
+    MeasureSe3(const cv::Mat& _rvec, const cv::Mat& _tvec, const cv::Mat& _info);
+    MeasureSe3(Se3 _se3, const cv::Mat& _info);
 
     Se3 se3;
 };
 
-class MeasureSe2 : public Measure {
+class MeasurePt3 : public Measure {
 public:
-    MeasureSe2() = default;
-    MeasureSe2(const MeasureSe2 &_m);
-    MeasureSe2(cv::Mat _measure, cv::Mat _info);
-    MeasureSe2(Se2 _odo, cv::Mat _info);
-    ~MeasureSe2() = default;
+    MeasurePt3() = default;
+    ~MeasurePt3() = default;
+    MeasurePt3(const MeasurePt3 &_m);
+    MeasurePt3(const cv::Mat &_measure, const cv::Mat &_info);
+    MeasurePt3(Pt3 _pt3, const cv::Mat &_info);
 
-    cv::Mat rvec() const;
-    cv::Mat tvec() const;
-    cv::Mat matR() const;
-    cv::Mat matT() const;
-    double ratio() const;
-
-    Se2 se2;
+    Pt3 pt3;
 };
 
-class MeasureKf2AMk : public MeasureSe3 {
+//! odometry measurement
+class MeasureSe2Kf2Kf : public MeasureSe2 {
 public:
-    MeasureKf2AMk() = default;
-    MeasureKf2AMk(const MeasureKf2AMk &_m);
-    MeasureKf2AMk(cv::Mat _measure, cv::Mat _info, PtrKeyFrame _pKf, PtrArucoMark _pAMk);
-    MeasureKf2AMk(cv::Mat _rvec, cv::Mat _tvec, cv::Mat _info, PtrKeyFrame _pKf, PtrArucoMark _pAMk);
-    ~MeasureKf2AMk() = default;
+    MeasureSe2Kf2Kf() = default;
+    ~MeasureSe2Kf2Kf() = default;
+    MeasureSe2Kf2Kf(const MeasureSe2Kf2Kf &_m);
+    MeasureSe2Kf2Kf(const cv::Mat& _measure, const cv::Mat& _info, PtrKeyFrame _pKfHead, PtrKeyFrame _pKfTail);
+    MeasureSe2Kf2Kf(Se2 _odo, const cv::Mat& _info, PtrKeyFrame _pKfHead, PtrKeyFrame _pKfTail);
 
-    PtrKeyFrame pKf;
-    PtrArucoMark pMk;
+    PtrKeyFrame pKfHead;
+    PtrKeyFrame pKfTail;
 };
 
+//! todo ...
 class MeasureSe3Kf2Kf : public MeasureSe3 {
 public:
     MeasureSe3Kf2Kf() {}
@@ -72,7 +76,7 @@ public:
     MeasureSe3Kf2Kf(const MeasureSe3Kf2Kf &_m) : MeasureSe3(_m),
         pKfHead(_m.pKfHead), pKfTail(_m.pKfTail) {}
 
-    MeasureSe3Kf2Kf(cv::Mat _measure, cv::Mat _info, PtrKeyFrame _pKfHead, PtrKeyFrame _pKfTail) : MeasureSe3(_measure, _info),
+    MeasureSe3Kf2Kf(const cv::Mat& _measure, const cv::Mat& _info, PtrKeyFrame _pKfHead, PtrKeyFrame _pKfTail) : MeasureSe3(_measure, _info),
         pKfHead(_pKfHead), pKfTail(_pKfTail) {}
 
     ~MeasureSe3Kf2Kf() {}
@@ -81,18 +85,33 @@ public:
     PtrKeyFrame pKfTail;
 };
 
-class MeasureSe2Kf2Kf : public MeasureSe2 {
+//! mark measurement
+class MeasureSe3Kf2Mk : public MeasureSe3 {
 public:
-    MeasureSe2Kf2Kf() = default;
-    MeasureSe2Kf2Kf(const MeasureSe2Kf2Kf &_m);
-    MeasureSe2Kf2Kf(cv::Mat _measure, cv::Mat _info, PtrKeyFrame _pKfHead, PtrKeyFrame _pKfTail);
-    MeasureSe2Kf2Kf(Se2 _odo, cv::Mat _info, PtrKeyFrame _pKfHead, PtrKeyFrame _pKfTail);
-    ~MeasureSe2Kf2Kf() = default;
+    MeasureSe3Kf2Mk() = default;
+    ~MeasureSe3Kf2Mk() = default;
+    MeasureSe3Kf2Mk(const MeasureSe3Kf2Mk &_m);
+    MeasureSe3Kf2Mk(const cv::Mat &_measure, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk);
+    MeasureSe3Kf2Mk(const cv::Mat &_rvec, const cv::Mat &_tvec, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk);
 
-    PtrKeyFrame pKfHead;
-    PtrKeyFrame pKfTail;
+    PtrKeyFrame pKf;
+    PtrMark pMk;
 };
 
+class MeasurePt3Kf2Mk : public MeasurePt3 {
+public:
+    MeasurePt3Kf2Mk() = default;
+    ~MeasurePt3Kf2Mk() = default;
+    MeasurePt3Kf2Mk(const MeasurePt3Kf2Mk &_m);
+    MeasurePt3Kf2Mk(const cv::Mat &_measure, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk);
+    MeasurePt3Kf2Mk(Pt3 _pt3, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk);
+
+    PtrKeyFrame pKf;
+    PtrMark pMk;
+};
+
+typedef std::shared_ptr<MeasurePt3Kf2Mk> PtrMsrPt3Kf2Mk;
+typedef std::shared_ptr<MeasureSe2Kf2Kf> PtrMsrSe2Kf2Kf;
 }
 
 #endif

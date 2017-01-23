@@ -8,40 +8,43 @@ namespace calibcamodo {
 
 class Mark {
 public:
-    Mark();
+    Mark() = default;
+    ~Mark() = default;
     Mark(int _id);
     Mark(const Mark &_mk);
-    ~Mark() {}
 
-    inline int GetId() const {return mId;}
-    inline Se3 GetPose() const {return mSe3wm;}
+    inline void SetId(int _id) { mId = _id; }
+    inline int GetId() const { return mId; }
+
     inline void SetPose(Se3 _in) { mSe3wm = _in; }
-    void SetPoseTranslation(cv::Mat _tvec);
+    inline void SetPoseTvec(cv::Mat _tvec) {
+        mSe3wm.tvec = _tvec.clone();
+    }
+    inline void SetPoseRvec(cv::Mat _rvec) {
+        mSe3wm.rvec = _rvec.clone();
+    }
+    inline Se3 GetPose() const { return mSe3wm; }
 
 protected:
     int mId;
     Se3 mSe3wm;
 };
 
-class ArucoMark : public Mark {
+class MarkAruco : public Mark {
 public:
-    ArucoMark() : Mark() {}
-    ArucoMark(const Mark &_mk) : Mark(_mk) {}
-    ~ArucoMark() {}
-
-    void InsertMsrMk(PtrMsrKf2AMk pmsr);
-    void DeleteMsrMk(PtrMsrKf2AMk pmsr);    
-
-    std::set<PtrMsrKf2AMk> GetMsr() const {return msetpMsr;}
-    std::set<PtrMsrKf2AMk> GetMsr(std::set<PtrKeyFrame> _setpKf) const; // return measure from given kfs
-    std::set<PtrKeyFrame> GetKf() const {return msetpKf;}
+    MarkAruco() = default;
+    ~MarkAruco() = default;
+    MarkAruco(int _id, int _arucoId, double _markSize);
+    MarkAruco(const Mark &_mk);
+    MarkAruco(const MarkAruco &_mk);
 
 protected:
-
-    std::set<PtrMsrKf2AMk> msetpMsr;
-    std::set<PtrKeyFrame> msetpKf;
-    std::map<PtrKeyFrame, PtrMsrKf2AMk> mmappKf2pMsr;
+    int mArucoId;
+    double mMarkSize;
 };
+
+typedef std::shared_ptr<Mark> PtrMark;
+typedef std::shared_ptr<MarkAruco> PtrMarkAruco;
 
 }
 #endif

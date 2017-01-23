@@ -10,42 +10,41 @@ using namespace cv;
 using namespace std;
 using namespace g2o;
 
+//!
+//! \brief Solver::Solver
+//! \param _pDataset
+//!
 Solver::Solver(Dataset *_pDataset): mpDataset(_pDataset) {
-
-    // load odometry error configure
-    mOdoLinErrR     = Config::CALIB_ODOLIN_ERRR;
-    mOdoLinErrMin   = Config::CALIB_ODOLIN_ERRMIN;
-    mOdoRotErrR     = Config::CALIB_ODOLIN_ERRR;
-    mOdoRotErrRLin  = Config::CALIB_ODOROT_ERRRLIN;
-    mOdoRotErrMin   = Config::CALIB_ODOROT_ERRMIN;
-
-    // load mark error configure
-    mAmkZErrRZ      = Config::CALIB_AMKZ_ERRRZ;
-    mAmkZErrMin     = Config::CALIB_AMKZ_ERRMIN;
-    mAmkXYErrRZ     = Config::CALIB_AMKXY_ERRRZ;
-    mAmkXYErrMin    = Config::CALIB_AMKXY_ERRMIN;
 
 }
 
-void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo) {
+
+SolverInitmk::SolverInitmk(Dataset *_pDataset):
+    Solver(_pDataset) {
+
+}
+
+
+void SolverInitmk::DoCalib() {
+
     // calibrate the ground plane, return 3-by-1 norm vector in camera frame
     Mat nvec_cg;
-    ComputeGrndPlane(_measuremk, nvec_cg);
+    ComputeGrndPlane(nvec_cg);
 
     // compute camera projection frame, with 2 solutions on 2 direction of ground
     Mat rvec_dc_1, tvec_dc_1, rvec_dc_2, tvec_dc_2;
     ComputeCamProjFrame(nvec_cg, rvec_dc_1, tvec_dc_1);
     ComputeCamProjFrame(-nvec_cg, rvec_dc_2, tvec_dc_2);
 
-//    cerr << "nvec_cg" << nvec_cg << endl;
-//    cerr << "rvec_dc_1" << rvec_dc_1 << endl;
-//    cerr << "rvec_dc_2" << rvec_dc_2 << endl;
+    //    cerr << "nvec_cg" << nvec_cg << endl;
+    //    cerr << "rvec_dc_1" << rvec_dc_1 << endl;
+    //    cerr << "rvec_dc_2" << rvec_dc_2 << endl;
 
     // compute xyyaw between based frame and camera projection frame,
     // choose the solution with smaller residual
     Mat rvec_bd_1, tvec_bd_1, rvec_bd_2, tvec_bd_2;
-    double norm_res_1 = Compute2DExtrinsic(_measuremk, _measureodo, rvec_dc_1, tvec_dc_1, rvec_bd_1, tvec_bd_1);
-    double norm_res_2 = Compute2DExtrinsic(_measuremk, _measureodo, rvec_dc_2, tvec_dc_2, rvec_bd_2, tvec_bd_2);
+    double norm_res_1 = Compute2DExtrinsic(rvec_dc_1, tvec_dc_1, rvec_bd_1, tvec_bd_1);
+    double norm_res_2 = Compute2DExtrinsic(rvec_dc_2, tvec_dc_2, rvec_bd_2, tvec_bd_2);
     Mat T_dc, T_bd, T_bc;
     if (norm_res_1 < norm_res_2) {
         Vec2MatSe3(rvec_dc_1, tvec_dc_1, T_dc);
@@ -59,17 +58,20 @@ void Solver::CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe
     mSe3cb = Se3(T_bc);
 }
 
-void Solver::ComputeGrndPlane(const set<PtrMsrKf2AMk> &_setmeasure, Mat &nvec_cg) {
+void SolverInitmk::ComputeGrndPlane(Mat &nvec_cg) {
+
+    const set<PtrMsrPt3Kf2Mk> & setMsrMk = mpDataset->GetMsrMkSet();
+
     int numLclIdMk = 0;
     int numLclIdKf = 0;
-    map<PtrArucoMark, int> mapMk2LclId;
+    map<PtrMark, int> mapMk2LclId;
     map<PtrKeyFrame, int> mapKf2LclId;
 
-    for (auto ptrmeasure : _setmeasure) {
+    for (auto ptrmeasure : setMsrMk) {
         PtrKeyFrame pKf = ptrmeasure->pKf;
-        PtrArucoMark pAMk = ptrmeasure->pMk;
-        if(!mapMk2LclId.count(pAMk))
-            mapMk2LclId[pAMk] = numLclIdMk++;
+        PtrMark pMk = ptrmeasure->pMk;
+        if(!mapMk2LclId.count(pMk))
+            mapMk2LclId[pMk] = numLclIdMk++;
         if(!mapKf2LclId.count(pKf))
             mapKf2LclId[pKf] = numLclIdKf++;
     }
@@ -78,14 +80,15 @@ void Solver::ComputeGrndPlane(const set<PtrMsrKf2AMk> &_setmeasure, Mat &nvec_cg
     const int dimcol = 3+numLclIdMk;
     Eigen::MatrixXd A = Eigen::MatrixXd::Zero(dimrow, dimcol);
 
-    for (auto ptrmeasure : _setmeasure) {
-        PtrKeyFrame pKf = ptrmeasure->pKf;
-        PtrArucoMark pAMk = ptrmeasure->pMk;
+    for (auto ptr : setMsrMk) {
+        PtrMsrPt3Kf2Mk pMsrMk = ptr;
+        PtrKeyFrame pKf = pMsrMk->pKf;
+        PtrMark pMk = pMsrMk->pMk;
 
-        int lclIdMk = mapMk2LclId[pAMk];
+        int lclIdMk = mapMk2LclId[pMk];
         int lclIdKf = mapKf2LclId[pKf];
 
-        Mat tvec = ptrmeasure->tvec();
+        Mat tvec = pMsrMk->pt3.tvec();
         A(lclIdKf,0) = tvec.at<float>(0);
         A(lclIdKf,1) = tvec.at<float>(1);
         A(lclIdKf,2) = tvec.at<float>(2);
@@ -126,7 +129,7 @@ void Solver::ComputeGrndPlane(const set<PtrMsrKf2AMk> &_setmeasure, Mat &nvec_cg
     nvec.copyTo(nvec_cg);
 }
 
-void Solver::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc, int flag) {
+void SolverInitmk::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc) {
 
     // define an approximate norm vector "nvecApprox" with a large angle with ground norm
     Mat nvecApprox;
@@ -157,14 +160,16 @@ void Solver::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tvec_dc,
 
     tvec_dc = Mat::zeros(3,1,CV_32FC1);
 
-//    cerr << "nvec_cg" << endl << nvec_cg << endl;
-//    cerr << "Rdc" << endl << Rcd.t() << endl;
-//    cerr << "rvec_dc" << rvec_dc << endl;
-//    cerr << "tvec_dc" << tvec_dc << endl;
+    //    cerr << "nvec_cg" << endl << nvec_cg << endl;
+    //    cerr << "Rdc" << endl << Rcd.t() << endl;
+    //    cerr << "rvec_dc" << rvec_dc << endl;
+    //    cerr << "tvec_dc" << tvec_dc << endl;
 }
 
-double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
-                                  const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd) {
+double SolverInitmk::Compute2DExtrinsic(const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd) {
+
+    const set<PtrMsrSe2Kf2Kf>& setMsrOdo = mpDataset->GetMsrOdoSet();
+    const set<PtrMsrPt3Kf2Mk>& setMsrMk = mpDataset->GetMsrMkSet();
 
     double threshSmallRotation = 1.0/5000;
 
@@ -172,23 +177,17 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
     vector<HyperEdgeOdoMk> vecHyperEdgeSmallRot;
     vector<HyperEdgeOdoMk> vecHyperEdgeLargeRot;
 
-    for(auto ptrmsrodo : _measureodo) {
+    for(auto ptrmsrodo : setMsrOdo) {
         PtrMsrSe2Kf2Kf pMsrOdo = ptrmsrodo;
-        double odo_ratio = pMsrOdo->ratio();
+        double odo_ratio = pMsrOdo->se2.ratio();
 
         PtrKeyFrame pKf1 = pMsrOdo->pKfHead;
         PtrKeyFrame pKf2 = pMsrOdo->pKfTail;
 
-        set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> setpairMsrMk;
+        set<pair<PtrMsrPt3Kf2Mk, PtrMsrPt3Kf2Mk>> setpairMsrMk;
         FindCovisMark(pKf1, pKf2, setpairMsrMk);
-        set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> setpairMsrMkInSet;
-        for (auto pairMsrMk : setpairMsrMk) {
-            if( _measuremk.count(pairMsrMk.first) && _measuremk.count(pairMsrMk.second) ) {
-                setpairMsrMkInSet.insert(pairMsrMk);
-            }
-        }
 
-        for (auto pairMsrMk : setpairMsrMkInSet) {
+        for (auto pairMsrMk : setpairMsrMk) {
             HyperEdgeOdoMk edge(pMsrOdo, pairMsrMk.first, pairMsrMk.second);
             vecHyperEdge.push_back(edge);
             if (abs(odo_ratio) < threshSmallRotation) {
@@ -213,13 +212,16 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
     for(auto edge : vecHyperEdgeSmallRot) {
         HyperEdgeOdoMk hyperEdge = edge;
         PtrMsrSe2Kf2Kf pMsrOdo = hyperEdge.pMsrOdo;
-        PtrMsrKf2AMk pMsrMk1 = hyperEdge.pMsrMk1;
-        PtrMsrKf2AMk pMsrMk2 = hyperEdge.pMsrMk2;
+        PtrMsrPt3Kf2Mk pMsrMk1 = hyperEdge.pMsrMk1;
+        PtrMsrPt3Kf2Mk pMsrMk2 = hyperEdge.pMsrMk2;
 
-        Mat R_b1b2 = pMsrOdo->matR();
-        Mat tvec_b1b2 = pMsrOdo->tvec();
-        Mat tvec_c1m = pMsrMk1->tvec();
-        Mat tvec_c2m = pMsrMk2->tvec();
+        Se3 se3_b1b2 = Se3(pMsrOdo->se2);
+
+        Mat R_b1b2 = se3_b1b2.R();
+        Mat tvec_b1b2 = se3_b1b2.tvec;
+
+        Mat tvec_c1m = pMsrMk1->pt3.tvec();
+        Mat tvec_c2m = pMsrMk2->pt3.tvec();
         Mat tvec_b1b2_bar = R_dc*tvec_c1m - R_b1b2*R_dc*tvec_c2m;
 
         double xb = tvec_b1b2.at<float>(0);
@@ -233,16 +235,16 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
         yawcount++;
 
         // DEBUG:
-//        cerr << "R_dc" << endl << R_dc << endl;
-//        cerr << "tvec_c1m" << endl << tvec_c1m.t() << endl;
-//        cerr << "tvec_c2m" << endl << tvec_c2m.t() << endl;
-//        cerr << "tvec_b1b2" << endl << tvec_b1b2.t() << endl;
-//        cerr << "tvec_b1b2_bar" << endl << tvec_b1b2_bar.t() << endl;
-//        cerr << xb << " " << yb << " " << xbbar << " " << ybbar << " " << yaw << endl;
-//        cerr << endl;
+        //        cerr << "R_dc" << endl << R_dc << endl;
+        //        cerr << "tvec_c1m" << endl << tvec_c1m.t() << endl;
+        //        cerr << "tvec_c2m" << endl << tvec_c2m.t() << endl;
+        //        cerr << "tvec_b1b2" << endl << tvec_b1b2.t() << endl;
+        //        cerr << "tvec_b1b2_bar" << endl << tvec_b1b2_bar.t() << endl;
+        //        cerr << xb << " " << yb << " " << xbbar << " " << ybbar << " " << yaw << endl;
+        //        cerr << endl;
     }
     double yawavr = yawsum/yawcount;
-//    cerr << "Yaw: " << yawavr << endl;
+    //    cerr << "Yaw: " << yawavr << endl;
     rvec_bd = ( Mat_<float>(3,1) << 0, 0, yawavr);
 
     // COMPUTE XY TRANSLATION
@@ -259,13 +261,14 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
 
         HyperEdgeOdoMk hyperEdge = edge;
         PtrMsrSe2Kf2Kf pMsrOdo = hyperEdge.pMsrOdo;
-        PtrMsrKf2AMk pMsrMk1 = hyperEdge.pMsrMk1;
-        PtrMsrKf2AMk pMsrMk2 = hyperEdge.pMsrMk2;
+        PtrMsrPt3Kf2Mk pMsrMk1 = hyperEdge.pMsrMk1;
+        PtrMsrPt3Kf2Mk pMsrMk2 = hyperEdge.pMsrMk2;
 
-        Mat R_b1b2 = pMsrOdo->matR();
-        Mat tvec_b1b2 = pMsrOdo->tvec();
-        Mat tvec_c1m = pMsrMk1->tvec();
-        Mat tvec_c2m = pMsrMk2->tvec();
+        Se3 se3_b1b2 = pMsrOdo->se2;
+        Mat R_b1b2 = se3_b1b2.R();
+        Mat tvec_b1b2 = se3_b1b2.tvec;
+        Mat tvec_c1m = pMsrMk1->pt3.tvec();
+        Mat tvec_c2m = pMsrMk2->pt3.tvec();
 
         Mat A_blk = Mat::eye(3,3,CV_32FC1) - R_b1b2;
         Mat b_blk = R_b1b2*R_bc*tvec_c2m - R_bc*tvec_c1m + tvec_b1b2;
@@ -288,32 +291,28 @@ double Solver::Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set
     tvec_bd = ( Mat_<float>(3,1) << x(0), x(1), 0 );
 
     // DEBUG
-//    Mat rvec_bc;
-//    Rodrigues(R_bc, rvec_bc);
-//    cerr << "rvec_bc:" << endl << rvec_bc << endl;
-//    cerr << "x:" << endl << x << endl;
-//    cerr << "A:" << endl << A << endl;
-//    cerr << "b:" << endl << b << endl;
-//    cerr << "residual:" << endl << residual << endl;
+    //    Mat rvec_bc;
+    //    Rodrigues(R_bc, rvec_bc);
+    //    cerr << "rvec_bc:" << endl << rvec_bc << endl;
+    //    cerr << "x:" << endl << x << endl;
+    //    cerr << "A:" << endl << A << endl;
+    //    cerr << "b:" << endl << b << endl;
+    //    cerr << "residual:" << endl << residual << endl;
 
     return residual.norm();
 }
 
-int Solver::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> &_setpairMsrMk) {
+int SolverInitmk::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrPt3Kf2Mk, PtrMsrPt3Kf2Mk>> &_setpairMsrMk) {
     // Find covisible mark from two keyframe, consider the ordered set
     _setpairMsrMk.clear();
-    set<PtrArucoMark> setpMk1 = _pKf1->GetMk();
-    set<PtrArucoMark> setpMk2 = _pKf2->GetMk();
-    set<PtrArucoMark> setpMk12;
-
+    set<PtrMark> setpMk1 = mpDataset->GetMkbyKf(_pKf1);
+    set<PtrMark> setpMk2 = mpDataset->GetMkbyKf(_pKf2);
+    set<PtrMark> setpMkCovis;
     for (auto iterMk1 = setpMk1.begin(), iterMk2 = setpMk2.begin();
          iterMk1 != setpMk1.end() && iterMk2 != setpMk2.end(); ) {
         if (*iterMk1 == *iterMk2) {
-            PtrArucoMark pMkCovis = *iterMk1;
-            setpMk12.insert(pMkCovis);
-            PtrMsrKf2AMk pMsrMk1 = _pKf1->GetMsrMk(pMkCovis);
-            PtrMsrKf2AMk pMsrMk2 = _pKf2->GetMsrMk(pMkCovis);
-            _setpairMsrMk.insert(make_pair(pMsrMk1,pMsrMk2));
+            PtrMark pMkCovis = *iterMk1;
+            setpMkCovis.insert(pMkCovis);
             iterMk1++;
             iterMk2++;
         }
@@ -324,10 +323,23 @@ int Solver::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<
             iterMk2++;
         }
     }
+
+    for(auto pMkCovis : setpMkCovis) {
+        PtrMsrPt3Kf2Mk pMsrMk1 = mpDataset->GetMsrMkbyKfMk(_pKf1, pMkCovis);
+        PtrMsrPt3Kf2Mk pMsrMk2 = mpDataset->GetMsrMkbyKfMk(_pKf2, pMkCovis);
+        assert(pMsrMk1 && pMsrMk2);
+        _setpairMsrMk.insert(make_pair(pMsrMk1,pMsrMk2));
+    }
+
     return 0;
 }
 
-void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo) {
+SolverOptMk::SolverOptMk(Dataset *_pDataset):
+    Solver(_pDataset) {
+
+}
+
+void SolverOptMk::DoCalib() {
 
     //! Set optimizer
     SparseOptimizer optimizer;
@@ -348,60 +360,47 @@ void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2
     }
 
     //! Set mark vertices
-    map<PtrArucoMark,int> mappMk2IdOpt;
+    map<PtrMark,int> mappMk2IdOpt;
     for (auto ptr : mpDataset->GetMkSet()) {
-        PtrArucoMark pMk = ptr;
+        PtrMark pMk = ptr;
         //! NEED TO ADD INIT MK POSE HERE !!!
         AddVertexPointXYZ(optimizer, toG2oVector3D(pMk->GetPose().tvec), idVertexMax);
         mappMk2IdOpt[pMk] = idVertexMax++;
     }
 
     //! Set odometry edges
-    for (auto ptr : _measureodo) {
+    for (auto ptr : mpDataset->GetMsrOdoSet()) {
         PtrMsrSe2Kf2Kf pMsrOdo = ptr;
         PtrKeyFrame pKf0 = pMsrOdo->pKfHead;
         PtrKeyFrame pKf1 = pMsrOdo->pKfTail;
         int id0 = mappKf2IdOpt[pKf0];
         int id1 = mappKf2IdOpt[pKf1];
-
         g2o::SE2 measure = toG2oSE2(pMsrOdo->se2);
-
-        // compute information matrix
-        double dist = pMsrOdo->se2.dist();
-        double stdlin = max(dist*mOdoLinErrR, mOdoLinErrMin);
-        double theta = pMsrOdo->se2.theta;
-        double stdrot = max(max(abs(theta)*mOdoRotErrR, mOdoRotErrMin), dist*mOdoRotErrRLin);
-
-        g2o::Matrix3D info;
-        info.setZero();
-        info(0,0) = 1/stdlin/stdlin;
-        info(1,1) = 1/stdlin/stdlin;
-        info(2,2) = 1/stdrot/stdrot;
-
+        g2o::Matrix3D info = toEigenMatrixXd(pMsrOdo->info);
         AddEdgeSE2(optimizer, id0, id1, measure, info);
+
+        // DEBUG
+//        cerr << info << endl;
+//        cerr << pMsrOdo->info << endl;
     }
 
     //! Set mark measurement edges
-    for (auto ptr : _measuremk) {
-        PtrMsrKf2AMk pMsrMk = ptr;
+    for (auto ptr : mpDataset->GetMsrMkSet()) {
+        PtrMsrPt3Kf2Mk pMsrMk = ptr;
         PtrKeyFrame pKf = pMsrMk->pKf;
-        PtrArucoMark pMk = pMsrMk->pMk;
+        PtrMark pMk = pMsrMk->pMk;
 
         int idKf = mappKf2IdOpt[pKf];
         int idMk = mappMk2IdOpt[pMk];
 
-        g2o::Vector3D measure = toG2oVector3D(pMsrMk->tvec());
-        double z = abs(measure(2));
-        double stdxy = max(z*mAmkXYErrRZ, mAmkXYErrMin);
-        double stdz = max(z*mAmkZErrRZ, mAmkZErrMin);
-
-        g2o::Matrix3D info;
-        info.setZero();
-        info(0,0) = 1/stdxy/stdxy;
-        info(1,1) = 1/stdxy/stdxy;
-        info(2,2) = 1/stdz/stdz;
+        g2o::Vector3D measure = toG2oVector3D(pMsrMk->measure);
+        g2o::Matrix3D info = toEigenMatrixXd(pMsrMk->info);
 
         AddEdgeXYZCalibCamOdo(optimizer, idKf, idMk, 0, measure, info);
+
+        // DEBUG
+//        cerr << info << endl;
+//        cerr << pMsrMk->info << endl;
     }
 
     //! Do optimize
@@ -424,14 +423,14 @@ void Solver::CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2
 
     //! Refresh landmark
     for (auto pair : mappMk2IdOpt) {
-        PtrArucoMark pMk = pair.first;
+        PtrMark pMk = pair.first;
         int idOpt = pair.second;
         VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
         Mat tvec_wm = toCvMatf(pVertex->estimate());
-        pMk->SetPoseTranslation(tvec_wm);
+        pMk->SetPoseTvec(tvec_wm);
 
         // DEBUG:
-//        cerr << "tvec_wm: " << tvec_wm.t() << endl;
+        //        cerr << "tvec_wm: " << tvec_wm.t() << endl;
     }
 }
 

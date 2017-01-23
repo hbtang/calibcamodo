@@ -1,55 +1,64 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
+#include "dataset.h"
 #include "measure.h"
 #include "frame.h"
 #include "type.h"
-#include "dataset.h"
 
 namespace calibcamodo {
-
-struct HyperEdgeOdoMk {
-
-    HyperEdgeOdoMk(PtrMsrSe2Kf2Kf _pMsrOdo, PtrMsrKf2AMk _pMsrMk1, PtrMsrKf2AMk _pMsrMk2):
-        pMsrOdo(_pMsrOdo), pMsrMk1(_pMsrMk1), pMsrMk2(_pMsrMk2) {}
-
-    PtrMsrSe2Kf2Kf pMsrOdo;
-    PtrMsrKf2AMk pMsrMk1;
-    PtrMsrKf2AMk pMsrMk2;
-};
 
 class Solver {
 public:
     Solver(Dataset *_pDataset);
+    inline Se3 GetSe3cb() const { return mSe3cb; }
+    inline void SetSe3cb(Se3 _se3) { mSe3cb = _se3; }
+    virtual void DoCalib() = 0;
 
-    // InitMk: using 3D translational mark measurements, non-iterative
-    void CalibInitMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo);
-    void ComputeGrndPlane(const set<PtrMsrKf2AMk> &_measure, cv::Mat &nvec_cg);
-    void ComputeCamProjFrame(const cv::Mat &nvec_cg, cv::Mat &rvec_dc, cv::Mat &tvec_dc, int flag = 0);
-    double Compute2DExtrinsic(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo,
-                            const cv::Mat &rvec_dc, const cv::Mat &tvec_dc, cv::Mat &rvec_bd, cv::Mat &tvec_bd);
-
-    // JointOptMk: using 3D translational mark measurements, iterative optimize SLAM and calibration
-    void CalibOptMk(const set<PtrMsrKf2AMk> &_measuremk, const set<PtrMsrSe2Kf2Kf> &_measureodo);
-
-    // other functions ...
-    int FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrKf2AMk, PtrMsrKf2AMk>> &_setpairMsr);
-
-    inline Se3 GetResult() const {return mSe3cb;}
-
-private:
+protected:
     Se3 mSe3cb;
     Dataset *mpDataset;
+};
 
-    double mOdoLinErrR;
-    double mOdoLinErrMin;
-    double mOdoRotErrR;
-    double mOdoRotErrRLin;
-    double mOdoRotErrMin;
-    double mAmkZErrRZ;
-    double mAmkZErrMin;
-    double mAmkXYErrRZ;
-    double mAmkXYErrMin;
+class SolverInitmk : public Solver {
+
+public:
+    SolverInitmk(Dataset *_pDataset);
+
+    struct HyperEdgeOdoMk {
+        HyperEdgeOdoMk(PtrMsrSe2Kf2Kf _pMsrOdo, PtrMsrPt3Kf2Mk _pMsrMk1, PtrMsrPt3Kf2Mk _pMsrMk2):
+            pMsrOdo(_pMsrOdo), pMsrMk1(_pMsrMk1), pMsrMk2(_pMsrMk2) {}
+        PtrMsrSe2Kf2Kf pMsrOdo;
+        PtrMsrPt3Kf2Mk pMsrMk1;
+        PtrMsrPt3Kf2Mk pMsrMk2;
+    };
+
+    void DoCalib();
+    void ComputeGrndPlane(cv::Mat &nvec_cg);
+    void ComputeCamProjFrame(const cv::Mat &nvec_cg, cv::Mat &rvec_dc, cv::Mat &tvec_dc);
+    double Compute2DExtrinsic(const cv::Mat &rvec_dc, const cv::Mat &tvec_dc, cv::Mat &rvec_bd, cv::Mat &tvec_bd);
+    int FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrPt3Kf2Mk, PtrMsrPt3Kf2Mk>> &_setpairMsr);
+
+private:
+    std::set<HyperEdgeOdoMk> msetHyperEdge;
+};
+
+
+// JointOptMk: using 3D translational mark measurements, iterative optimize SLAM and calibration
+class SolverOptMk : public Solver {
+public:
+    SolverOptMk(Dataset *_pDataset);
+    void DoCalib();
+
+//    double mOdoLinErrR;
+//    double mOdoLinErrMin;
+//    double mOdoRotErrR;
+//    double mOdoRotErrRLin;
+//    double mOdoRotErrMin;
+//    double mAmkZErrRZ;
+//    double mAmkZErrMin;
+//    double mAmkXYErrRZ;
+//    double mAmkXYErrMin;
 };
 
 }

@@ -48,35 +48,37 @@ int main(int argc, char **argv) {
     Config::InitConfig(strFolderPathMain, numFrame, markerSize);
 
     //! Init dataset
-    Dataset dataset;
+    DatasetAruco datasetAruco;
     cerr << "Dataset: creating frames ..." << endl;
-    dataset.CreateFrame();
+    datasetAruco.CreateFrames();
     cerr << "Dataset: creating keyframes ..." << endl;
-    dataset.CreateKeyFrame();
-    cerr << "Dataset: creating measurements ..." << endl;
-    dataset.CreateMarkMeasure();    
-    cerr << "Dataset: dataset created!" << endl << endl;
+    datasetAruco.CreateKeyFrames();
+    cerr << "Dataset: creating measurement odometry ..." << endl;
+    datasetAruco.CreateMsrOdos();
+    cerr << "Dataset: creating aruco mark and measurements ..." << endl;
+    datasetAruco.CreateMarks();
 
-    //! Init solver
-    cerr << "Solver: init solver ..." << endl;
-    Solver solver(&dataset);
+    cerr << "Dataset: dataset created." << endl << endl;
 
-    //! Do calibrate with "initmk" algorithm
-    cerr << "Solver: calibrate by initmk ..." << endl;
-    solver.CalibInitMk(dataset.GetMsrMk(), dataset.GetMsrOdo());
-    Se3 se3bc_initmk = solver.GetResult();
-    cerr << "Solver: calibration done! " << se3bc_initmk << endl << endl;
+    //! Calibrate by SolverInitmk
+    cerr << "SolverInitmk: init solver ..." << endl;
+    SolverInitmk solverInitmk(&datasetAruco);
+    solverInitmk.DoCalib();
+    Se3 se3_cb = solverInitmk.GetSe3cb();
+    cerr << "SolverInitmk: result = " << se3_cb << endl << endl;
 
-    //! Do calibrate with "optmk" algorithm
-    cerr << "Solver: calibrate by optmk ..." << endl;
-    dataset.InitAll(solver.GetResult());
-    solver.CalibOptMk(dataset.GetMsrMk(), dataset.GetMsrOdo());
-    Se3 se3bc_optmk = solver.GetResult();
-    cerr << "Solver: calibration done! " << se3bc_optmk << endl << endl;
+    //! Calibrate by SolverOptmk
+    cerr << "SolverOptmk: init solver ..." << endl;
+    datasetAruco.InitAll(se3_cb);
+    SolverOptMk solverOptmk(&datasetAruco);
+    solverOptmk.SetSe3cb(se3_cb);
+    solverOptmk.DoCalib();
+    se3_cb = solverOptmk.GetSe3cb();
+    cerr << "SolverOptmk: result = " << se3_cb << endl;
 
     //! Debug: Show something here, with ros viewer
-    MapPublish mappublish(&dataset);
-    mappublish.run();
+//    MapPublish mappublish(&dataset);
+//    mappublish.run();
 
     return 0;
 }

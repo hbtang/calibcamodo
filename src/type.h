@@ -12,26 +12,6 @@
 #include <opencv2/core/core.hpp>
 
 namespace calibcamodo {
-
-// Type definitions
-
-class Frame;
-class KeyFrame;
-class Mark;
-class ArucoMark;
-class MeasureKf2AMk;
-class MeasureSe3Kf2Kf;
-class MeasureSe2Kf2Kf;
-
-typedef std::shared_ptr<Frame> PtrFrame;
-typedef std::shared_ptr<KeyFrame> PtrKeyFrame;
-typedef std::shared_ptr<Mark> PtrMark;
-typedef std::shared_ptr<ArucoMark> PtrArucoMark;
-typedef std::shared_ptr<MeasureKf2AMk> PtrMsrKf2AMk;
-typedef std::shared_ptr<MeasureSe3Kf2Kf> PtrMsrSe3Kf2Kf;
-typedef std::shared_ptr<MeasureSe2Kf2Kf> PtrMsrSe2Kf2Kf;
-
-
 // Data structures
 
 struct Se2{
@@ -41,8 +21,8 @@ struct Se2{
     Se2(const Se2& _in);
     ~Se2() = default;
 
-    Se2 operator- (const Se2& tominus);
-    Se2 operator+ (const Se2& toadd);
+    Se2 operator - (const Se2& tominus);
+    Se2 operator + (const Se2& toadd);
 
     float dist();
     float ratio();
@@ -55,14 +35,14 @@ struct Se2{
 struct Se3{
 
     Se3();
-    Se3(cv::Mat &_rvec, cv::Mat &_tvec);
+    Se3(const cv::Mat& _rvec, const cv::Mat &_tvec);
     Se3(const Se3 &_in);
     Se3(const Se2 &_in);
     Se3(const cv::Mat &_T);
     ~Se3() = default;
 
-    Se3 operator- (const Se3 &tominus);
-    Se3 operator+ (const Se3 &toadd);
+    Se3 operator - (const Se3 &tominus);
+    Se3 operator + (const Se3 &toadd);
 
     cv::Mat T() const;
     cv::Mat R() const;
@@ -71,14 +51,31 @@ struct Se3{
     cv::Mat tvec;
 };
 
-std::ostream &operator<< (std::ostream &os, Se3 &se3);
-std::ostream &operator<< (std::ostream &os, Se2 &se2);
+struct Pt3 {
+    Pt3() = default;
+    Pt3(float _x, float _y, float _z);
+    Pt3(const Pt3 &_in);
+    Pt3(const cv::Mat &_tvec);
+    Pt3 operator- (const Pt3 &rhs);
+    Pt3 operator+ (const Pt3 &rhs);
+    Pt3 &operator= (const Pt3 &rhs);
+
+    float x;
+    float y;
+    float z;
+    inline cv::Mat tvec() const { return ( cv::Mat_<float>(3,1) << x, y, z); }
+};
+
+std::ostream & operator << (std::ostream &os, Se3 &se3);
+std::ostream & operator << (std::ostream &os, Se2 &se2);
 
 // Math functions:
 const double PI = 3.1415926;
 double Period(double in, double upperbound, double lowerbound);
 
 }
+
+
 
 
 #endif

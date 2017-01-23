@@ -6,75 +6,83 @@ using namespace cv;
 using namespace std;
 using namespace aruco;
 
-// Class Frame
-Frame::Frame(const cv::Mat &_im, const Se2& _odo, int _id) :
+//! Class Frame
+Frame::Frame(const Frame &_f):
+    mId(_f.mId), mOdo(_f.mOdo), mbImgLoaded(_f.mbImgLoaded) {
+    mImg = _f.mImg.clone();
+}
+
+Frame& Frame::operator= (const Frame &_f) {
+    mId = _f.mId;
+    mOdo = _f.mOdo;
+    mImg = _f.mImg.clone();
+    mbImgLoaded = _f.mbImgLoaded;
+    return *this;
+}
+
+Frame::Frame(const cv::Mat &_im, Se2 _odo, int _id) :
     mOdo(_odo), mId(_id) {
-    _im.copyTo(mImg);
+    mImg = _im.clone();
+    mbImgLoaded = true;
 }
 
-Frame::Frame(const Se2& _odo, int _id) :
-    mOdo(_odo), mId(_id) {
-    mImg.create(0,0,CV_32FC1);
+Frame::Frame(Se2 _odo, int _id) :
+    mOdo(_odo), mId(_id), mbImgLoaded(false){
+
 }
 
-Frame::Frame(const Frame &_f) :
-    mOdo(_f.mOdo), mId(_f.mId) {
-    _f.mImg.copyTo(mImg);
+//! Class KeyFrame
+KeyFrame::KeyFrame(const KeyFrame& _kf):
+    Frame(_kf), mSe2wb(_kf.mSe2wb), mSe3wc(_kf.mSe3wc) {
 }
 
-void Frame::SetImg(cv::Mat &_img) {
-    mImg = _img.clone();
+KeyFrame& KeyFrame::operator = (const KeyFrame& _kf) {
+    Frame::operator =(_kf);
+    return *this;
 }
 
-// Class KeyFrame
 KeyFrame::KeyFrame(const Frame& _f):
-    Frame(_f), mpMsrOdoNext(nullptr), mpMsrOdoLast(nullptr) {
+    Frame(_f) {
     mSe2wb = mOdo;
     mSe3wc = Se3();
-}
-
-void KeyFrame::ComputeAruco(CameraParameters &_CamParam,
-                            MarkerDetector &_MarkerDetector,
-                            double _marksize) {
-
-    _MarkerDetector.detect(mImg, mvecMsrAruco, _CamParam, _marksize);
-    mImg.copyTo(mImgAruco);
-    for (auto mk : mvecMsrAruco) {
-        mk.draw(mImgAruco, Scalar(0,0,255), 2);
-    }
-}
-
-void KeyFrame::InsertMsrMk(PtrMsrKf2AMk pmsr) {
-    if (msetpMk.count(pmsr->pMk)) {
-        cerr << "Error in KeyFrame::InsertMsrMk, already observed." << endl;
-        return;
-    }
-    msetpMsrMk.insert(pmsr);
-    msetpMk.insert(pmsr->pMk);
-    mmappMk2pMsr[pmsr->pMk] = pmsr;
-}
-
-void KeyFrame::DeleteMsrMk(PtrMsrKf2AMk pmsr) {
-    msetpMsrMk.erase(pmsr);
-    msetpMk.erase(pmsr->pMk);
-    mmappMk2pMsr.erase(pmsr->pMk);
-}
-
-set<PtrMsrKf2AMk> KeyFrame::GetMsrMk(set<PtrArucoMark> _setpMk) const {
-    set<PtrMsrKf2AMk> setRet;
-    for (auto pMk : _setpMk) {
-        if(msetpMk.count(pMk)) {
-            PtrMsrKf2AMk pMsr = mmappMk2pMsr.at(pMk);
-            setRet.insert(pMsr);
-        }
-    }
-    return setRet;
 }
 
 void KeyFrame::SetPoseAllbyB(Se2 _wb, Se3 _bc) {
     mSe2wb = _wb;
     Se3 se3wb = Se3(_wb);
     mSe3wc = se3wb + _bc;
+}
+
+
+//! Class KeyFrameAruco
+KeyFrameAruco::KeyFrameAruco(const KeyFrameAruco& _kf):
+    KeyFrame(_kf) {
+
+}
+
+KeyFrameAruco& KeyFrameAruco::operator = (const KeyFrameAruco& _kf) {
+    KeyFrame::operator =(_kf);
+    return *this;
+}
+
+KeyFrameAruco::KeyFrameAruco(const Frame &_f):
+    KeyFrame(_f){
+
+}
+
+KeyFrameAruco::KeyFrameAruco(const KeyFrame &_kf):
+    KeyFrame(_kf){
+
+}
+
+void KeyFrameAruco::ComputeAruco(aruco::CameraParameters &_CamParam,
+                                 aruco::MarkerDetector &_MarkerDetector,
+                                 double _markSize) {
+    _MarkerDetector.detect(mImg, mvecAruco, _CamParam, _markSize);
+    mImg.copyTo(mImgAruco);
+    for (auto mk : mvecAruco) {
+        mk.draw(mImgAruco, Scalar(0,0,255), 2);
+    }
 }
 
 
