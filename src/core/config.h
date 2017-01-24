@@ -2,15 +2,16 @@
 #define CONFIG_H
 
 #include <string>
+#include <opencv/cv.h>
 
 namespace calibcamodo {
 
 class Config {
 public:
 
-    static void InitConfig(std::string _strfolderpathmain, int numframe, double marksize);
+    static void InitConfig(std::string _strfolderpathmain);
 
-    //! Read dataset
+    //! Input
     static int NUM_FRAME;    
     static std::string STR_FOLDERPATH_MAIN;
     static std::string STR_FOlDERPATH_IMG;
@@ -18,10 +19,22 @@ public:
     static std::string STR_FILEPATH_CAM;
     static std::string STR_FILEPATH_CALIB;
 
+    //!Camera Intrinsics
+    static int IMAGE_WIDTH;
+    static int IMAGE_HEIGHT;
+    static cv::Mat CAMERA_MATRIX;
+    static cv::Mat DISTORTION_COEFFICIENTS;
+
+    //!Camera Extrinsics Init
+    static cv::Mat RVEC_BC;
+    static cv::Mat TVEC_BC;
+
+    //! Mark
+    static double MARK_SIZE;
+
     //! Dataset
     static double DATASET_THRESH_KF_ODOLIN;
-    static double DATASET_THRESH_KF_ODOROT;
-    static double MARK_SIZE;
+    static double DATASET_THRESH_KF_ODOROT;    
 
     //! Solver
     static double CALIB_ODOLIN_ERRR;

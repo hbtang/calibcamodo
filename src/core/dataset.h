@@ -21,7 +21,7 @@ public:
     set<PtrFrame> SelectFrame() const;
     virtual void CreateKeyFrames() {}
     virtual void CreateMsrOdos();
-    virtual void CreateMarks() {}    
+    virtual void CreateMarks() {}
     virtual void CreateMsrMks() {}
 
     void InitKf(Se3 _se3bc);
@@ -102,14 +102,13 @@ protected:
 
 
     //! Configures
-    aruco::CameraParameters mCamParam;
-    aruco::MarkerDetector mMDetector;
+
     string mstrFoldPathMain;
     string mstrFoldPathImg;
     string mstrFilePathOdo;
     string mstrFilePathCam;
     int mNumFrame;
-    double mMarkerSize;
+
     double mThreshOdoLin;
     double mThreshOdoRot;
     double mOdoLinErrR;
@@ -143,12 +142,27 @@ public:
     PtrKeyFrameAruco GetKfAruco(int _id) const;
 
 protected:
+
+    double mMarkerSize;
+
+    aruco::CameraParameters mCamParam;
+    aruco::MarkerDetector mMDetector;
+
     std::set<PtrMarkAruco> msetpMkAruco;
     std::map<int, PtrMarkAruco> mmapId2pMkAruco;
     std::set<PtrKeyFrameAruco> msetpKfAruco;
     std::map<int, PtrKeyFrameAruco> mmapId2pKfAruco;
+};
 
+class DatasetOrb : public Dataset {
+public:
+    DatasetOrb();
 
+    void LoadOrbVoc(std::string _strFilePathOrbVoc);
+
+protected:
+    ORBextractor mOrbExtractor;
+    ORBVocabulary mOrbVocalubary;
 };
 
 }

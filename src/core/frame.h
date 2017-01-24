@@ -5,6 +5,12 @@
 //#include "measure.h"
 #include "aruco/aruco.h"
 
+#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
+#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#include "orb/ORBVocabulary.h"
+#include "orb/ORBextractor.h"
+#include "orb/ORBmatcher.h"
+
 namespace calibcamodo {
 
 class Frame {
@@ -76,6 +82,27 @@ private:
 };
 
 class KeyFrameOrb : public KeyFrame {
+
+public:
+    void ComputeOrb(ORBextractor* _pOrb);
+    void ComputeBoW(ORBVocabulary* _pVoc);
+    inline DBoW2::FeatureVector GetFeatureVector() {
+        return mFeatVec;
+    }
+    inline DBoW2::BowVector GetBowVector() {
+        return mBowVec;
+    }
+
+private:
+    cv::Mat mImgOrb;
+    vector<cv::KeyPoint> mvecKeyPoint;
+    vector<cv::KeyPoint> mvecKeyPointUndist;
+    cv::Mat mDescriptor;
+    int mNumKeyPoint;
+    bool mbBowVecExist;
+    DBoW2::FeatureVector mFeatVec;
+    DBoW2::BowVector mBowVec;
+
 };
 
 typedef std::shared_ptr<Frame> PtrFrame;

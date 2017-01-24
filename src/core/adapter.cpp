@@ -1,10 +1,12 @@
 #include <opencv2/calib3d/calib3d.hpp>
 
 #include "adapter.h"
+#include <iostream>
 
 namespace calibcamodo{
 
 using namespace cv;
+using namespace std;
 
 
 cv::Mat toT4x4(cv::Mat R, cv::Mat T){
@@ -86,9 +88,17 @@ g2o::Matrix6d toG2oMatrix6f(const cv::Mat &cvMat6f){
 }
 
 g2o::Vector3D toG2oVector3D(const cv::Mat &cvmat) {
+    Mat mat;
+    cvmat.convertTo(mat, CV_32FC1);
+
     g2o::Vector3D v;
-    for(int i; i<3; i++)
-        v(i) = cvmat.at<float>(i);
+    for(int i = 0; i<3; i++)
+        v(i) = mat.at<float>(i);
+
+//    cerr << mat << endl;
+//    cerr << cvmat << endl;
+//    cerr << v << endl;
+
     return v;
 }
 
@@ -271,6 +281,5 @@ Se2 toSe2(const g2o::SE2 &in) {
     g2o::Vector3D v = in.toVector();
     return Se2(v(0), v(1), v(2));
 }
-
 
 }

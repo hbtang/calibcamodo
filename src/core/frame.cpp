@@ -1,4 +1,5 @@
 #include "frame.h"
+#include "adapter.h"
 
 namespace calibcamodo {
 
@@ -83,6 +84,23 @@ void KeyFrameAruco::ComputeAruco(aruco::CameraParameters &_CamParam,
     for (auto mk : mvecAruco) {
         mk.draw(mImgAruco, Scalar(0,0,255), 2);
     }
+}
+
+//! KeyFrameOrb
+//!
+
+void KeyFrameOrb::ComputeOrb(ORBextractor* _pOrb) {
+    (*_pOrb)(mImg, cv::Mat(), mvecKeyPoint, mDescriptor);
+}
+
+void KeyFrameOrb::ComputeBoW(ORBVocabulary* _pVoc) {
+    if(mBowVec.empty() || mFeatVec.empty()) {
+        vector<cv::Mat> vCurrentDesc = toDescriptorVector(mDescriptor);
+        // Feature vector associate features with nodes in the 4th level (from leaves up)
+        // We assume the vocabulary tree has 6 levels, change the 4 otherwise
+        _pVoc->transform(vCurrentDesc,mBowVec,mFeatVec,4);
+    }
+    mbBowVecExist = true;
 }
 
 

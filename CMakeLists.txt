@@ -28,8 +28,11 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
     image_transport
 )
 
+CATKIN_PACKAGE()
+
 INCLUDE_DIRECTORIES(
-    src/
+    ./src/
+    ./src/core/
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${catkin_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIRS}
@@ -61,17 +64,26 @@ AUX_SOURCE_DIRECTORY(./src SRC_DIR )
 AUX_SOURCE_DIRECTORY(./src/aruco SRC_DIR_ARUCO)
 AUX_SOURCE_DIRECTORY(./src/g2o SRC_DIR_G2O)
 AUX_SOURCE_DIRECTORY(./src/ros SRC_DIR_ROS)
-ADD_EXECUTABLE(
-    calibcamodo
-    ${SRC_DIR}
+AUX_SOURCE_DIRECTORY(./src/orb SRC_DIR_ORB)
+AUX_SOURCE_DIRECTORY(./src/core SRC_DIR_CORE)
+
+ADD_LIBRARY(calibcamodo SHARED
     ${SRC_DIR_ARUCO}
     ${SRC_DIR_G2O}
     ${SRC_DIR_ROS}
+    ${SRC_DIR_ORB}
+    ${SRC_DIR_CORE}
+)
+TARGET_LINK_LIBRARIES(calibcamodo
+    ${LINK_LIBS} ${G2O_LIBS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 )
 
-# message("SRC_DIR: ${SRC_DIR}")
-# message("SRC_DIR_ARUCO: ${SRC_DIR_ARUCO}")
-# message("FILE_INCLUDE: ${FILE_INCLUDE}")
-
-## Specify libraries to link a library or executable target against
-TARGET_LINK_LIBRARIES(calibcamodo ${LINK_LIBS} ${G2O_LIBS} )
+ADD_EXECUTABLE(
+    calibaruco
+    ./src/main.cpp
+)
+TARGET_LINK_LIBRARIES(calibaruco
+    calibcamodo
+    ${LINK_LIBS}
+)

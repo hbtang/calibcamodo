@@ -59,6 +59,8 @@ Se3::Se3() {
 }
 
 Se3::Se3(const cv::Mat& _rvec, const cv::Mat& _tvec) {
+    assert(_rvec.type() == CV_32FC1);
+    assert(_tvec.type() == CV_32FC1);
     rvec = _rvec.clone();
     tvec = _tvec.clone();
 }
@@ -74,8 +76,9 @@ Se3::Se3(const Se2 &_in) {
 }
 
 Se3::Se3(const cv::Mat &_T) {
-    Mat _R = _T.colRange(0,3).rowRange(0,3).clone();
-    Rodrigues(_R, rvec);
+    assert(_T.type() == CV_32FC1);
+    Mat R = _T.colRange(0,3).rowRange(0,3).clone();
+    Rodrigues(R, rvec);
     tvec = _T.col(3).rowRange(0,3).clone();
 }
 
@@ -132,6 +135,7 @@ Pt3::Pt3(float _x, float _y, float _z) {
 }
 
 Pt3::Pt3(const cv::Mat &_tvec) {
+    assert(_tvec.type() == CV_32FC1);
     x = _tvec.at<float>(0);
     y = _tvec.at<float>(1);
     z = _tvec.at<float>(2);

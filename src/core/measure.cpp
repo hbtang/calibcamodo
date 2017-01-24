@@ -14,6 +14,7 @@ Measure::Measure(const Measure &_m) {
 }
 
 Measure::Measure(const Mat& _measure, const Mat& _info) {
+    assert(_measure.type() == CV_32FC1 && _info.type() == CV_32FC1);
     _measure.copyTo(measure);
     _info.copyTo(info);
 }
@@ -32,6 +33,7 @@ MeasureSe2::MeasureSe2(const Mat& _measure, const Mat& _info) : Measure(_measure
 }
 
 MeasureSe2::MeasureSe2(Se2 _odo, const cv::Mat& _info) {
+    assert(_info.type() == CV_32FC1);
     _info.copyTo(info);
     se2 = _odo;
     measure = (Mat_<float>(3,1) << _odo.x, _odo.y, _odo.theta);
@@ -56,6 +58,11 @@ MeasureSe3::MeasureSe3(const cv::Mat& _measure, const cv::Mat& _info) : Measure(
 }
 
 MeasureSe3::MeasureSe3(const cv::Mat& _rvec, const cv::Mat& _tvec, const cv::Mat& _info) {
+
+    assert(_info.type() == CV_32FC1);
+    assert(_rvec.type() == CV_32FC1);
+    assert(_tvec.type() == CV_32FC1);
+
     _info.copyTo(info);
     measure.create(6,1,CV_32FC1);
     for (int i=0; i<3; i++) {
@@ -66,6 +73,8 @@ MeasureSe3::MeasureSe3(const cv::Mat& _rvec, const cv::Mat& _tvec, const cv::Mat
 }
 
 MeasureSe3::MeasureSe3(Se3 _se3, const cv::Mat& _info) {
+    assert(_info.type() == CV_32FC1);
+
     se3 = _se3;
     info = _info.clone();
     measure.create(6,1,CV_32FC1);
@@ -108,7 +117,9 @@ MeasurePt3::MeasurePt3(const cv::Mat &_measure, const cv::Mat &_info):
 }
 
 MeasurePt3::MeasurePt3(Pt3 _pt3, const cv::Mat &_info):
-    pt3(_pt3){
+    pt3(_pt3) {
+
+    assert(_info.type() == CV_32FC1);
     info = _info.clone();
     measure = pt3.tvec().clone();
 }

@@ -13,22 +13,11 @@ using namespace aruco;
 Dataset::Dataset() {
 
     mNumFrame = Config::NUM_FRAME;
-    mMarkerSize = Config::MARK_SIZE;
+
     mstrFoldPathMain = Config::STR_FOLDERPATH_MAIN;
     mstrFoldPathImg = Config::STR_FOlDERPATH_IMG;
-    mstrFilePathCam = Config::STR_FILEPATH_CAM;
     mstrFilePathOdo = Config::STR_FILEPATH_ODO;
-
-    // load camera intrinsics
-    mCamParam.readFromXMLFile(mstrFilePathCam);
-
-    // set aruco mark detector
-    int ThePyrDownLevel = 0;
-    int ThresParam1 = 19;
-    int ThresParam2 = 15;
-    mMDetector.pyrDown(ThePyrDownLevel);
-    mMDetector.setCornerRefinementMethod(MarkerDetector::LINES);
-    mMDetector.setThresholdParams(ThresParam1, ThresParam2);
+    mstrFilePathCam = Config::STR_FILEPATH_CAM;
 
     // select keyframe
     mThreshOdoLin   = Config::DATASET_THRESH_KF_ODOLIN;
@@ -366,11 +355,34 @@ void Dataset::InitMk() {
             pMk->SetPose(se3wm);
 
             // DEBUG
-            //            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
-            //            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
-            //            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
-            //            cerr << endl;
+//            cerr << "idKf" << pKf->GetId() << endl;
+//            cerr << "idMk" << pMk->GetId() << endl;
+//            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
+//            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
+//            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
+//            cerr << endl;
         }
+
+        //DEBUG
+//        for(auto pMsr : setpMsr) {
+//            PtrKeyFrame pKf = pMsr->pKf;
+//            if (pMsr->pMk != pMk) {
+//                cerr << "Error!!!" << endl;
+//            }
+
+//            Se3 se3wc = pKf->GetPoseCamera();
+//            Se3 se3cm;
+//            se3cm.tvec = pMsr->pt3.tvec();
+//            Se3 se3wm = se3wc+se3cm;
+
+//            // DEBUG
+//            cerr << "idKf" << pKf->GetId() << endl;
+//            cerr << "idMk" << pMk->GetId() << endl;
+//            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
+//            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
+//            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
+//            cerr << endl;
+//        }
     }
 }
 
@@ -379,6 +391,21 @@ void Dataset::InitMk() {
 DatasetAruco::DatasetAruco():
     Dataset() {
 
+    mMarkerSize = Config::MARK_SIZE;
+    // load camera intrinsics
+    mCamParam.readFromXMLFile(mstrFilePathCam);
+    //    mCamParam.CameraMatrix = Config::CAMERA_MATRIX.clone();
+    //    mCamParam.Distorsion = Config::DISTORTION_COEFFICIENTS.clone();
+    //    mCamParam.CamSize.width = Config::IMAGE_WIDTH;
+    //    mCamParam.CamSize.height = Config::IMAGE_HEIGHT;
+
+    // set aruco mark detector
+    int ThePyrDownLevel = 0;
+    int ThresParam1 = 19;
+    int ThresParam2 = 15;
+    mMDetector.pyrDown(ThePyrDownLevel);
+    mMDetector.setCornerRefinementMethod(MarkerDetector::LINES);
+    mMDetector.setThresholdParams(ThresParam1, ThresParam2);
 }
 
 bool DatasetAruco::InsertKfAruco(PtrKeyFrameAruco _pKfAruco) {
@@ -465,149 +492,6 @@ void DatasetAruco::CreateMarks() {
     }
 }
 
-//! old functions to remove...
 
-//void Dataset::CreateKeyFrames() {
-
-//    PtrKeyFrame pKeyFrameLast = make_shared<KeyFrame>(**msetpFrame.cbegin());
-//    InsertKf(pKeyFrameLast);
-
-//    for (auto ptr : msetpFrame) {
-//        PtrFrame pFrameNew = ptr;
-//        Se2 dodo = pFrameNew->GetOdo() - pKeyFrameLast->GetOdo();
-//        double dl = sqrt(dodo.x*dodo.x + dodo.y*dodo.y);
-//        double dr = abs(dodo.theta);
-//        Mat info = Mat::eye(3,3,CV_32FC1);
-//        if (dl > mThreshOdoLin || dr > mThreshOdoRot) {
-//            PtrKeyFrame pKeyFrameNew = make_shared<KeyFrame>(*pFrameNew);
-//            InsertKf(pKeyFrameNew);
-//            PtrMsrSe2Kf2Kf pMeasureOdo = make_shared<MeasureSe2Kf2Kf>(dodo, info, pKeyFrameLast, pKeyFrameNew);
-//            InsertMsrOdo(pMeasureOdo);
-//            pKeyFrameLast = pKeyFrameNew;
-//        }
-//    }
-
-//    LoadKfImage(msetpKf);
-//}
-
-//bool Dataset::InsertFrame(PtrFrame ptr) {
-//    int id = ptr->GetId();
-//    if(mmapId2pFrame.count(id)) {
-//        return false;
-//    }
-
-//    msetpFrame.insert(ptr);
-//    mmapId2pFrame[id] = ptr;
-//    return true;
-//}
-
-//bool Dataset::DeleteFrame(PtrFrame ptr) {
-//    auto iter = msetpFrame.find(ptr);
-//    if (iter == msetpFrame.cend()) {
-//        return false;
-//    }
-//    msetpFrame.erase(iter);
-//    mmapId2pFrame.erase(ptr->GetId());
-//    return true;
-//}
-
-//bool Dataset::InsertKf(PtrKeyFrame ptr) {
-//    int id = ptr->GetId();
-//    if(mmapId2pKf.count(id)) {
-//        return false;
-//    }
-//    msetpKf.insert(ptr);
-//    mmapId2pKf[id] = ptr;
-//    return true;
-//}
-
-//bool Dataset::DeleteKf(PtrKeyFrame ptr) {
-//    auto iter = msetpKf.find(ptr);
-//    if (iter == msetpKf.cend()) {
-//        return false;
-//    }
-//    msetpKf.erase(iter);
-//    mmapId2pKf.erase(ptr->GetId());
-//    return true;
-//}
-
-
-//bool Dataset::InsertMk(PtrMarkAruco& ptr) {
-//    int id = ptr->GetId();
-//    if(mmapId2pMk.count(id)) {
-//        ptr = mmapId2pMk[id];
-//        return false;
-//    }
-//    msetpMk.insert(ptr);
-//    mmapId2pMk[id] = ptr;
-//    return true;
-//}
-
-//bool Dataset::DeleteMk(PtrMarkAruco ptr) {
-//    auto iter = msetpMk.find(ptr);
-//    if (iter == msetpMk.cend()) {
-//        return false;
-//    }
-//    msetpMk.erase(iter);
-//    mmapId2pMk.erase(ptr->GetId());
-//    return true;
-//}
-
-//PtrMarkAruco Dataset::FindMk(int id) {
-//    auto iter = mmapId2pMk.find(id);
-//    if (iter != mmapId2pMk.cend())
-//        return iter->second;
-//    else
-//        return nullptr;
-//}
-
-//void Dataset::CreateMarkMeasure() {
-// TODO ...
-//    for (auto pkf : msetpKf) {
-//        const vector<Marker>& vecMeasureAruco = pkf->GetMsrAruco();
-//        for (auto measure_aruco : vecMeasureAruco) {
-//            // read data from aruco detect
-//            int id = measure_aruco.id;
-//            Mat rvec = measure_aruco.Rvec;
-//            Mat tvec = measure_aruco.Tvec;
-//            Mat info = Mat::eye(6,6,CV_32FC1);
-
-//            // add new aruco mark into dataset
-//            PtrMarkAruco pamk = make_shared<MarkAruco>(id);
-//            InsertMk(pamk);
-
-//            // add new measurement into dataset
-//            PtrMsrKf2AMk pmeas = make_shared<MeasureKf2AMk>(rvec, tvec, info, pkf, pamk);
-//            InsertMsrMk(pmeas);
-//        }
-//    }
-//}
-
-//bool Dataset::InsertMsrMk(PtrMsrKf2AMk pmsr) {
-//    msetMsrMk.insert(pmsr);
-//    PtrKeyFrame pKf = pmsr->pKf;
-//    PtrMarkAruco pMk = pmsr->pMk;
-//    pKf->InsertMsrMk(pmsr);
-//    pMk->InsertMsrMk(pmsr);
-//}
-
-
-
-//void Dataset::LoadKfImage(const set<PtrKeyFrame> &_setpKF) {
-//    for (auto ptr : _setpKF) {
-//        PtrKeyFrame pKf = ptr;
-//        int id = pKf->GetId();
-//        string strImgPath = mstrFoldPathImg + to_string(id) + ".bmp";
-//        Mat img = imread(strImgPath);
-//        pKf->SetImg(img);
-//    }
-//}
-
-//void DatasetAruco::ComputeKfAruco(const set<PtrKeyFrame> &_setpKF) {
-//    for (auto ptr : _setpKF) {
-//        PtrKeyFrame pKf = ptr;
-//        pKf->ComputeAruco(mCamParam, mMDetector, mMarkerSize);
-//    }
-//}
 
 }

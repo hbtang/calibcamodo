@@ -26,7 +26,7 @@ public:
 
     Dataset* mpDataset;
 
-    void run();
+    void run(int _numIter = 10);
 
     void SetDataset(Dataset* pDataset) { mpDataset = pDataset; }
 

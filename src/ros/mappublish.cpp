@@ -242,12 +242,13 @@ void MapPublish::PublishMapPoints() {
 }
 
 
-void MapPublish::run() {
+void MapPublish::run(int _numIter) {
     ros::Rate rate(5);
-    while (ros::ok()) {
+    while (ros::ok() && _numIter != 0) {
         PublishKeyFrames();
         PublishMapPoints();
         rate.sleep();
+        _numIter--;
     }
 }
 

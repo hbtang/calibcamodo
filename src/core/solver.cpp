@@ -364,8 +364,14 @@ void SolverOptMk::DoCalib() {
     for (auto ptr : mpDataset->GetMkSet()) {
         PtrMark pMk = ptr;
         //! NEED TO ADD INIT MK POSE HERE !!!
-        AddVertexPointXYZ(optimizer, toG2oVector3D(pMk->GetPose().tvec), idVertexMax);
+        g2o::Vector3D pose = toG2oVector3D(pMk->GetPose().tvec);
+
+        AddVertexPointXYZ(optimizer, pose, idVertexMax);
         mappMk2IdOpt[pMk] = idVertexMax++;
+        // DEBUG
+//        cerr << "mkId: " << pMk->GetId() << endl;
+//        cerr << "mkTvec: " << pMk->GetPose().tvec << endl;
+//        cerr << "pose: " << pose << endl;
     }
 
     //! Set odometry edges
@@ -400,12 +406,14 @@ void SolverOptMk::DoCalib() {
 
         // DEBUG
 //        cerr << info << endl;
+//        cerr << pMsrMk->measure << endl;
+//        cerr << measure << endl;
 //        cerr << pMsrMk->info << endl;
     }
 
     //! Do optimize
     optimizer.initializeOptimization();
-    optimizer.optimize(30);
+    optimizer.optimize(100);
 
 
     //! Refresh calibration results

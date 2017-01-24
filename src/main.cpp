@@ -33,8 +33,8 @@ using namespace calibcamodo;
 int main(int argc, char **argv) {
 
     string strFolderPathMain = argv[1];
-    int numFrame = atoi(argv[2]);
-    double markerSize = atof(argv[3]);
+//    int numFrame = atoi(argv[2]);
+//    double markerSize = atof(argv[3]);
 
     //! Init ros
     ros::init(argc, argv, "pub");
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     image_transport::Publisher pub = it.advertise("/camera/image_raw",1);
 
     //! Init config
-    Config::InitConfig(strFolderPathMain, numFrame, markerSize);
+    Config::InitConfig(strFolderPathMain);
 
     //! Init dataset
     DatasetAruco datasetAruco;
@@ -70,14 +70,17 @@ int main(int argc, char **argv) {
     //! Calibrate by SolverOptmk
     cerr << "SolverOptmk: init solver ..." << endl;
     datasetAruco.InitAll(se3_cb);
+
+    //! Debug: Show something here, with ros viewer
+    MapPublish mappublish(&datasetAruco);
+    mappublish.run();
+
     SolverOptMk solverOptmk(&datasetAruco);
     solverOptmk.SetSe3cb(se3_cb);
     solverOptmk.DoCalib();
     se3_cb = solverOptmk.GetSe3cb();
     cerr << "SolverOptmk: result = " << se3_cb << endl;
 
-    //! Debug: Show something here, with ros viewer
-    MapPublish mappublish(&datasetAruco);
     mappublish.run();
 
     return 0;
