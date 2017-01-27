@@ -84,8 +84,17 @@ private:
 class KeyFrameOrb : public KeyFrame {
 
 public:
-    void ComputeOrb(ORBextractor* _pOrb);
-    void ComputeBoW(ORBVocabulary* _pVoc);
+    KeyFrameOrb(const Frame& _f);
+    KeyFrameOrb(const KeyFrame& _kf);
+
+
+    void ComputeOrb(ORBextractor& _OrbExtractor, const cv::Mat& _cammatrix, const cv::Mat& _distortion);
+    void ComputeBoW(ORBVocabulary& _OrbVoc);
+
+    void UndistortKeyPoints(const vector<cv::KeyPoint>& _vKeyPt, vector<cv::KeyPoint>& _vKeyPtUndist,
+                            const cv::Mat& _cammatrix, const cv::Mat& _distortion);
+
+
     inline DBoW2::FeatureVector GetFeatureVector() {
         return mFeatVec;
     }

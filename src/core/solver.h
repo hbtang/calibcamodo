@@ -11,6 +11,10 @@ namespace calibcamodo {
 class Solver {
 public:
     Solver(Dataset *_pDataset);
+
+    void CreateMsrOdos();
+    void RefreshKfsPose();
+
     inline Se3 GetSe3cb() const { return mSe3cb; }
     inline void SetSe3cb(Se3 _se3) { mSe3cb = _se3; }
     virtual void DoCalib() = 0;
@@ -18,12 +22,34 @@ public:
 protected:
     Se3 mSe3cb;
     Dataset *mpDataset;
+
+    double mOdoLinErrR;
+    double mOdoLinErrMin;
+    double mOdoRotErrR;
+    double mOdoRotErrRLin;
+    double mOdoRotErrMin;
 };
 
-class SolverInitmk : public Solver {
+class SolverAruco : public Solver {
+public:
+    SolverAruco(DatasetAruco* _pDatasetAruco);
+    void CreateMarks();
+    void RefreshMksPose();
+    void RefreshAllPose();
+
+private:
+    DatasetAruco* mpDatasetAruco;
+
+    double mAmkZErrRZ;
+    double mAmkZErrMin;
+    double mAmkXYErrRZ;
+    double mAmkXYErrMin;
+};
+
+class SolverInitmk : public SolverAruco {
 
 public:
-    SolverInitmk(Dataset *_pDataset);
+    SolverInitmk(DatasetAruco* _pDataset);
 
     struct HyperEdgeOdoMk {
         HyperEdgeOdoMk(PtrMsrSe2Kf2Kf _pMsrOdo, PtrMsrPt3Kf2Mk _pMsrMk1, PtrMsrPt3Kf2Mk _pMsrMk2):
@@ -45,20 +71,11 @@ private:
 
 
 // JointOptMk: using 3D translational mark measurements, iterative optimize SLAM and calibration
-class SolverOptMk : public Solver {
+class SolverOptMk : public SolverAruco {
 public:
-    SolverOptMk(Dataset *_pDataset);
+    SolverOptMk(DatasetAruco *_pDataset);
     void DoCalib();
 
-//    double mOdoLinErrR;
-//    double mOdoLinErrMin;
-//    double mOdoRotErrR;
-//    double mOdoRotErrRLin;
-//    double mOdoRotErrMin;
-//    double mAmkZErrRZ;
-//    double mAmkZErrMin;
-//    double mAmkXYErrRZ;
-//    double mAmkXYErrMin;
 };
 
 }

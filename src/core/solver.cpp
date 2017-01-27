@@ -16,11 +16,124 @@ using namespace g2o;
 //!
 Solver::Solver(Dataset *_pDataset): mpDataset(_pDataset) {
 
+    // load odometry error configure
+    mOdoLinErrR     = Config::CALIB_ODOLIN_ERRR;
+    mOdoLinErrMin   = Config::CALIB_ODOLIN_ERRMIN;
+    mOdoRotErrR     = Config::CALIB_ODOLIN_ERRR;
+    mOdoRotErrRLin  = Config::CALIB_ODOROT_ERRRLIN;
+    mOdoRotErrMin   = Config::CALIB_ODOROT_ERRMIN;
+
+}
+
+void Solver::CreateMsrOdos() {
+
+    mpDataset->ClearMsrOdo();
+    const std::map<int, PtrKeyFrame>& mmapId2pKf = mpDataset->GetKfMap();
+
+    for(auto iter1 = mmapId2pKf.cbegin(), iter2 = iter1++;
+        iter1 != mmapId2pKf.cend();
+        ++iter1, ++iter2) {
+
+        PtrKeyFrame pKfHead = (*iter1).second;
+        PtrKeyFrame pKfTail = (*iter2).second;
+        Se2 dodo = pKfTail->GetOdo() - pKfHead->GetOdo();
+        Mat info = Mat::eye(3,3,CV_32FC1);
+
+        double dist = dodo.dist();
+        double stdlin = max(dist*mOdoLinErrR, mOdoLinErrMin);
+        double theta = dodo.theta;
+        double stdrot = max(max(abs(theta)*mOdoRotErrR, mOdoRotErrMin), dist*mOdoRotErrRLin);
+
+        info.at<float>(0,0) = 1/stdlin/stdlin;
+        info.at<float>(1,1) = 1/stdlin/stdlin;
+        info.at<float>(2,2) = 1/stdrot/stdrot;
+
+        PtrMsrSe2Kf2Kf pMeasureOdo =
+                make_shared<MeasureSe2Kf2Kf>(dodo, info, pKfHead, pKfTail);
+        mpDataset->InsertMsrOdo(pMeasureOdo);
+    }
+}
+
+void Solver::RefreshKfsPose() {
+    for(auto ptr : mpDataset->GetKfSet()) {
+        PtrKeyFrame pKf = ptr;
+        Se2 se2odo = pKf->GetOdo();
+        Se2 se2wb = se2odo;
+        Se3 se3wb = Se3(se2wb);
+        Se3 se3wc = se3wb + mSe3cb;
+
+        pKf->SetPoseBase(se2odo);
+        pKf->SetPoseCamera(se3wc);
+    }
 }
 
 
-SolverInitmk::SolverInitmk(Dataset *_pDataset):
-    Solver(_pDataset) {
+SolverAruco::SolverAruco(DatasetAruco* _pDatasetAruco):
+    Solver(_pDatasetAruco) {
+    mpDatasetAruco  = _pDatasetAruco;
+    mAmkZErrRZ      = Config::CALIB_AMKZ_ERRRZ;
+    mAmkZErrMin     = Config::CALIB_AMKZ_ERRMIN;
+    mAmkXYErrRZ     = Config::CALIB_AMKXY_ERRRZ;
+    mAmkXYErrMin    = Config::CALIB_AMKXY_ERRMIN;
+}
+
+void SolverAruco::CreateMarks() {
+
+    const set<PtrKeyFrameAruco> setpKfAruco = mpDatasetAruco->GetKfArucoSet();
+
+    // Create aruco marks and mark measurements
+    for (auto ptr : setpKfAruco) {
+        PtrKeyFrameAruco pKfAruco = ptr;
+        const std::vector<aruco::Marker>& vecAruco = pKfAruco->GetMsrAruco();
+        for (auto measure_aruco : vecAruco) {
+            int id = measure_aruco.id;
+            Mat tvec = measure_aruco.Tvec;
+            double marksize = measure_aruco.ssize;
+
+            double z = abs(tvec.at<float>(2));
+            double stdxy = max(z*mAmkXYErrRZ, mAmkXYErrMin);
+            double stdz = max(z*mAmkZErrRZ, mAmkZErrMin);
+
+            Mat info = Mat::eye(3,3,CV_32FC1);
+            info.at<float>(0,0) = 1/stdxy/stdxy;
+            info.at<float>(1,1) = 1/stdxy/stdxy;
+            info.at<float>(2,2) = 1/stdz/stdz;
+
+            // add new aruco mark into dataset
+            PtrMarkAruco pMkAruco = make_shared<MarkAruco>(id, id, marksize);
+            if (!mpDatasetAruco->InsertMkAruco(pMkAruco))
+                pMkAruco = mpDatasetAruco->GetMkAruco(id);
+
+            // add new measurement into dataset
+            PtrMsrPt3Kf2Mk pMsrMk = make_shared<MeasurePt3Kf2Mk>(tvec, info, pKfAruco, pMkAruco);
+            mpDatasetAruco->InsertMsrMk(pMsrMk);
+        }
+    }
+}
+
+void SolverAruco::RefreshMksPose() {
+    for(auto ptr : mpDatasetAruco->GetMkSet()) {
+        PtrMark pMk = ptr;
+        set<PtrMsrPt3Kf2Mk> setpMsr = mpDatasetAruco->GetMsrMkbyMk(pMk);
+        if(!setpMsr.empty()) {
+            PtrKeyFrame pKf = (*setpMsr.cbegin())->pKf;
+            Se3 se3wc = pKf->GetPoseCamera();
+            Se3 se3cm;
+            se3cm.tvec = (*setpMsr.cbegin())->pt3.tvec();
+            Se3 se3wm = se3wc + se3cm;
+            pMk->SetPose(se3wm);
+        }
+    }
+}
+
+void SolverAruco::RefreshAllPose() {
+    RefreshKfsPose();
+    RefreshMksPose();
+}
+
+
+SolverInitmk::SolverInitmk(DatasetAruco *_pDatasetAruco):
+    SolverAruco(_pDatasetAruco) {
 
 }
 
@@ -165,6 +278,7 @@ void SolverInitmk::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tv
     //    cerr << "rvec_dc" << rvec_dc << endl;
     //    cerr << "tvec_dc" << tvec_dc << endl;
 }
+
 
 double SolverInitmk::Compute2DExtrinsic(const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd) {
 
@@ -334,8 +448,8 @@ int SolverInitmk::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2
     return 0;
 }
 
-SolverOptMk::SolverOptMk(Dataset *_pDataset):
-    Solver(_pDataset) {
+SolverOptMk::SolverOptMk(DatasetAruco *_pDataset):
+    SolverAruco(_pDataset) {
 
 }
 

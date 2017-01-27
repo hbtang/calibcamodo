@@ -33,8 +33,8 @@ using namespace calibcamodo;
 int main(int argc, char **argv) {
 
     string strFolderPathMain = argv[1];
-//    int numFrame = atoi(argv[2]);
-//    double markerSize = atof(argv[3]);
+    //    int numFrame = atoi(argv[2]);
+    //    double markerSize = atof(argv[3]);
 
     //! Init ros
     ros::init(argc, argv, "pub");
@@ -53,34 +53,39 @@ int main(int argc, char **argv) {
     datasetAruco.CreateFrames();
     cerr << "Dataset: creating keyframes ..." << endl;
     datasetAruco.CreateKeyFrames();
-    cerr << "Dataset: creating measurement odometry ..." << endl;
-    datasetAruco.CreateMsrOdos();
-    cerr << "Dataset: creating aruco mark and measurements ..." << endl;
-    datasetAruco.CreateMarks();
-
     cerr << "Dataset: dataset created." << endl << endl;
+
+    //! Init mappublisher with ros rviz
+    MapPublish mappublish(&datasetAruco);
+
 
     //! Calibrate by SolverInitmk
     cerr << "SolverInitmk: init solver ..." << endl;
     SolverInitmk solverInitmk(&datasetAruco);
+
+    cerr << "SolverInitmk: creating measurement odometry ..." << endl;
+    solverInitmk.CreateMsrOdos();
+
+    cerr << "SolverInitmk: creating aruco mark and measurements ..." << endl;
+    solverInitmk.CreateMarks();
+
+    cerr << "SolverInitmk: do calibration with inimk algorithm ..." << endl;
     solverInitmk.DoCalib();
-    Se3 se3_cb = solverInitmk.GetSe3cb();
-    cerr << "SolverInitmk: result = " << se3_cb << endl << endl;
+
+    cerr << "SolverInitmk: result = " << solverInitmk.GetSe3cb() << endl << endl;
 
     //! Calibrate by SolverOptmk
-    cerr << "SolverOptmk: init solver ..." << endl;
-    datasetAruco.InitAll(se3_cb);
+    cerr << "SolverOptMk: init solver ..." << endl;
+    SolverOptMk solverOptmk(&datasetAruco);
+    solverOptmk.SetSe3cb(solverInitmk.GetSe3cb());
 
-    //! Debug: Show something here, with ros viewer
-    MapPublish mappublish(&datasetAruco);
+    cerr << "SolverOptMk: refresh pose of all kfs and mps in dataset ..." << endl;
+    solverOptmk.RefreshAllPose();
     mappublish.run();
 
-    SolverOptMk solverOptmk(&datasetAruco);
-    solverOptmk.SetSe3cb(se3_cb);
+    cerr << "SolverOptMk: do calibration with optmk algorithm ..." << endl;
     solverOptmk.DoCalib();
-    se3_cb = solverOptmk.GetSe3cb();
-    cerr << "SolverOptmk: result = " << se3_cb << endl;
-
+    cerr << "SolverOptMk: result = " << solverOptmk.GetSe3cb() << endl;
     mappublish.run();
 
     return 0;

@@ -1,5 +1,6 @@
 #include "frame.h"
 #include "adapter.h"
+#include "config.h"
 
 namespace calibcamodo {
 
@@ -89,18 +90,76 @@ void KeyFrameAruco::ComputeAruco(aruco::CameraParameters &_CamParam,
 //! KeyFrameOrb
 //!
 
-void KeyFrameOrb::ComputeOrb(ORBextractor* _pOrb) {
-    (*_pOrb)(mImg, cv::Mat(), mvecKeyPoint, mDescriptor);
+void KeyFrameOrb::ComputeOrb(ORBextractor& _OrbExtractor, const Mat& _cammatrix, const Mat& _distortion) {
+
+    cvtColor(mImg, mImgOrb, CV_RGB2GRAY);
+    (_OrbExtractor)(mImgOrb, cv::Mat(), mvecKeyPoint, mDescriptor);
+    cvtColor(mImgOrb, mImgOrb, CV_GRAY2RGB);
+
+    UndistortKeyPoints(mvecKeyPoint, mvecKeyPointUndist, _cammatrix, _distortion);
+
+    for (auto kpt : mvecKeyPoint) {
+        Point2f pt = kpt.pt;
+        circle(mImgOrb, pt, 5, Scalar(0,255,0), 1);
+    }
+
+//    imshow("orb", mImgOrb);
+//    waitKey(10);
 }
 
-void KeyFrameOrb::ComputeBoW(ORBVocabulary* _pVoc) {
+void KeyFrameOrb::UndistortKeyPoints(const vector<KeyPoint>& _vKeyPt, vector<KeyPoint>& _vKeyPtUndist, const Mat& _cammatrix, const Mat& _distortion)
+{
+    _vKeyPtUndist.clear();
+
+    if(_distortion.at<float>(0)==0.0)
+    {
+        _vKeyPtUndist = _vKeyPt;
+        return;
+    }
+
+    // Fill matrix with points
+    cv::Mat mat(_vKeyPt.size(),2,CV_32F);
+    for(unsigned int i=0; i<_vKeyPt.size(); i++)
+    {
+        mat.at<float>(i,0)=_vKeyPt[i].pt.x;
+        mat.at<float>(i,1)=_vKeyPt[i].pt.y;
+    }
+
+    // Undistort points
+    mat=mat.reshape(2);
+    cv::undistortPoints(mat,mat,_cammatrix,_distortion,cv::Mat(),_cammatrix);
+    mat=mat.reshape(1);
+
+    // Fill undistorted keypoint vector
+    _vKeyPtUndist.resize(_vKeyPt.size());
+    for(unsigned int i=0; i<_vKeyPt.size(); i++)
+    {
+        cv::KeyPoint kp = _vKeyPt[i];
+        kp.pt.x=mat.at<float>(i,0);
+        kp.pt.y=mat.at<float>(i,1);
+        _vKeyPtUndist[i]=kp;
+    }
+}
+
+
+void KeyFrameOrb::ComputeBoW(ORBVocabulary& _OrbVoc) {
     if(mBowVec.empty() || mFeatVec.empty()) {
         vector<cv::Mat> vCurrentDesc = toDescriptorVector(mDescriptor);
         // Feature vector associate features with nodes in the 4th level (from leaves up)
         // We assume the vocabulary tree has 6 levels, change the 4 otherwise
-        _pVoc->transform(vCurrentDesc,mBowVec,mFeatVec,4);
+        _OrbVoc.transform(vCurrentDesc, mBowVec, mFeatVec, 4);
     }
     mbBowVecExist = true;
+}
+
+KeyFrameOrb::KeyFrameOrb(const Frame &_f):
+    KeyFrame(_f){
+
+}
+
+KeyFrameOrb::KeyFrameOrb(const KeyFrame &_kf):
+    KeyFrame(_kf){
+
 }
 
 

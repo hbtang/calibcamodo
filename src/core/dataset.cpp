@@ -24,17 +24,17 @@ Dataset::Dataset() {
     mThreshOdoRot   = Config::DATASET_THRESH_KF_ODOROT;
 
     // load odometry error configure
-    mOdoLinErrR     = Config::CALIB_ODOLIN_ERRR;
-    mOdoLinErrMin   = Config::CALIB_ODOLIN_ERRMIN;
-    mOdoRotErrR     = Config::CALIB_ODOLIN_ERRR;
-    mOdoRotErrRLin  = Config::CALIB_ODOROT_ERRRLIN;
-    mOdoRotErrMin   = Config::CALIB_ODOROT_ERRMIN;
+//    mOdoLinErrR     = Config::CALIB_ODOLIN_ERRR;
+//    mOdoLinErrMin   = Config::CALIB_ODOLIN_ERRMIN;
+//    mOdoRotErrR     = Config::CALIB_ODOLIN_ERRR;
+//    mOdoRotErrRLin  = Config::CALIB_ODOROT_ERRRLIN;
+//    mOdoRotErrMin   = Config::CALIB_ODOROT_ERRMIN;
 
     // load mark error configure
-    mAmkZErrRZ      = Config::CALIB_AMKZ_ERRRZ;
-    mAmkZErrMin     = Config::CALIB_AMKZ_ERRMIN;
-    mAmkXYErrRZ     = Config::CALIB_AMKXY_ERRRZ;
-    mAmkXYErrMin    = Config::CALIB_AMKXY_ERRMIN;
+//    mAmkZErrRZ      = Config::CALIB_AMKZ_ERRRZ;
+//    mAmkZErrMin     = Config::CALIB_AMKZ_ERRMIN;
+//    mAmkXYErrRZ     = Config::CALIB_AMKXY_ERRRZ;
+//    mAmkXYErrMin    = Config::CALIB_AMKXY_ERRMIN;
 
 }
 
@@ -119,6 +119,12 @@ PtrMsrSe2Kf2Kf Dataset::GetMsrOdobyKfTail(PtrKeyFrame _pKf) const {
     if(mmapKfTail2MsrOdo.count(_pKf))
         pRet = mmapKfTail2MsrOdo.at(_pKf);
     return pRet;
+}
+
+void Dataset::ClearMsrOdo() {
+    msetMsrOdo.clear();
+    mmapKfHead2MsrOdo.clear();
+    mmapKfTail2MsrOdo.clear();
 }
 
 PtrKeyFrame Dataset::GetKfOdoNext(PtrKeyFrame _pKf) const {
@@ -280,34 +286,34 @@ void Dataset::LoadImage(int _id, cv::Mat& _img) {
     _img = imread(strImgPath);
 }
 
-void Dataset::CreateMsrOdos() {
-    msetMsrOdo.clear();
-    mmapKfHead2MsrOdo.clear();
-    mmapKfTail2MsrOdo.clear();
+//void Dataset::CreateMsrOdos() {
+//    msetMsrOdo.clear();
+//    mmapKfHead2MsrOdo.clear();
+//    mmapKfTail2MsrOdo.clear();
 
-    for(auto iter1 = mmapId2pKf.cbegin(), iter2 = iter1++;
-        iter1 != mmapId2pKf.cend();
-        ++iter1, ++iter2) {
+//    for(auto iter1 = mmapId2pKf.cbegin(), iter2 = iter1++;
+//        iter1 != mmapId2pKf.cend();
+//        ++iter1, ++iter2) {
 
-        PtrKeyFrame pKfHead = (*iter1).second;
-        PtrKeyFrame pKfTail = (*iter2).second;
-        Se2 dodo = pKfTail->GetOdo() - pKfHead->GetOdo();
-        Mat info = Mat::eye(3,3,CV_32FC1);
+//        PtrKeyFrame pKfHead = (*iter1).second;
+//        PtrKeyFrame pKfTail = (*iter2).second;
+//        Se2 dodo = pKfTail->GetOdo() - pKfHead->GetOdo();
+//        Mat info = Mat::eye(3,3,CV_32FC1);
 
-        double dist = dodo.dist();
-        double stdlin = max(dist*mOdoLinErrR, mOdoLinErrMin);
-        double theta = dodo.theta;
-        double stdrot = max(max(abs(theta)*mOdoRotErrR, mOdoRotErrMin), dist*mOdoRotErrRLin);
+//        double dist = dodo.dist();
+//        double stdlin = max(dist*mOdoLinErrR, mOdoLinErrMin);
+//        double theta = dodo.theta;
+//        double stdrot = max(max(abs(theta)*mOdoRotErrR, mOdoRotErrMin), dist*mOdoRotErrRLin);
 
-        info.at<float>(0,0) = 1/stdlin/stdlin;
-        info.at<float>(1,1) = 1/stdlin/stdlin;
-        info.at<float>(2,2) = 1/stdrot/stdrot;
+//        info.at<float>(0,0) = 1/stdlin/stdlin;
+//        info.at<float>(1,1) = 1/stdlin/stdlin;
+//        info.at<float>(2,2) = 1/stdrot/stdrot;
 
-        PtrMsrSe2Kf2Kf pMeasureOdo =
-                make_shared<MeasureSe2Kf2Kf>(dodo, info, pKfHead, pKfTail);
-        InsertMsrOdo(pMeasureOdo);
-    }
-}
+//        PtrMsrSe2Kf2Kf pMeasureOdo =
+//                make_shared<MeasureSe2Kf2Kf>(dodo, info, pKfHead, pKfTail);
+//        InsertMsrOdo(pMeasureOdo);
+//    }
+//}
 
 PtrMsrPt3Kf2Mk Dataset::GetMsrMkbyKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const {
     auto iter_lowerbound = mmapKf2MsrMk.lower_bound(_pKf);
@@ -320,71 +326,71 @@ PtrMsrPt3Kf2Mk Dataset::GetMsrMkbyKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const {
     return nullptr;
 }
 
-void Dataset::InitKf(Se3 _se3bc) {
-    for(auto ptr : msetpKf) {
-        PtrKeyFrame pKf = ptr;
+//void Dataset::InitKf(Se3 _se3bc) {
+//    for(auto ptr : msetpKf) {
+//        PtrKeyFrame pKf = ptr;
 
-        Se2 se2odo = pKf->GetOdo();
-        Se2 se2wb = se2odo;
-        Se3 se3wb = Se3(se2wb);
-        Se3 se3wc = se3wb+_se3bc;
+//        Se2 se2odo = pKf->GetOdo();
+//        Se2 se2wb = se2odo;
+//        Se3 se3wb = Se3(se2wb);
+//        Se3 se3wc = se3wb+_se3bc;
 
-        //        cerr << "se2odo:" << se2odo << endl;
-        //        cerr << "se3wb:" << se3wb << endl;
-        //        cerr << "se3wc:" << se3wc << endl;
+//        //        cerr << "se2odo:" << se2odo << endl;
+//        //        cerr << "se3wb:" << se3wb << endl;
+//        //        cerr << "se3wc:" << se3wc << endl;
 
-        pKf->SetPoseBase(se2odo);
-        pKf->SetPoseCamera(se3wc);
+//        pKf->SetPoseBase(se2odo);
+//        pKf->SetPoseCamera(se3wc);
 
-        //        Se3 se3wc_b = pKf->GetPoseCamera();
-        //        cerr << "se3wc:" << se3wc_b << endl;
-        //        cerr << endl;
-    }
-}
+//        //        Se3 se3wc_b = pKf->GetPoseCamera();
+//        //        cerr << "se3wc:" << se3wc_b << endl;
+//        //        cerr << endl;
+//    }
+//}
 
-void Dataset::InitMk() {
-    for(auto ptr : msetpMk) {
-        PtrMark pMk = ptr;
-        set<PtrMsrPt3Kf2Mk> setpMsr = GetMsrMkbyMk(pMk);
-        if(!setpMsr.empty()) {
-            PtrKeyFrame pKf = (*setpMsr.cbegin())->pKf;
-            Se3 se3wc = pKf->GetPoseCamera();
-            Se3 se3cm;
-            se3cm.tvec = (*setpMsr.cbegin())->pt3.tvec();
-            Se3 se3wm = se3wc+se3cm;
-            pMk->SetPose(se3wm);
-
-            // DEBUG
-//            cerr << "idKf" << pKf->GetId() << endl;
-//            cerr << "idMk" << pMk->GetId() << endl;
-//            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
-//            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
-//            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
-//            cerr << endl;
-        }
-
-        //DEBUG
-//        for(auto pMsr : setpMsr) {
-//            PtrKeyFrame pKf = pMsr->pKf;
-//            if (pMsr->pMk != pMk) {
-//                cerr << "Error!!!" << endl;
-//            }
-
+//void Dataset::InitMk() {
+//    for(auto ptr : msetpMk) {
+//        PtrMark pMk = ptr;
+//        set<PtrMsrPt3Kf2Mk> setpMsr = GetMsrMkbyMk(pMk);
+//        if(!setpMsr.empty()) {
+//            PtrKeyFrame pKf = (*setpMsr.cbegin())->pKf;
 //            Se3 se3wc = pKf->GetPoseCamera();
 //            Se3 se3cm;
-//            se3cm.tvec = pMsr->pt3.tvec();
+//            se3cm.tvec = (*setpMsr.cbegin())->pt3.tvec();
 //            Se3 se3wm = se3wc+se3cm;
+//            pMk->SetPose(se3wm);
 
 //            // DEBUG
-//            cerr << "idKf" << pKf->GetId() << endl;
-//            cerr << "idMk" << pMk->GetId() << endl;
-//            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
-//            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
-//            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
-//            cerr << endl;
+//            //            cerr << "idKf" << pKf->GetId() << endl;
+//            //            cerr << "idMk" << pMk->GetId() << endl;
+//            //            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
+//            //            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
+//            //            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
+//            //            cerr << endl;
 //        }
-    }
-}
+
+//        //DEBUG
+//        //        for(auto pMsr : setpMsr) {
+//        //            PtrKeyFrame pKf = pMsr->pKf;
+//        //            if (pMsr->pMk != pMk) {
+//        //                cerr << "Error!!!" << endl;
+//        //            }
+
+//        //            Se3 se3wc = pKf->GetPoseCamera();
+//        //            Se3 se3cm;
+//        //            se3cm.tvec = pMsr->pt3.tvec();
+//        //            Se3 se3wm = se3wc+se3cm;
+
+//        //            // DEBUG
+//        //            cerr << "idKf" << pKf->GetId() << endl;
+//        //            cerr << "idMk" << pMk->GetId() << endl;
+//        //            cerr << "se3wc" << se3wc.rvec.t() << se3wc.tvec.t() << endl;
+//        //            cerr << "se3cm" << se3cm.rvec.t() << se3cm.tvec.t() << endl;
+//        //            cerr << "se3wm" << se3wm.rvec.t() << se3wm.tvec.t() << endl;
+//        //            cerr << endl;
+//        //        }
+//    }
+//}
 
 //! Class DatasetAruco
 
@@ -393,11 +399,11 @@ DatasetAruco::DatasetAruco():
 
     mMarkerSize = Config::MARK_SIZE;
     // load camera intrinsics
-    mCamParam.readFromXMLFile(mstrFilePathCam);
-    //    mCamParam.CameraMatrix = Config::CAMERA_MATRIX.clone();
-    //    mCamParam.Distorsion = Config::DISTORTION_COEFFICIENTS.clone();
-    //    mCamParam.CamSize.width = Config::IMAGE_WIDTH;
-    //    mCamParam.CamSize.height = Config::IMAGE_HEIGHT;
+    //    mCamParam.readFromXMLFile(mstrFilePathCam);
+    mCamParam.CameraMatrix = Config::CAMERA_MATRIX.clone();
+    mCamParam.Distorsion = Config::DISTORTION_COEFFICIENTS.clone();
+    mCamParam.CamSize.width = Config::IMAGE_WIDTH;
+    mCamParam.CamSize.height = Config::IMAGE_HEIGHT;
 
     // set aruco mark detector
     int ThePyrDownLevel = 0;
@@ -462,35 +468,93 @@ void DatasetAruco::CreateKeyFrames() {
     }
 }
 
-void DatasetAruco::CreateMarks() {
-    // Create aruco marks and mark measurements
-    for (auto ptr : msetpKfAruco) {
-        PtrKeyFrameAruco pKfAruco = ptr;
-        const std::vector<aruco::Marker>& vecAruco = pKfAruco->GetMsrAruco();
-        for (auto measure_aruco : vecAruco) {
-            int id = measure_aruco.id;
-            Mat tvec = measure_aruco.Tvec;
+//void DatasetAruco::CreateMarks() {
+//    // Create aruco marks and mark measurements
+//    for (auto ptr : msetpKfAruco) {
+//        PtrKeyFrameAruco pKfAruco = ptr;
+//        const std::vector<aruco::Marker>& vecAruco = pKfAruco->GetMsrAruco();
+//        for (auto measure_aruco : vecAruco) {
+//            int id = measure_aruco.id;
+//            Mat tvec = measure_aruco.Tvec;
 
-            double z = abs(tvec.at<float>(2));
-            double stdxy = max(z*mAmkXYErrRZ, mAmkXYErrMin);
-            double stdz = max(z*mAmkZErrRZ, mAmkZErrMin);
+//            double z = abs(tvec.at<float>(2));
+//            double stdxy = max(z*mAmkXYErrRZ, mAmkXYErrMin);
+//            double stdz = max(z*mAmkZErrRZ, mAmkZErrMin);
 
-            Mat info = Mat::eye(3,3,CV_32FC1);
-            info.at<float>(0,0) = 1/stdxy/stdxy;
-            info.at<float>(1,1) = 1/stdxy/stdxy;
-            info.at<float>(2,2) = 1/stdz/stdz;
+//            Mat info = Mat::eye(3,3,CV_32FC1);
+//            info.at<float>(0,0) = 1/stdxy/stdxy;
+//            info.at<float>(1,1) = 1/stdxy/stdxy;
+//            info.at<float>(2,2) = 1/stdz/stdz;
 
-            // add new aruco mark into dataset
-            PtrMarkAruco pMkAruco = make_shared<MarkAruco>(id, id, mMarkerSize);
-            if (!InsertMkAruco(pMkAruco))
-                pMkAruco = GetMkAruco(id);
+//            // add new aruco mark into dataset
+//            PtrMarkAruco pMkAruco = make_shared<MarkAruco>(id, id, mMarkerSize);
+//            if (!InsertMkAruco(pMkAruco))
+//                pMkAruco = GetMkAruco(id);
 
-            // add new measurement into dataset
-            PtrMsrPt3Kf2Mk pMsrMk = make_shared<MeasurePt3Kf2Mk>(tvec, info, pKfAruco, pMkAruco);
-            InsertMsrMk(pMsrMk);
-        }
+//            // add new measurement into dataset
+//            PtrMsrPt3Kf2Mk pMsrMk = make_shared<MeasurePt3Kf2Mk>(tvec, info, pKfAruco, pMkAruco);
+//            InsertMsrMk(pMsrMk);
+//        }
+//    }
+//}
+
+//! DatasetOrb
+
+DatasetOrb::DatasetOrb(): Dataset() {
+
+    cerr << "DatasetOrb: init ORB extractor ..." << endl;
+    mOrbExtractor = ORBextractor(400, 1.2, 5);
+    if(!mOrbVocalubary.loadFromTextFile(Config::STR_FILEPATH_ORBVOC)) {
+        cerr << "Wrong path to vocabulary. Path must be absolut or relative to ORB_SLAM package directory." << endl;
+        cerr << "Falied to open at: " << Config::STR_FILEPATH_ORBVOC << endl;
+    }
+
+    cerr << "DatasetOrb: load ORB vocalubary ..." << endl;
+    if(!mOrbVocalubary.loadFromTextFile(Config::STR_FILEPATH_ORBVOC)) {
+        cerr << "Wrong path to vocabulary. Path must be absolut or relative to ORB_SLAM package directory." << endl;
+        cerr << "Falied to open at: " << Config::STR_FILEPATH_ORBVOC << endl;
+    }
+
+    mCamMatrix = Config::CAMERA_MATRIX.clone();
+    mDistCoeff = Config::DISTORTION_COEFFICIENTS.clone();
+}
+
+void DatasetOrb::CreateKeyFrames() {
+    set<PtrFrame> setpFrameSelected = SelectFrame();
+    for(auto ptr : setpFrameSelected) {
+        PtrFrame pframe = ptr;
+        int id = pframe->GetId();
+        Mat img;
+        LoadImage(id, img);
+        pframe->SetImg(img);
+        PtrKeyFrameOrb pKfOrb = make_shared<KeyFrameOrb>(*pframe);
+        pKfOrb->ComputeOrb(mOrbExtractor, mCamMatrix, mDistCoeff);
+        pKfOrb->ComputeBoW(mOrbVocalubary);
+        InsertKfOrb(pKfOrb);
     }
 }
+
+bool DatasetOrb::InsertKfOrb(PtrKeyFrameOrb _pKfOrb) {
+    if(!InsertKf(_pKfOrb))
+        return false;
+    if (msetpKfOrb.count(_pKfOrb))
+        return false;
+    int id = _pKfOrb->GetId();
+    if (mmapId2pKfOrb.count(id))
+        return false;
+    msetpKfOrb.insert(_pKfOrb);
+    mmapId2pKfOrb[id] = _pKfOrb;
+    return true;
+}
+
+PtrKeyFrameOrb DatasetOrb::GetKfOrb(int _id) const {
+    if(mmapId2pKfOrb.count(_id))
+        return mmapId2pKfOrb.at(_id);
+    else
+        return nullptr;
+}
+
+
 
 
 

@@ -16,6 +16,7 @@ std::string Config::STR_FOlDERPATH_IMG;
 std::string Config::STR_FILEPATH_ODO;
 std::string Config::STR_FILEPATH_CAM;
 std::string Config::STR_FILEPATH_CALIB;
+std::string Config::STR_FILEPATH_ORBVOC;
 
 //!Camera Intrinsics
 int Config::IMAGE_WIDTH;
@@ -89,6 +90,8 @@ void Config::InitConfig(std::string _strfolderpathmain) {
     file["CALIB_AMKXY_ERRMIN"] >> CALIB_AMKXY_ERRMIN;
 
     file["MAPPUB_SCALE_RATIO"] >> MAPPUB_SCALE_RATIO;
+
+    file["STR_FILEPATH_ORBVOC"] >> STR_FILEPATH_ORBVOC;
 }
 
 }

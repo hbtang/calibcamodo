@@ -18,6 +18,7 @@ public:
     static std::string STR_FILEPATH_ODO;
     static std::string STR_FILEPATH_CAM;
     static std::string STR_FILEPATH_CALIB;
+    static std::string STR_FILEPATH_ORBVOC;
 
     //!Camera Intrinsics
     static int IMAGE_WIDTH;
@@ -47,6 +48,9 @@ public:
     static double CALIB_AMKZ_ERRMIN;
     static double CALIB_AMKXY_ERRRZ;
     static double CALIB_AMKXY_ERRMIN;
+
+
+
 
     //! Output using ROS
     static double MAPPUB_SCALE_RATIO;

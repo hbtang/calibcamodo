@@ -80,10 +80,19 @@ TARGET_LINK_LIBRARIES(calibcamodo
 )
 
 ADD_EXECUTABLE(
-    calibaruco
-    ./src/main.cpp
+    calib_aruco
+    ./src/calib_aruco.cpp
 )
-TARGET_LINK_LIBRARIES(calibaruco
+TARGET_LINK_LIBRARIES(calib_aruco
+    calibcamodo
+    ${LINK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    calib_orb
+    ./src/calib_orb.cpp
+)
+TARGET_LINK_LIBRARIES(calib_orb
     calibcamodo
     ${LINK_LIBS}
 )
