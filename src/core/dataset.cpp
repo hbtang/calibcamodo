@@ -96,6 +96,25 @@ bool Dataset::InsertMk(PtrMark _ptr) {
     return true;
 }
 
+
+PtrMapPoint Dataset::GetMp(int _id) const {
+    PtrMapPoint pRet = nullptr;
+    if(mmapId2pMp.count(_id))
+        pRet = mmapId2pMp.at(_id);
+    return pRet;
+}
+
+bool Dataset::InsertMp(PtrMapPoint _ptr) {
+    if (msetpMp.count(_ptr))
+        return false;
+    int id = _ptr->GetId();
+    if (mmapId2pMp.count(id))
+        return false;
+    msetpMp.insert(_ptr);
+    mmapId2pMp[id] = _ptr;
+    return true;
+}
+
 bool Dataset::InsertMsrOdo(PtrMsrSe2Kf2Kf _ptr) {
     assert(msetMsrOdo.count(_ptr) == 0);
     assert(mmapKfHead2MsrOdo.count(_ptr->pKfHead) == 0);
@@ -554,6 +573,26 @@ PtrKeyFrameOrb DatasetOrb::GetKfOrb(int _id) const {
         return nullptr;
 }
 
+
+bool DatasetOrb::InsertMpOrb(PtrMapPointOrb _pMpOrb) {
+    if(!InsertMp(_pMpOrb))
+        return false;
+    if (msetpMpOrb.count(_pMpOrb))
+        return false;
+    int id = _pMpOrb->GetId();
+    if (mmapId2pMpOrb.count(id))
+        return false;
+    msetpMpOrb.insert(_pMpOrb);
+    mmapId2pMpOrb[id] = _pMpOrb;
+    return true;
+}
+
+PtrMapPointOrb DatasetOrb::GetMpOrb(int _id) const {
+    if(mmapId2pMpOrb.count(_id))
+        return mmapId2pMpOrb.at(_id);
+    else
+        return nullptr;
+}
 
 
 

@@ -51,6 +51,12 @@ public:
     PtrMark GetMk(int _id) const;
     bool InsertMk(PtrMark _ptr);
 
+    // Function on MapPoint
+    const std::set<PtrMapPoint> & GetMpSet() const { return msetpMp; }
+    const std::map<int, PtrMapPoint>& GetMpMap() const { return mmapId2pMp; }
+    PtrMapPoint GetMp(int _id) const;
+    bool InsertMp(PtrMapPoint _ptr);
+
 
     // Function on Odometry Measure
     bool InsertMsrOdo(PtrMsrSe2Kf2Kf _ptr);
@@ -89,6 +95,9 @@ protected:
     // Mark
     std::set<PtrMark> msetpMk;
     std::map<int, PtrMark> mmapId2pMk;
+    // MapPoint
+    std::set<PtrMapPoint> msetpMp;
+    std::map<int, PtrMapPoint> mmapId2pMp;
 
 
     //! Measures
@@ -191,33 +200,44 @@ public:
 //    void GlobalBA() {}
 
 
-    //! mappoints
+    // mappoints
     std::set<PtrMapPoint> msetpMp;
     std::map<int, PtrMapPoint> mmapId2pMp;
 
-    //! measurements info
-//    std::set<PtrMsrPt2Kf2Mp> msetMsrMp;
-//    std::multimap<PtrKeyFrame, PtrMsrPt2Kf2Mp> mmapKf2MsrMp;
-//    std::multimap<PtrMapPoint, PtrMsrPt2Kf2Mp> mmapMp2MsrMp;
+    // measurements info
+    std::set<PtrMsrUVKf2Mp> msetMsrMp;
+    std::multimap<PtrKeyFrame, PtrMsrUVKf2Mp> mmapKf2MsrMp;
+    std::multimap<PtrMapPoint, PtrMsrUVKf2Mp> mmapMp2MsrMp;
 
-    // TODO end.
-
-
+    // keyframe functions
+    const std::set<PtrKeyFrameOrb> GetKfOrbSet() { return msetpKfOrb; }
+    const std::map<int, PtrKeyFrameOrb> GetKfOrbMap() { return mmapId2pKfOrb; }
     bool InsertKfOrb(PtrKeyFrameOrb _pKfOrb);
     PtrKeyFrameOrb GetKfOrb(int _id) const;
 
+    // mappoint functions
+    const std::set<PtrMapPointOrb> GetMpOrbSet() { return msetpMpOrb; }
+    const std::map<int, PtrMapPointOrb> GetMpOrbMap() { return mmapId2pMpOrb; }
+    bool InsertMpOrb(PtrMapPointOrb _pMpOrb);
+    PtrMapPointOrb GetMpOrb(int _id) const;
 
-protected:
+
+protected:    
+    // orb algorithms
     ORBextractor mOrbExtractor;
     ORBVocabulary mOrbVocalubary;
 
+    // camera intrinsic parameters
     cv::Mat mCamMatrix;
     cv::Mat mDistCoeff;
 
+    // storage of orb-keyframes
     std::set<PtrKeyFrameOrb> msetpKfOrb;
     std::map<int, PtrKeyFrameOrb> mmapId2pKfOrb;
 
-
+    // storage of orb-mappoints
+    std::set<PtrMapPointOrb> msetpMpOrb;
+    std::map<int, PtrMapPointOrb> mmapId2pMpOrb;
 
 
 };
