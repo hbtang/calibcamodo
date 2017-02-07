@@ -5,11 +5,11 @@
 #include "type.h"
 #include "frame.h"
 #include "mark.h"
+#include "point.h"
 
 namespace calibcamodo {
 
 class Measure {
-
 public:
     Measure() = default;
     ~Measure() = default;
@@ -110,8 +110,39 @@ public:
     PtrMark pMk;
 };
 
+//! image feature
+
+class MeasureUV : public Measure {
+public:
+    MeasureUV(const cv::Mat &_measure, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec);
+    MeasureUV(cv::Point2f _pt, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec);
+
+    cv::Point2f pt;
+    cv::Point2f ptUndist;
+    cv::Mat camMat;
+    cv::Mat distVec;
+
+private:
+    void UndistortPoint();
+};
+
+class MeasureUVKf2Mp : public MeasureUV {
+public:
+    MeasureUVKf2Mp(const cv::Mat &_measure, const cv::Mat &_info,
+                   const cv::Mat& _camMat, const cv::Mat& _distVec,
+                   PtrKeyFrame _pKf, PtrMapPoint _pMp);
+    MeasureUVKf2Mp(cv::Point2f _pt, const cv::Mat &_info,
+                   const cv::Mat& _camMat, const cv::Mat& _distVec,
+                   PtrKeyFrame _pKf, PtrMapPoint _pMp);
+
+    PtrKeyFrame pKf;
+    PtrMapPoint pMp;
+};
+
 typedef std::shared_ptr<MeasurePt3Kf2Mk> PtrMsrPt3Kf2Mk;
 typedef std::shared_ptr<MeasureSe2Kf2Kf> PtrMsrSe2Kf2Kf;
+typedef std::shared_ptr<MeasureUVKf2Mp> PtrMsrUVKf2Mp;
+
 }
 
 #endif

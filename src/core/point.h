@@ -33,6 +33,9 @@ protected:
 
 };
 
+typedef std::shared_ptr<MapPoint> PtrMapPoint;
+typedef std::shared_ptr<MapPointOrb> PtrMapPointOrb;
+
 }
 
 #endif // POINT_H

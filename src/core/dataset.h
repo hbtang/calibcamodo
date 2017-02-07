@@ -108,6 +108,7 @@ protected:
     string mstrFoldPathImg;
     string mstrFilePathOdo;
     string mstrFilePathCam;
+
     int mNumFrame;
 
     double mThreshOdoLin;
@@ -117,10 +118,10 @@ protected:
 //    double mOdoRotErrR;
 //    double mOdoRotErrRLin;
 //    double mOdoRotErrMin;
-    double mAmkZErrRZ;
-    double mAmkZErrMin;
-    double mAmkXYErrRZ;
-    double mAmkXYErrMin;
+//    double mAmkZErrRZ;
+//    double mAmkZErrMin;
+//    double mAmkXYErrRZ;
+//    double mAmkXYErrMin;
 };
 
 class DatasetAruco : public Dataset {
@@ -190,18 +191,16 @@ public:
 //    void GlobalBA() {}
 
 
-//    //! mappoints
-//    std::set<PtrMapPoint> msetpMp;
-//    std::map<int, PtrMapPoint> mmapId2pMp;
+    //! mappoints
+    std::set<PtrMapPoint> msetpMp;
+    std::map<int, PtrMapPoint> mmapId2pMp;
 
-//    //! measurements info
+    //! measurements info
 //    std::set<PtrMsrPt2Kf2Mp> msetMsrMp;
 //    std::multimap<PtrKeyFrame, PtrMsrPt2Kf2Mp> mmapKf2MsrMp;
 //    std::multimap<PtrMapPoint, PtrMsrPt2Kf2Mp> mmapMp2MsrMp;
 
     // TODO end.
-
-
 
 
     bool InsertKfOrb(PtrKeyFrameOrb _pKfOrb);
