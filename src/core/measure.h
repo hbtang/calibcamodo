@@ -114,11 +114,12 @@ public:
 
 class MeasureUV : public Measure {
 public:
-    MeasureUV(const cv::Mat &_measure, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec);
+//    MeasureUV(const cv::Mat &_measure, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec);
     MeasureUV(cv::Point2f _pt, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec);
+    MeasureUV(cv::Point2f _pt, cv::Point2f _ptUn, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec);
 
     cv::Point2f pt;
-    cv::Point2f ptUndist;
+    cv::Point2f ptUn;   // undistorted point
     cv::Mat camMat;
     cv::Mat distVec;
 
@@ -128,10 +129,14 @@ private:
 
 class MeasureUVKf2Mp : public MeasureUV {
 public:
-    MeasureUVKf2Mp(const cv::Mat &_measure, const cv::Mat &_info,
+//    MeasureUVKf2Mp(const cv::Mat &_measure, const cv::Mat &_info,
+//                   const cv::Mat& _camMat, const cv::Mat& _distVec,
+//                   PtrKeyFrame _pKf, PtrMapPoint _pMp);
+    MeasureUVKf2Mp(cv::Point2f _pt, const cv::Mat &_info,
                    const cv::Mat& _camMat, const cv::Mat& _distVec,
                    PtrKeyFrame _pKf, PtrMapPoint _pMp);
-    MeasureUVKf2Mp(cv::Point2f _pt, const cv::Mat &_info,
+
+    MeasureUVKf2Mp(cv::Point2f _pt, cv::Point2f _ptUn, const cv::Mat &_info,
                    const cv::Mat& _camMat, const cv::Mat& _distVec,
                    PtrKeyFrame _pKf, PtrMapPoint _pMp);
 

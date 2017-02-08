@@ -411,6 +411,20 @@ PtrMsrPt3Kf2Mk Dataset::GetMsrMkbyKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const {
 //    }
 //}
 
+bool Dataset::InsertMsrMp(PtrMsrUVKf2Mp _ptr) {
+    assert(msetMsrMp.count(_ptr) == 0);
+    msetMsrMp.insert(_ptr);
+    mmapKf2MsrMp.emplace(_ptr->pKf, _ptr);
+    mmapMp2MsrMp.emplace(_ptr->pMp, _ptr);
+    return true;
+}
+
+
+
+
+
+
+
 //! Class DatasetAruco
 
 DatasetAruco::DatasetAruco():

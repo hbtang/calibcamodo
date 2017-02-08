@@ -3,6 +3,7 @@
 #include "mark.h"
 #include "g2o/g2o_api.h"
 #include "config.h"
+#include "cvmath.h"
 
 namespace calibcamodo {
 
@@ -23,6 +24,8 @@ Solver::Solver(Dataset *_pDataset): mpDataset(_pDataset) {
     mOdoRotErrRLin  = Config::CALIB_ODOROT_ERRRLIN;
     mOdoRotErrMin   = Config::CALIB_ODOROT_ERRMIN;
 
+    // init camera extrinsics
+    SetSe3cb(Se3(Config::RVEC_BC, Config::TVEC_BC));
 }
 
 void Solver::CreateMsrOdos() {
@@ -598,7 +601,68 @@ void SolverOrb::BuildDataset() {
         cerr << "-- number of good matches 2: " << mapOrbMatchesGood2.size();
         cerr << endl;
         // debug end
+
+        CreateMapPointLocal(pKf1, pKf2, mapOrbMatchesGood2);
+
     }
+}
+
+void SolverOrb::CreateMapPointLocal(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+                         const std::map<int, int>& match) {
+    Mat matCamP1 = ComputeCamMatP(pKf1, mpDatasetOrb->mCamMatrix);
+    Mat matCamP2 = ComputeCamMatP(pKf2, mpDatasetOrb->mCamMatrix);
+    std::map<int, int> match_mpcandidate;
+    for(auto pair : match) {
+        int id1 = pair.first;
+        int id2 = pair.second;
+
+        KeyPoint kp1Un = pKf1->mvecKeyPointUndist[id1];
+        KeyPoint kp2Un = pKf2->mvecKeyPointUndist[id2];
+        Point2f pt1Un = kp1Un.pt;
+        Point2f pt2Un = kp2Un.pt;
+
+        KeyPoint kp1 = pKf1->mvecKeyPointUndist[id1];
+        KeyPoint kp2 = pKf2->mvecKeyPointUndist[id2];
+        Point2f pt1 = kp1.pt;
+        Point2f pt2 = kp2.pt;
+
+        // do triangulation
+        Mat x3D;
+        triangulate(pt1Un, pt2Un, matCamP1, matCamP2, x3D);
+        Point3f pt3wp(x3D);
+        Point3f pt3wo1(pKf1->GetPoseCamera().tvec);
+        Point3f pt3wo2(pKf2->GetPoseCamera().tvec);
+
+        // check if parallax good, and create mappoint
+        if (checkParallax(pt3wo1, pt3wo2, pt3wp)) {
+            match_mpcandidate[id1] = id2;
+
+            // insert mappoint
+            PtrMapPointOrb pMp = make_shared<MapPointOrb>(Pt3(pt3wp));
+            mpDatasetOrb->InsertMpOrb(pMp);
+
+            Mat info = (Mat_<float>(2,2) << 1,0,0,1);
+            PtrMsrUVKf2Mp pMsr1 = make_shared<MeasureUVKf2Mp>(pt1, pt1Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf1, pMp);
+            PtrMsrUVKf2Mp pMsr2 = make_shared<MeasureUVKf2Mp>(pt2, pt2Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf1, pMp);
+
+            mpDatasetOrb->InsertMsrMp(pMsr1);
+            mpDatasetOrb->InsertMsrMp(pMsr2);
+        }
+
+
+        // debug
+//        cerr << "matCamP1" << endl << matCamP1 << endl;
+//        cerr << "matCamP2" << endl << matCamP2 << endl;
+//        cerr << "pt1" << endl << pt1 << endl;
+//        cerr << "pt2" << endl << pt2 << endl;
+//        cerr << "pt3wp" << endl << pt3wp << endl;
+//        cerr << endl;
+
+    }
+
+    // debug
+    cerr << " -- number of mappoint candidates: " << match_mpcandidate.size() << endl;
+
 }
 
 void SolverOrb::MatchKeyPointOrb(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match) {
@@ -609,8 +673,8 @@ void SolverOrb::DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<i
 
     Mat imgKf1 = pKf1->GetImg().clone();
     Mat imgKf2 = pKf2->GetImg().clone();
-//    cvtColor(pKf1->GetImg(), imgKf1, CV_GRAY2BGR);
-//    cvtColor(pKf2->GetImg(), imgKf2, CV_GRAY2BGR);
+    //    cvtColor(pKf1->GetImg(), imgKf1, CV_GRAY2BGR);
+    //    cvtColor(pKf2->GetImg(), imgKf2, CV_GRAY2BGR);
 
     Size sizeImg1 = imgKf1.size();
     Size sizeImg2 = imgKf2.size();
@@ -655,7 +719,7 @@ void SolverOrb::DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<i
 
 
 void SolverOrb::RejectOutlierRansac(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
-                    const std::map<int, int>& match_in, std::map<int, int>& match_out) {
+                                    const std::map<int, int>& match_in, std::map<int, int>& match_out) {
 
     // Initialize
     int numMinMatch = 10;
@@ -692,7 +756,7 @@ void SolverOrb::RejectOutlierRansac(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
 }
 
 void SolverOrb::RejectOutlierDist(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
-                    const std::map<int, int>& match_in, std::map<int, int>& match_out) {
+                                  const std::map<int, int>& match_in, std::map<int, int>& match_out) {
     // Initialize
     int numMinMatch = 10;
     if (match_in.size() < numMinMatch) {
@@ -701,7 +765,7 @@ void SolverOrb::RejectOutlierDist(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
     }
 
     // Set max distance in pixel
-    double maxPixelDist = 120;
+    double maxPixelDist = 100;
 
     // Select good matches
     map<int, int> match_good;
@@ -722,5 +786,12 @@ void SolverOrb::RejectOutlierDist(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
     match_out.swap(match_good);
 }
 
+cv::Mat SolverOrb::ComputeCamMatP(PtrKeyFrame pKf, cv::Mat matCam) {
+    Se3 se3wc = pKf->GetPoseCamera();
+    Mat Twc = se3wc.T();
+    Mat Tcw = Twc.inv();
+    Mat P = matCam*Tcw.rowRange(0,3);
+    return P;
+}
 
 }

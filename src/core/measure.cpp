@@ -146,7 +146,7 @@ MeasurePt3Kf2Mk::MeasurePt3Kf2Mk(Pt3 _pt3, const cv::Mat &_info, PtrKeyFrame _pK
 
 void MeasureUV::UndistortPoint() {
     if(distVec.at<float>(0)==0.0) {
-        ptUndist = pt;
+        ptUn = pt;
         return;
     }
 
@@ -155,38 +155,53 @@ void MeasureUV::UndistortPoint() {
     cv::undistortPoints(mat, mat, camMat, distVec, cv::Mat(), camMat);
     mat = mat.reshape(1);
 
-    ptUndist.x = mat.at<float>(0);
-    ptUndist.y = mat.at<float>(1);
+    ptUn.x = mat.at<float>(0);
+    ptUn.y = mat.at<float>(1);
 }
 
-MeasureUV::MeasureUV(const cv::Mat &_measure, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec):
-    Measure(_measure, _info) {
-    camMat = _camMat.clone();
-    distVec = _distVec.clone();
-    pt.x = _measure.at<float>(0);
-    pt.y = _measure.at<float>(1);
-    UndistortPoint();
-}
+//MeasureUV::MeasureUV(const cv::Mat &_measure, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec):
+//    Measure(_measure, _info) {
+//    camMat = _camMat.clone();
+//    distVec = _distVec.clone();
+//    pt.x = _measure.at<float>(0);
+//    pt.y = _measure.at<float>(1);
+//    UndistortPoint();
+//}
 
-MeasureUV::MeasureUV(cv::Point2f _pt, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec) {
-    measure = (Mat_<float>(2,1) << _pt.x, _pt.y);
+MeasureUV::MeasureUV(cv::Point2f _pt, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec) {    
     info = _info.clone();
     pt = _pt;
     camMat = _camMat.clone();
     distVec = _distVec.clone();
-    UndistortPoint();
+    UndistortPoint();    
+    measure = (Mat_<float>(2,1) << ptUn.x, ptUn.y);
+}
+
+MeasureUV::MeasureUV(cv::Point2f _pt, cv::Point2f _ptUn, const cv::Mat &_info, const cv::Mat& _camMat, const cv::Mat& _distVec) {
+    measure = (Mat_<float>(2,1) << _ptUn.x, _ptUn.y);
+    info = _info.clone();
+
+    pt = _pt;
+    ptUn = _ptUn;
+    camMat = _camMat.clone();
+    distVec = _distVec.clone();
 }
 
 //! Class MeasureUVKf2Mp
 
-MeasureUVKf2Mp::MeasureUVKf2Mp(const cv::Mat &_measure, const cv::Mat &_info,
-                               const cv::Mat& _camMat, const cv::Mat& _distVec,
-                               PtrKeyFrame _pKf, PtrMapPoint _pMp):
-    MeasureUV(_measure, _info, _camMat, _distVec), pKf(_pKf), pMp(_pMp) {}
+//MeasureUVKf2Mp::MeasureUVKf2Mp(const cv::Mat &_measure, const cv::Mat &_info,
+//                               const cv::Mat& _camMat, const cv::Mat& _distVec,
+//                               PtrKeyFrame _pKf, PtrMapPoint _pMp):
+//    MeasureUV(_measure, _info, _camMat, _distVec), pKf(_pKf), pMp(_pMp) {}
 
 MeasureUVKf2Mp::MeasureUVKf2Mp(cv::Point2f _pt, const cv::Mat &_info,
                                const cv::Mat& _camMat, const cv::Mat& _distVec,
                                PtrKeyFrame _pKf, PtrMapPoint _pMp):
     MeasureUV(_pt, _info, _camMat, _distVec), pKf(_pKf), pMp(_pMp) {}
+
+MeasureUVKf2Mp::MeasureUVKf2Mp(cv::Point2f _pt, cv::Point2f _ptUn, const cv::Mat &_info,
+               const cv::Mat& _camMat, const cv::Mat& _distVec,
+               PtrKeyFrame _pKf, PtrMapPoint _pMp):
+    MeasureUV(_pt, _ptUn, _info, _camMat, _distVec), pKf(_pKf), pMp(_pMp) {}
 
 }

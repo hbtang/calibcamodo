@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
 
     //! Solver
     SolverOrb solverOrb(&datasetOrb);
+    solverOrb.RefreshKfsPose();
     solverOrb.BuildDataset();
 //    SolverInitmk solverInitmk(&datasetOrb);
 //    cerr << "DatasetOrb: creating measurement odometry ..." << endl;

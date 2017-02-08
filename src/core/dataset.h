@@ -34,34 +34,34 @@ public:
 //        InitMk();
 //    }
 
-    // Function on Frame
+    // Functions on Frame
     inline const std::set<PtrFrame>& GetFrameSet() const { return msetpFrame; }
     inline const std::map<int, PtrFrame>& GetFrameMap() const { return mmapId2pFrame; }
     PtrFrame GetFrame(int _id) const;
     bool InsertFrame(PtrFrame _ptr);
 
 
-    // Function on KeyFrame
+    // Functions on KeyFrame
     inline const std::set<PtrKeyFrame> & GetKfSet() const { return msetpKf; }
     inline const std::map<int, PtrKeyFrame>& GetKfMap() const { return mmapId2pKf; }
     PtrKeyFrame GetKf(int _id) const;
     bool InsertKf(PtrKeyFrame _ptr);
 
 
-    // Function on Mark
+    // Functions on Mark
     inline const std::set<PtrMark> & GetMkSet() const { return msetpMk; }
     inline const std::map<int, PtrMark>& GetMkMap() const { return mmapId2pMk; }
     PtrMark GetMk(int _id) const;
     bool InsertMk(PtrMark _ptr);
 
-    // Function on MapPoint
+    // Functions on MapPoint
     const std::set<PtrMapPoint> & GetMpSet() const { return msetpMp; }
     const std::map<int, PtrMapPoint>& GetMpMap() const { return mmapId2pMp; }
     PtrMapPoint GetMp(int _id) const;
     bool InsertMp(PtrMapPoint _ptr);
 
 
-    // Function on Odometry Measure
+    // Functions on Odometry Measure
     bool InsertMsrOdo(PtrMsrSe2Kf2Kf _ptr);
     void ClearMsrOdo();
     inline const std::set<PtrMsrSe2Kf2Kf> & GetMsrOdoSet() const { return msetMsrOdo; }
@@ -71,7 +71,7 @@ public:
     PtrKeyFrame GetKfOdoLast(PtrKeyFrame _pKf) const;
 
 
-    // Function on Pt3 Mark Measure
+    // Functions on Pt3 Mark Measure
     bool InsertMsrMk(PtrMsrPt3Kf2Mk ptr);
     inline const std::set<PtrMsrPt3Kf2Mk> & GetMsrMkSet() const { return msetMsrMk; }    
     std::set<PtrMsrPt3Kf2Mk> GetMsrMkbyKf(PtrKeyFrame _pKf) const;
@@ -79,6 +79,10 @@ public:
     PtrMsrPt3Kf2Mk GetMsrMkbyKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const;
     std::set<PtrMark> GetMkbyKf(PtrKeyFrame _pKf) const;
     std::set<PtrKeyFrame> GetKfbyMk(PtrMark _pMk) const;
+
+    // Todo: Functions on UV2 MapPoint Measure
+    bool InsertMsrMp(PtrMsrUVKf2Mp ptr);
+    bool RemoveMsrMp(PtrMsrUVKf2Mp ptr);
 
 
     //! IO Functions
@@ -112,6 +116,10 @@ protected:
     std::set<PtrMsrPt3Kf2Mk> msetMsrMk;
     std::multimap<PtrKeyFrame ,PtrMsrPt3Kf2Mk> mmapKf2MsrMk;
     std::multimap<PtrMark, PtrMsrPt3Kf2Mk> mmapMk2MsrMk;
+    // MapPoint
+    std::set<PtrMsrUVKf2Mp> msetMsrMp;
+    std::multimap<PtrKeyFrame, PtrMsrUVKf2Mp> mmapKf2MsrMp;
+    std::multimap<PtrMapPoint, PtrMsrUVKf2Mp> mmapMp2MsrMp;
 
 
     //! Configures
@@ -174,38 +182,13 @@ protected:
 };
 
 class DatasetOrb : public Dataset {
+
+    friend class SolverOrb;
+
 public:
     DatasetOrb();
 
     void CreateKeyFrames();
-
-    // TODO...
-
-//    //! create mappoints measurements in order of keyframes
-//    //! but does not do triangulation or BA
-//    //! output: msetMsrMp, mmapKf2MsrMp, mmapMp2MsrMp, ...
-//    //!
-//    void CreatePoints() {
-//        // 1. do match in odometry sequence, reject outliers, create mappoints
-
-//        // 2. do loop closure detection, bow match, reject outliers, create or merge mappoints
-
-//        // 3. do triangulation based on keyframe location
-
-//        // 4. do global ba
-//    }
-
-
-
-
-    // mappoints
-    std::set<PtrMapPoint> msetpMp;
-    std::map<int, PtrMapPoint> mmapId2pMp;
-
-    // measurements info
-    std::set<PtrMsrUVKf2Mp> msetMsrMp;
-    std::multimap<PtrKeyFrame, PtrMsrUVKf2Mp> mmapKf2MsrMp;
-    std::multimap<PtrMapPoint, PtrMsrUVKf2Mp> mmapMp2MsrMp;
 
     // keyframe functions
     const std::set<PtrKeyFrameOrb> GetKfOrbSet() { return msetpKfOrb; }
@@ -218,7 +201,6 @@ public:
     const std::map<int, PtrMapPointOrb> GetMpOrbMap() { return mmapId2pMpOrb; }
     bool InsertMpOrb(PtrMapPointOrb _pMpOrb);
     PtrMapPointOrb GetMpOrb(int _id) const;
-
 
 protected:    
     // orb algorithms

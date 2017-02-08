@@ -148,6 +148,12 @@ Pt3::Pt3(const cv::Mat &_tvec) {
     z = _tvec.at<float>(2);
 }
 
+Pt3::Pt3(const cv::Point3f& _pt3) {
+    x = _pt3.x;
+    y = _pt3.y;
+    z = _pt3.z;
+}
+
 Pt3 Pt3::operator - (const Pt3 &rhs) {
     return Pt3(x-rhs.x, y-rhs.y, z-rhs.z);
 }

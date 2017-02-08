@@ -7,6 +7,7 @@
 #include "type.h"
 #include "orb/ORBmatcher.h"
 
+
 namespace calibcamodo {
 
 //!
@@ -114,7 +115,8 @@ public:
                         const std::map<int, int>& match_in, std::map<int, int>& match_out);
 
     // functions: create mappoints locally
-    void CreateMapPointLocal();
+    void CreateMapPointLocal(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+                             const std::map<int, int>& match);
     void TriangulateMapPoint();
 
     // functions: detect loop closing in global
@@ -131,6 +133,7 @@ private:
 
     // debug functions:
     void DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match, std::string imgtitle = "debug");
+    cv::Mat ComputeCamMatP(PtrKeyFrame pKf, cv::Mat matCam);
 };
 
 

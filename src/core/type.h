@@ -56,6 +56,8 @@ struct Pt3 {
     Pt3(float _x, float _y, float _z);
     Pt3(const Pt3 &_in);
     Pt3(const cv::Mat &_tvec);
+    Pt3(const cv::Point3f& _pt3);
+
     Pt3 operator- (const Pt3 &rhs);
     Pt3 operator+ (const Pt3 &rhs);
     Pt3 &operator= (const Pt3 &rhs);

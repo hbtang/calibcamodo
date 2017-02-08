@@ -9,25 +9,21 @@ namespace calibcamodo {
 class MapPoint
 {
 public:
-    MapPoint(int _id);
-    MapPoint(int _id, Pt3 _pt3);
-    MapPoint(const MapPoint &_pt);
+    MapPoint(Pt3 _pt3);
 
-    inline void SetId(int _id)  { mId = _id; }
-    inline int  GetId() const   { return mId; }
-    inline void SetPos(Pt3 _in) { mPt3wp = _in; }
-    inline Pt3  GetPos() const  { return mPt3wp; }
+    int  GetId() const   { return mId; }
+    void SetPos(Pt3 _in) { mPt3wp = _in; }
+    Pt3  GetPos() const  { return mPt3wp; }
 
 protected:
     int mId;
-    Pt3 mPt3wp;
+    Pt3 mPt3wp;    
+    static int mIdNext;
 };
 
 class MapPointOrb: public MapPoint {
 public:
-    MapPointOrb(int _id);
-    MapPointOrb(const MapPoint& _pt);
-    MapPointOrb(const MapPointOrb& _ptorb);
+    MapPointOrb(Pt3 _pt3);
 
 protected:
 
