@@ -483,9 +483,9 @@ void SolverOptMk::DoCalib() {
         AddVertexPointXYZ(optimizer, pose, idVertexMax);
         mappMk2IdOpt[pMk] = idVertexMax++;
         // DEBUG
-//        cerr << "mkId: " << pMk->GetId() << endl;
-//        cerr << "mkTvec: " << pMk->GetPose().tvec << endl;
-//        cerr << "pose: " << pose << endl;
+        //        cerr << "mkId: " << pMk->GetId() << endl;
+        //        cerr << "mkTvec: " << pMk->GetPose().tvec << endl;
+        //        cerr << "pose: " << pose << endl;
     }
 
     //! Set odometry edges
@@ -500,8 +500,8 @@ void SolverOptMk::DoCalib() {
         AddEdgeSE2(optimizer, id0, id1, measure, info);
 
         // DEBUG
-//        cerr << info << endl;
-//        cerr << pMsrOdo->info << endl;
+        //        cerr << info << endl;
+        //        cerr << pMsrOdo->info << endl;
     }
 
     //! Set mark measurement edges
@@ -519,10 +519,10 @@ void SolverOptMk::DoCalib() {
         AddEdgeXYZCalibCamOdo(optimizer, idKf, idMk, 0, measure, info);
 
         // DEBUG
-//        cerr << info << endl;
-//        cerr << pMsrMk->measure << endl;
-//        cerr << measure << endl;
-//        cerr << pMsrMk->info << endl;
+        //        cerr << info << endl;
+        //        cerr << pMsrMk->measure << endl;
+        //        cerr << measure << endl;
+        //        cerr << pMsrMk->info << endl;
     }
 
     //! Do optimize
@@ -555,5 +555,93 @@ void SolverOptMk::DoCalib() {
         //        cerr << "tvec_wm: " << tvec_wm.t() << endl;
     }
 }
+
+
+
+//! SolverOrb
+//!
+//!
+
+SolverOrb::SolverOrb(DatasetOrb* _pDataset):
+    Solver(_pDataset), mpDatasetOrb(_pDataset) {
+    // set configures ...
+    mOrbMatcher = ORBmatcher();
+
+}
+
+
+void SolverOrb::BuildDataset() {
+
+    // match orb-keypoints between neigbour keyframes
+    std::map<int, PtrKeyFrameOrb> mapId2pKfOrb = mpDatasetOrb->GetKfOrbMap();
+    for (auto iter2 = mapId2pKfOrb.cbegin(), iter1 = iter2++;
+         iter2 != mapId2pKfOrb.cend();
+         ++iter1, ++iter2) {
+        PtrKeyFrameOrb pKf1 = iter1->second;
+        PtrKeyFrameOrb pKf2 = iter2->second;
+        map<int, int> mapOrbMatches;
+        MatchKeyPointOrb(pKf1, pKf2, mapOrbMatches);
+
+        // debug ...
+//        cerr << pKf1->GetId() << " "  << pKf2->GetId() << endl;
+//        imshow("orb-solver", pKf1->GetImg());
+//        waitKey(3);
+        DrawMatches(pKf1, pKf2, mapOrbMatches);
+        // debug end
+    }
+}
+
+void SolverOrb::MatchKeyPointOrb(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match) {
+    mOrbMatcher.MatchByBow(pKf1, pKf2, match);
+}
+
+void SolverOrb::DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match) {
+
+    Mat imgKf1 = pKf1->GetImg().clone();
+    Mat imgKf2 = pKf2->GetImg().clone();
+//    cvtColor(pKf1->GetImg(), imgKf1, CV_GRAY2BGR);
+//    cvtColor(pKf2->GetImg(), imgKf2, CV_GRAY2BGR);
+
+    Size sizeImg1 = imgKf1.size();
+    Size sizeImg2 = imgKf2.size();
+
+    Mat imgMatch(sizeImg1.height*2, sizeImg1.width, imgKf1.type());
+    imgKf1.copyTo(imgMatch(cv::Rect(0,0,sizeImg1.width,sizeImg1.height)));
+    imgKf2.copyTo(imgMatch(cv::Rect(0,sizeImg1.height,sizeImg2.width,sizeImg2.height)));
+
+
+    Scalar color = Scalar(0,255,0);
+    //! Draw Features
+    for (auto ele : pKf1->mvecKeyPoint) {
+        KeyPoint kp = ele;
+        Point2f pt = kp.pt;
+        circle(imgMatch, pt, 5, color, 1);
+    }
+    for (auto ele : pKf2->mvecKeyPoint) {
+        KeyPoint kp = ele;
+        Point2f pt = kp.pt;
+        pt.y += 480;
+        circle(imgMatch, pt, 5, color, 1);
+    }
+
+    //! Draw Matches
+    for (auto iter = match.begin(); iter != match.end(); iter++) {
+
+        int idx1 = iter->first;
+        KeyPoint kp1 = pKf1->mvecKeyPoint[idx1];
+        Point2f pt1 = kp1.pt;
+
+        int idx2 = iter->second;
+        KeyPoint kp2 = pKf2->mvecKeyPoint[idx2];
+        Point2f pt2 = kp2.pt;
+        pt2.y += 480;
+
+        line(imgMatch, pt1, pt2, color, 1);
+    }
+
+    imshow("debug-orbmatch", imgMatch);
+    waitKey(10);
+}
+
 
 }

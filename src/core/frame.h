@@ -7,11 +7,16 @@
 
 #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
 #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+
 #include "orb/ORBVocabulary.h"
-#include "orb/ORBextractor.h"
-#include "orb/ORBmatcher.h"
 
 namespace calibcamodo {
+
+const int FRAME_GRID_ROWS = 48;
+const int FRAME_GRID_COLS = 64;
+
+class ORBextractor;
+class ORBmatcher;
 
 class Frame {
 public:
@@ -94,15 +99,9 @@ public:
     void UndistortKeyPoints(const vector<cv::KeyPoint>& _vKeyPt, vector<cv::KeyPoint>& _vKeyPtUndist,
                             const cv::Mat& _cammatrix, const cv::Mat& _distortion);
 
+    DBoW2::FeatureVector GetFeatureVector() { return mFeatVec; }
+    DBoW2::BowVector GetBowVector() { return mBowVec; }
 
-    inline DBoW2::FeatureVector GetFeatureVector() {
-        return mFeatVec;
-    }
-    inline DBoW2::BowVector GetBowVector() {
-        return mBowVec;
-    }
-
-private:
     cv::Mat mImgOrb;
     vector<cv::KeyPoint> mvecKeyPoint;
     vector<cv::KeyPoint> mvecKeyPointUndist;
@@ -111,6 +110,14 @@ private:
     bool mbBowVecExist;
     DBoW2::FeatureVector mFeatVec;
     DBoW2::BowVector mBowVec;
+
+
+//    //! TODO: for orb-matcher by window
+//    vector<size_t> GetFeaturesInArea(const float &x, const float  &y, const float  &r, const int minLevel=-1, const int maxLevel=-1) const;
+//    bool PosInGrid(cv::KeyPoint &kp, int &posX, int &posY);
+//    static float mfGridElementWidthInv;
+//    static float mfGridElementHeightInv;
+//    std::vector<std::size_t> mGrid[FRAME_GRID_COLS][FRAME_GRID_ROWS];
 
 };
 

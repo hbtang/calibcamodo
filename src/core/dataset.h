@@ -6,6 +6,9 @@
 #include "mark.h"
 #include "measure.h"
 
+#include "orb/ORBVocabulary.h"
+#include "orb/ORBextractor.h"
+
 namespace calibcamodo {
 
 class Dataset {
@@ -192,12 +195,7 @@ public:
 //        // 4. do global ba
 //    }
 
-//    void MatchKeyPointOrb(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match) {}
-//    void RejectOutliers(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
-//                        const std::map<int, int>& match_in, std::map<int, int>& match_out) {}
-//    void MatchBowOrb(std::map<PtrKeyFrameOrb,PtrKeyFrameOrb>& kfmatch) {}
-//    void Triangulation() {}
-//    void GlobalBA() {}
+
 
 
     // mappoints

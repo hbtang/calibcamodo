@@ -57,6 +57,8 @@ int main(int argc, char **argv) {
     cerr << "DatasetOrb: dataset created." << endl << endl;
 
     //! Solver
+    SolverOrb solverOrb(&datasetOrb);
+    solverOrb.BuildDataset();
 //    SolverInitmk solverInitmk(&datasetOrb);
 //    cerr << "DatasetOrb: creating measurement odometry ..." << endl;
 //    solverInitmk.CreateMsrOdos();

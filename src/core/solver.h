@@ -5,9 +5,14 @@
 #include "measure.h"
 #include "frame.h"
 #include "type.h"
+#include "orb/ORBmatcher.h"
 
 namespace calibcamodo {
 
+//!
+//! \brief The Solver class
+//! base class for all solvers
+//!
 class Solver {
 public:
     Solver(Dataset *_pDataset);
@@ -30,6 +35,10 @@ protected:
     double mOdoRotErrMin;
 };
 
+//!
+//! \brief The SolverAruco class
+//! base class for solver using aruco mark measurements
+//!
 class SolverAruco : public Solver {
 public:
     SolverAruco(DatasetAruco* _pDatasetAruco);
@@ -46,6 +55,11 @@ private:
     double mAmkXYErrMin;
 };
 
+//!
+//! \brief The SolverInitmk class
+//! solver with algorith initmk
+//! based on aruco mark measurements
+//!
 class SolverInitmk : public SolverAruco {
 
 public:
@@ -70,13 +84,53 @@ private:
 };
 
 
-// JointOptMk: using 3D translational mark measurements, iterative optimize SLAM and calibration
+//!
+//! \brief The SolverOptMk class
+//! JointOptMk: using 3D translational mark measurements, iterative optimize SLAM and calibration
 class SolverOptMk : public SolverAruco {
 public:
     SolverOptMk(DatasetAruco *_pDataset);
     void DoCalib();
-
 };
+
+
+
+//!
+//! \brief The SolverOrb class
+//! solver using orb features
+//!
+class SolverOrb : public Solver {
+public:
+    SolverOrb(DatasetOrb* _pDataset);
+
+    void DoCalib() {}
+    void BuildDataset();
+
+    // functions: find good matches of orb-features between 2 keyframes
+    void MatchKeyPointOrb(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match);
+    void RejectOutlier(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+                        const std::map<int, int>& match_in, std::map<int, int>& match_out);
+
+    // functions: create mappoints locally
+    void CreateMapPointLocal();
+    void TriangulateMapPoint();
+
+    // functions: detect loop closing in global
+    void DetectLoopClose(PtrKeyFrameOrb pKf, std::vector<PtrKeyFrameOrb>& vecpKfCand);
+    void MergeMapPointLoopClose();
+
+    // functions: solve global optimization for slam or sclam
+    void OptimizeSlam();
+    void OptimizeCalibSlam();
+
+private:
+    DatasetOrb* mpDatasetOrb;
+    ORBmatcher mOrbMatcher;
+
+    // debug functions:
+    void DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match);
+};
+
 
 }
 #endif // SOLVER_H

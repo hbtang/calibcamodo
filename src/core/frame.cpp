@@ -2,6 +2,9 @@
 #include "adapter.h"
 #include "config.h"
 
+#include "orb/ORBextractor.h"
+#include "orb/ORBmatcher.h"
+
 namespace calibcamodo {
 
 using namespace cv;
@@ -97,6 +100,7 @@ void KeyFrameOrb::ComputeOrb(ORBextractor& _OrbExtractor, const Mat& _cammatrix,
     cvtColor(mImgOrb, mImgOrb, CV_GRAY2RGB);
 
     UndistortKeyPoints(mvecKeyPoint, mvecKeyPointUndist, _cammatrix, _distortion);
+    mNumKeyPoint = mvecKeyPoint.size();
 
     for (auto kpt : mvecKeyPoint) {
         Point2f pt = kpt.pt;
