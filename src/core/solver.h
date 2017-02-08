@@ -108,7 +108,9 @@ public:
 
     // functions: find good matches of orb-features between 2 keyframes
     void MatchKeyPointOrb(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match);
-    void RejectOutlier(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+    void RejectOutlierRansac(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+                        const std::map<int, int>& match_in, std::map<int, int>& match_out);
+    void RejectOutlierDist(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
                         const std::map<int, int>& match_in, std::map<int, int>& match_out);
 
     // functions: create mappoints locally
@@ -128,7 +130,7 @@ private:
     ORBmatcher mOrbMatcher;
 
     // debug functions:
-    void DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match);
+    void DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match, std::string imgtitle = "debug");
 };
 
 

@@ -579,14 +579,24 @@ void SolverOrb::BuildDataset() {
          ++iter1, ++iter2) {
         PtrKeyFrameOrb pKf1 = iter1->second;
         PtrKeyFrameOrb pKf2 = iter2->second;
+
         map<int, int> mapOrbMatches;
         MatchKeyPointOrb(pKf1, pKf2, mapOrbMatches);
 
+        map<int, int> mapOrbMatchesGood1;
+        RejectOutlierDist(pKf1, pKf2, mapOrbMatches, mapOrbMatchesGood1);
+
+        map<int, int> mapOrbMatchesGood2;
+        RejectOutlierRansac(pKf1, pKf2, mapOrbMatchesGood1, mapOrbMatchesGood2);
+
         // debug ...
-//        cerr << pKf1->GetId() << " "  << pKf2->GetId() << endl;
-//        imshow("orb-solver", pKf1->GetImg());
-//        waitKey(3);
-        DrawMatches(pKf1, pKf2, mapOrbMatches);
+        DrawMatches(pKf1, pKf2, mapOrbMatches, "raw-match");
+        DrawMatches(pKf1, pKf2, mapOrbMatchesGood1, "good-match-1");
+        DrawMatches(pKf1, pKf2, mapOrbMatchesGood2, "good-match-2");
+        cerr << "-- number of raw matches: " << mapOrbMatches.size();
+        cerr << "-- number of good matches 1: " << mapOrbMatchesGood1.size();
+        cerr << "-- number of good matches 2: " << mapOrbMatchesGood2.size();
+        cerr << endl;
         // debug end
     }
 }
@@ -595,7 +605,7 @@ void SolverOrb::MatchKeyPointOrb(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::
     mOrbMatcher.MatchByBow(pKf1, pKf2, match);
 }
 
-void SolverOrb::DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match) {
+void SolverOrb::DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match, std::string imgtitle) {
 
     Mat imgKf1 = pKf1->GetImg().clone();
     Mat imgKf2 = pKf2->GetImg().clone();
@@ -639,8 +649,77 @@ void SolverOrb::DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<i
         line(imgMatch, pt1, pt2, color, 1);
     }
 
-    imshow("debug-orbmatch", imgMatch);
+    imshow(imgtitle, imgMatch);
     waitKey(10);
+}
+
+
+void SolverOrb::RejectOutlierRansac(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+                    const std::map<int, int>& match_in, std::map<int, int>& match_out) {
+
+    // Initialize
+    int numMinMatch = 10;
+    if (match_in.size() < numMinMatch) {
+        match_out.clear();
+        return; // return when small number of matches
+    }
+
+    map<int, int> match_good;
+    vector<int> vecId1, vecId2;
+    vector<Point2f> vecPt1, vecPt2;
+
+    for (auto iter = match_in.begin(); iter != match_in.end(); iter++) {
+        int id1 = iter->first;
+        int id2 = iter->second;
+        vecId1.push_back(id1);
+        vecId2.push_back(id2);
+        vecPt1.push_back(pKf1->mvecKeyPointUndist[id1].pt);
+        vecPt2.push_back(pKf2->mvecKeyPointUndist[id2].pt);
+    }
+
+    // RANSAC with fundemantal matrix
+    vector<uchar> vInlier; // 1 when inliers, 0 when outliers
+    findFundamentalMat(vecPt1, vecPt2, FM_RANSAC, 3.0, 0.99, vInlier);
+    for (unsigned int i=0; i<vInlier.size(); i++) {
+        int id1 = vecId1[i];
+        int id2 = vecId2[i];
+        if(vInlier[i] == true) {
+            match_good[id1] = id2;
+        }
+    }
+    // Return good Matches
+    match_out.swap(match_good);
+}
+
+void SolverOrb::RejectOutlierDist(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+                    const std::map<int, int>& match_in, std::map<int, int>& match_out) {
+    // Initialize
+    int numMinMatch = 10;
+    if (match_in.size() < numMinMatch) {
+        match_out.clear();
+        return; // return when small number of matches
+    }
+
+    // Set max distance in pixel
+    double maxPixelDist = 120;
+
+    // Select good matches
+    map<int, int> match_good;
+    for (auto iter = match_in.begin(); iter != match_in.end(); iter++) {
+        int id1 = iter->first;
+        int id2 = iter->second;
+        Point2f pt1 = pKf1->mvecKeyPointUndist[id1].pt;
+        Point2f pt2 = pKf2->mvecKeyPointUndist[id2].pt;
+
+        double dx = pt1.x - pt2.x;
+        double dy = pt1.y - pt2.y;
+        double dist = sqrt(dx*dx + dy*dy);
+        if (dist <= maxPixelDist)
+            match_good[id1] = id2;
+    }
+
+    // Return good Matches
+    match_out.swap(match_good);
 }
 
 
