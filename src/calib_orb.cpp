@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
     SolverOrb solverOrb(&datasetOrb);
     solverOrb.RefreshKfsPose();
     solverOrb.CreateMsrOdos();
-    solverOrb.CreateMapPoint();
+    solverOrb.CreateMapPoints();
 
     //! Show results
     mappublish.run(10, 1);

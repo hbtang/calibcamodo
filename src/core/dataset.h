@@ -5,6 +5,7 @@
 #include "frame.h"
 #include "mark.h"
 #include "measure.h"
+#include "measurepool.h"
 
 #include "orb/ORBVocabulary.h"
 #include "orb/ORBextractor.h"
@@ -38,31 +39,31 @@ public:
     inline const std::set<PtrFrame>& GetFrameSet() const { return msetpFrame; }
     inline const std::map<int, PtrFrame>& GetFrameMap() const { return mmapId2pFrame; }
     PtrFrame GetFrame(int _id) const;
-    bool InsertFrame(PtrFrame _ptr);
+    bool AddFrame(PtrFrame _ptr);
 
 
     // Functions on KeyFrame
     inline const std::set<PtrKeyFrame> & GetKfSet() const { return msetpKf; }
     inline const std::map<int, PtrKeyFrame>& GetKfMap() const { return mmapId2pKf; }
     PtrKeyFrame GetKf(int _id) const;
-    bool InsertKf(PtrKeyFrame _ptr);
+    bool AddKf(PtrKeyFrame _ptr);
 
 
     // Functions on Mark
     inline const std::set<PtrMark> & GetMkSet() const { return msetpMk; }
     inline const std::map<int, PtrMark>& GetMkMap() const { return mmapId2pMk; }
     PtrMark GetMk(int _id) const;
-    bool InsertMk(PtrMark _ptr);
+    bool AddMk(PtrMark _ptr);
 
     // Functions on MapPoint
     const std::set<PtrMapPoint> & GetMpSet() const { return msetpMp; }
     const std::map<int, PtrMapPoint>& GetMpMap() const { return mmapId2pMp; }
     PtrMapPoint GetMp(int _id) const;
-    bool InsertMp(PtrMapPoint _ptr);
+    bool AddMp(PtrMapPoint _ptr);
 
 
     // Functions on Odometry Measure
-    bool InsertMsrOdo(PtrMsrSe2Kf2Kf _ptr);
+    bool AddMsrOdo(PtrMsrSe2Kf2Kf _ptr);
     void ClearMsrOdo();
     inline const std::set<PtrMsrSe2Kf2Kf> & GetMsrOdoSet() const { return msetMsrOdo; }
     PtrMsrSe2Kf2Kf GetMsrOdobyKfHead(PtrKeyFrame _pKf) const;
@@ -72,7 +73,7 @@ public:
 
 
     // Functions on Pt3 Mark Measure
-    bool InsertMsrMk(PtrMsrPt3Kf2Mk ptr);
+    bool AddMsrMk(PtrMsrPt3Kf2Mk ptr);
     inline const std::set<PtrMsrPt3Kf2Mk> & GetMsrMkSet() const { return msetMsrMk; }    
     std::set<PtrMsrPt3Kf2Mk> GetMsrMkbyKf(PtrKeyFrame _pKf) const;
     std::set<PtrMsrPt3Kf2Mk> GetMsrMkbyMk(PtrMark _pMk) const;
@@ -80,10 +81,8 @@ public:
     std::set<PtrMark> GetMkbyKf(PtrKeyFrame _pKf) const;
     std::set<PtrKeyFrame> GetKfbyMk(PtrMark _pMk) const;
 
-    // Todo: Functions on UV2 MapPoint Measure
-    bool InsertMsrMp(PtrMsrUVKf2Mp ptr);
-    bool RemoveMsrMp(PtrMsrUVKf2Mp ptr);
-
+    // Functions on UV Mappoint Measure
+    bool AddMsrMp(PtrMsrUVKf2Mp _pMsr) { return mmsrplOrbMp.AddMsr(_pMsr); }
 
     //! IO Functions
     std::vector<std::string> SplitString(const std::string _str, const std::string _separator);
@@ -102,6 +101,7 @@ protected:
     // Mark
     std::set<PtrMark> msetpMk;
     std::map<int, PtrMark> mmapId2pMk;
+
     // MapPoint
     std::set<PtrMapPoint> msetpMp;
     std::map<int, PtrMapPoint> mmapId2pMp;
@@ -116,11 +116,9 @@ protected:
     std::set<PtrMsrPt3Kf2Mk> msetMsrMk;
     std::multimap<PtrKeyFrame ,PtrMsrPt3Kf2Mk> mmapKf2MsrMk;
     std::multimap<PtrMark, PtrMsrPt3Kf2Mk> mmapMk2MsrMk;
-    // MapPoint
-    std::set<PtrMsrUVKf2Mp> msetMsrMp;
-    std::multimap<PtrKeyFrame, PtrMsrUVKf2Mp> mmapKf2MsrMp;
-    std::multimap<PtrMapPoint, PtrMsrUVKf2Mp> mmapMp2MsrMp;
 
+    // MapPoint
+    MeasurePoolOrbMp mmsrplOrbMp;
 
     //! Configures
 
@@ -159,13 +157,13 @@ public:
     // Functions on MkAruco
     inline const std::set<PtrMarkAruco> GetMkArucoSet() { return msetpMkAruco; }
     inline const std::map<int, PtrMarkAruco> GetMkArucoMap() { return mmapId2pMkAruco; }
-    bool InsertMkAruco(PtrMarkAruco _pMkAruco);
+    bool AddMkAruco(PtrMarkAruco _pMkAruco);
     PtrMarkAruco GetMkAruco(int _id) const;
 
     // Functions on KfAruco
     inline const std::set<PtrKeyFrameAruco> GetKfArucoSet() { return msetpKfAruco; }
     inline const std::map<int,PtrKeyFrameAruco> GetKfArucoMap() { return mmapId2pKfAruco; }
-    bool InsertKfAruco(PtrKeyFrameAruco _pKfAruco);
+    bool AddKfAruco(PtrKeyFrameAruco _pKfAruco);
     PtrKeyFrameAruco GetKfAruco(int _id) const;
 
 protected:
@@ -193,13 +191,13 @@ public:
     // keyframe functions
     const std::set<PtrKeyFrameOrb> GetKfOrbSet() { return msetpKfOrb; }
     const std::map<int, PtrKeyFrameOrb> GetKfOrbMap() { return mmapId2pKfOrb; }
-    bool InsertKfOrb(PtrKeyFrameOrb _pKfOrb);
+    bool AddKfOrb(PtrKeyFrameOrb _pKfOrb);
     PtrKeyFrameOrb GetKfOrb(int _id) const;
 
     // mappoint functions
     const std::set<PtrMapPointOrb> GetMpOrbSet() { return msetpMpOrb; }
     const std::map<int, PtrMapPointOrb> GetMpOrbMap() { return mmapId2pMpOrb; }
-    bool InsertMpOrb(PtrMapPointOrb _pMpOrb);
+    bool AddMpOrb(PtrMapPointOrb _pMpOrb);
     PtrMapPointOrb GetMpOrb(int _id) const;
 
 protected:    

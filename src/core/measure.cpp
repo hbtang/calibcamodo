@@ -196,12 +196,12 @@ MeasureUV::MeasureUV(cv::Point2f _pt, cv::Point2f _ptUn, const cv::Mat &_info, c
 
 MeasureUVKf2Mp::MeasureUVKf2Mp(cv::Point2f _pt, const cv::Mat &_info,
                                const cv::Mat& _camMat, const cv::Mat& _distVec,
-                               PtrKeyFrame _pKf, PtrMapPoint _pMp):
-    MeasureUV(_pt, _info, _camMat, _distVec), pKf(_pKf), pMp(_pMp) {}
+                               PtrKeyFrame _pKf, PtrMapPoint _pMp, int _idkp):
+    MeasureUV(_pt, _info, _camMat, _distVec), pKf(_pKf), pMp(_pMp), idKp(_idkp) {}
 
 MeasureUVKf2Mp::MeasureUVKf2Mp(cv::Point2f _pt, cv::Point2f _ptUn, const cv::Mat &_info,
                const cv::Mat& _camMat, const cv::Mat& _distVec,
-               PtrKeyFrame _pKf, PtrMapPoint _pMp):
-    MeasureUV(_pt, _ptUn, _info, _camMat, _distVec), pKf(_pKf), pMp(_pMp) {}
+               PtrKeyFrame _pKf, PtrMapPoint _pMp, int _idkp):
+    MeasureUV(_pt, _ptUn, _info, _camMat, _distVec), pKf(_pKf), pMp(_pMp), idKp(_idkp) {}
 
 }

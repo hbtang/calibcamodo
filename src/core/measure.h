@@ -134,14 +134,16 @@ public:
 //                   PtrKeyFrame _pKf, PtrMapPoint _pMp);
     MeasureUVKf2Mp(cv::Point2f _pt, const cv::Mat &_info,
                    const cv::Mat& _camMat, const cv::Mat& _distVec,
-                   PtrKeyFrame _pKf, PtrMapPoint _pMp);
+                   PtrKeyFrame _pKf, PtrMapPoint _pMp, int _idkp);
 
     MeasureUVKf2Mp(cv::Point2f _pt, cv::Point2f _ptUn, const cv::Mat &_info,
                    const cv::Mat& _camMat, const cv::Mat& _distVec,
-                   PtrKeyFrame _pKf, PtrMapPoint _pMp);
+                   PtrKeyFrame _pKf, PtrMapPoint _pMp, int _idkp);
 
     PtrKeyFrame pKf;
     PtrMapPoint pMp;
+    // local id of the related keypoint in the keyframe
+    int idKp;
 };
 
 typedef std::shared_ptr<MeasurePt3Kf2Mk> PtrMsrPt3Kf2Mk;

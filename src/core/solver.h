@@ -105,7 +105,15 @@ public:
     SolverOrb(DatasetOrb* _pDataset);
 
     void DoCalib() {}
-    void CreateMapPoint();
+
+    //!
+    //! \brief CreateMapPoint:
+    //! create mappoints from 2 consecutive keyframes
+    //! reject outliers by ransac and distance
+    //! init mappoint location by linear triangulation
+    //! reject bad parallex point
+    //!
+    void CreateMapPoints();
 
     // functions: find good matches of orb-features between 2 keyframes
     void MatchKeyPointOrb(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match);
@@ -114,10 +122,9 @@ public:
     void RejectOutlierDist(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
                         const std::map<int, int>& match_in, std::map<int, int>& match_out);
 
-    // functions: create mappoints locally
-    void CreateMapPointLocal(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+    // functions: init mappoints by triangulation, create mappoints and measure in dataset
+    void InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
                              const std::map<int, int>& match);
-    void TriangulateMapPoint();
 
     // functions: detect loop closing in global
     void DetectLoopClose(PtrKeyFrameOrb pKf, std::vector<PtrKeyFrameOrb>& vecpKfCand);

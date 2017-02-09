@@ -45,7 +45,7 @@ PtrFrame Dataset::GetFrame(int _id) const {
     return pRet;
 }
 
-bool Dataset::InsertFrame(PtrFrame _ptr) {
+bool Dataset::AddFrame(PtrFrame _ptr) {
     if (msetpFrame.count(_ptr))
         return false;
 
@@ -65,7 +65,7 @@ PtrKeyFrame Dataset::GetKf(int _id) const {
     return pRet;
 }
 
-bool Dataset::InsertKf(PtrKeyFrame _ptr) {
+bool Dataset::AddKf(PtrKeyFrame _ptr) {
     if (msetpKf.count(_ptr))
         return false;
 
@@ -85,7 +85,7 @@ PtrMark Dataset::GetMk(int _id) const {
     return pRet;
 }
 
-bool Dataset::InsertMk(PtrMark _ptr) {
+bool Dataset::AddMk(PtrMark _ptr) {
     if (msetpMk.count(_ptr))
         return false;
     int id = _ptr->GetId();
@@ -104,7 +104,7 @@ PtrMapPoint Dataset::GetMp(int _id) const {
     return pRet;
 }
 
-bool Dataset::InsertMp(PtrMapPoint _ptr) {
+bool Dataset::AddMp(PtrMapPoint _ptr) {
     if (msetpMp.count(_ptr))
         return false;
     int id = _ptr->GetId();
@@ -115,7 +115,7 @@ bool Dataset::InsertMp(PtrMapPoint _ptr) {
     return true;
 }
 
-bool Dataset::InsertMsrOdo(PtrMsrSe2Kf2Kf _ptr) {
+bool Dataset::AddMsrOdo(PtrMsrSe2Kf2Kf _ptr) {
     assert(msetMsrOdo.count(_ptr) == 0);
     assert(mmapKfHead2MsrOdo.count(_ptr->pKfHead) == 0);
     assert(mmapKfTail2MsrOdo.count(_ptr->pKfTail) == 0);
@@ -162,7 +162,7 @@ PtrKeyFrame Dataset::GetKfOdoLast(PtrKeyFrame _pKf) const {
         return nullptr;
 }
 
-bool Dataset::InsertMsrMk(PtrMsrPt3Kf2Mk _ptr) {
+bool Dataset::AddMsrMk(PtrMsrPt3Kf2Mk _ptr) {
     assert(msetMsrMk.count(_ptr) == 0);
     msetMsrMk.insert(_ptr);
     mmapKf2MsrMk.emplace(_ptr->pKf, _ptr);
@@ -276,7 +276,7 @@ void Dataset::CreateFrames() {
         const auto iterOdo = mapId2Odo.find(i);
         if (iterImg != setIdImgExist.cend() && iterOdo != mapId2Odo.cend()) {
             PtrFrame pf = make_shared<Frame>(iterOdo->second, i);
-            InsertFrame(pf);
+            AddFrame(pf);
         }
     }
 
@@ -411,13 +411,13 @@ PtrMsrPt3Kf2Mk Dataset::GetMsrMkbyKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const {
 //    }
 //}
 
-bool Dataset::InsertMsrMp(PtrMsrUVKf2Mp _ptr) {
-    assert(msetMsrMp.count(_ptr) == 0);
-    msetMsrMp.insert(_ptr);
-    mmapKf2MsrMp.emplace(_ptr->pKf, _ptr);
-    mmapMp2MsrMp.emplace(_ptr->pMp, _ptr);
-    return true;
-}
+//bool Dataset::InsertMsrMp(PtrMsrUVKf2Mp _ptr) {
+//    assert(msetMsrMp.count(_ptr) == 0);
+//    msetMsrMp.insert(_ptr);
+//    mmapKf2MsrMp.emplace(_ptr->pKf, _ptr);
+//    mmapMp2MsrMp.emplace(_ptr->pMp, _ptr);
+//    return true;
+//}
 
 
 
@@ -447,8 +447,8 @@ DatasetAruco::DatasetAruco():
     mMDetector.setThresholdParams(ThresParam1, ThresParam2);
 }
 
-bool DatasetAruco::InsertKfAruco(PtrKeyFrameAruco _pKfAruco) {
-    if(!InsertKf(_pKfAruco))
+bool DatasetAruco::AddKfAruco(PtrKeyFrameAruco _pKfAruco) {
+    if(!AddKf(_pKfAruco))
         return false;
     if (msetpKfAruco.count(_pKfAruco))
         return false;
@@ -467,8 +467,8 @@ PtrKeyFrameAruco DatasetAruco::GetKfAruco(int _id) const {
         return nullptr;
 }
 
-bool DatasetAruco::InsertMkAruco(PtrMarkAruco _pMkAruco) {
-    if(!InsertMk(_pMkAruco))
+bool DatasetAruco::AddMkAruco(PtrMarkAruco _pMkAruco) {
+    if(!AddMk(_pMkAruco))
         return false;
     if(msetpMkAruco.count(_pMkAruco))
         return false;
@@ -497,7 +497,7 @@ void DatasetAruco::CreateKeyFrames() {
         pframe->SetImg(img);
         PtrKeyFrameAruco pKfAruco = make_shared<KeyFrameAruco>(*pframe);
         pKfAruco->ComputeAruco(mCamParam, mMDetector, mMarkerSize);
-        InsertKfAruco(pKfAruco);
+        AddKfAruco(pKfAruco);
     }
 }
 
@@ -563,12 +563,12 @@ void DatasetOrb::CreateKeyFrames() {
         PtrKeyFrameOrb pKfOrb = make_shared<KeyFrameOrb>(*pframe);
         pKfOrb->ComputeOrb(mOrbExtractor, mCamMatrix, mDistCoeff);
         pKfOrb->ComputeBoW(mOrbVocalubary);
-        InsertKfOrb(pKfOrb);
+        AddKfOrb(pKfOrb);
     }
 }
 
-bool DatasetOrb::InsertKfOrb(PtrKeyFrameOrb _pKfOrb) {
-    if(!InsertKf(_pKfOrb))
+bool DatasetOrb::AddKfOrb(PtrKeyFrameOrb _pKfOrb) {
+    if(!AddKf(_pKfOrb))
         return false;
     if (msetpKfOrb.count(_pKfOrb))
         return false;
@@ -588,8 +588,8 @@ PtrKeyFrameOrb DatasetOrb::GetKfOrb(int _id) const {
 }
 
 
-bool DatasetOrb::InsertMpOrb(PtrMapPointOrb _pMpOrb) {
-    if(!InsertMp(_pMpOrb))
+bool DatasetOrb::AddMpOrb(PtrMapPointOrb _pMpOrb) {
+    if(!AddMp(_pMpOrb))
         return false;
     if (msetpMpOrb.count(_pMpOrb))
         return false;

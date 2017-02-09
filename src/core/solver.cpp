@@ -53,7 +53,7 @@ void Solver::CreateMsrOdos() {
 
         PtrMsrSe2Kf2Kf pMeasureOdo =
                 make_shared<MeasureSe2Kf2Kf>(dodo, info, pKfHead, pKfTail);
-        mpDataset->InsertMsrOdo(pMeasureOdo);
+        mpDataset->AddMsrOdo(pMeasureOdo);
     }
 }
 
@@ -104,12 +104,12 @@ void SolverAruco::CreateMarks() {
 
             // add new aruco mark into dataset
             PtrMarkAruco pMkAruco = make_shared<MarkAruco>(id, id, marksize);
-            if (!mpDatasetAruco->InsertMkAruco(pMkAruco))
+            if (!mpDatasetAruco->AddMkAruco(pMkAruco))
                 pMkAruco = mpDatasetAruco->GetMkAruco(id);
 
             // add new measurement into dataset
             PtrMsrPt3Kf2Mk pMsrMk = make_shared<MeasurePt3Kf2Mk>(tvec, info, pKfAruco, pMkAruco);
-            mpDatasetAruco->InsertMsrMk(pMsrMk);
+            mpDatasetAruco->AddMsrMk(pMsrMk);
         }
     }
 }
@@ -532,7 +532,6 @@ void SolverOptMk::DoCalib() {
     optimizer.initializeOptimization();
     optimizer.optimize(100);
 
-
     //! Refresh calibration results
     g2o::VertexSE3* v = static_cast<g2o::VertexSE3*>(optimizer.vertex(0));
     Isometry3D Iso3_bc_opt = v->estimate();
@@ -573,7 +572,7 @@ SolverOrb::SolverOrb(DatasetOrb* _pDataset):
 }
 
 
-void SolverOrb::CreateMapPoint() {
+void SolverOrb::CreateMapPoints() {
 
     // match orb-keypoints between neigbour keyframes
     std::map<int, PtrKeyFrameOrb> mapId2pKfOrb = mpDatasetOrb->GetKfOrbMap();
@@ -593,8 +592,8 @@ void SolverOrb::CreateMapPoint() {
         RejectOutlierRansac(pKf1, pKf2, mapOrbMatchesGood1, mapOrbMatchesGood2);
 
         // debug ...
-//        DrawMatches(pKf1, pKf2, mapOrbMatches, "raw-match");
-//        DrawMatches(pKf1, pKf2, mapOrbMatchesGood1, "good-match-1");
+        //        DrawMatches(pKf1, pKf2, mapOrbMatches, "raw-match");
+        //        DrawMatches(pKf1, pKf2, mapOrbMatchesGood1, "good-match-1");
         DrawMatches(pKf1, pKf2, mapOrbMatchesGood2, "good-match-2");
         cerr << "-- number of raw matches: " << mapOrbMatches.size();
         cerr << "-- number of good matches 1: " << mapOrbMatchesGood1.size();
@@ -602,13 +601,12 @@ void SolverOrb::CreateMapPoint() {
         cerr << endl;
         // debug end
 
-        CreateMapPointLocal(pKf1, pKf2, mapOrbMatchesGood2);
-
+        InitMapPointTrian(pKf1, pKf2, mapOrbMatchesGood2);
     }
 }
 
-void SolverOrb::CreateMapPointLocal(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
-                         const std::map<int, int>& match) {
+void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
+                                  const std::map<int, int>& match) {
     Mat matCamP1 = ComputeCamMatP(pKf1, mpDatasetOrb->mCamMatrix);
     Mat matCamP2 = ComputeCamMatP(pKf2, mpDatasetOrb->mCamMatrix);
     std::map<int, int> match_mpcandidate;
@@ -639,24 +637,26 @@ void SolverOrb::CreateMapPointLocal(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
 
             // insert mappoint
             PtrMapPointOrb pMp = make_shared<MapPointOrb>(Pt3(pt3wp));
-            mpDatasetOrb->InsertMpOrb(pMp);
+            mpDatasetOrb->AddMpOrb(pMp);
 
             Mat info = (Mat_<float>(2,2) << 1,0,0,1);
-            PtrMsrUVKf2Mp pMsr1 = make_shared<MeasureUVKf2Mp>(pt1, pt1Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf1, pMp);
-            PtrMsrUVKf2Mp pMsr2 = make_shared<MeasureUVKf2Mp>(pt2, pt2Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf1, pMp);
+            PtrMsrUVKf2Mp pMsr1 = make_shared<MeasureUVKf2Mp>(
+                        pt1, pt1Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf1, pMp, id1);
+            PtrMsrUVKf2Mp pMsr2 = make_shared<MeasureUVKf2Mp>(
+                        pt2, pt2Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf1, pMp, id2);
 
-            mpDatasetOrb->InsertMsrMp(pMsr1);
-            mpDatasetOrb->InsertMsrMp(pMsr2);
+            mpDatasetOrb->AddMsrMp(pMsr1);
+            mpDatasetOrb->AddMsrMp(pMsr2);
         }
 
 
         // debug
-//        cerr << "matCamP1" << endl << matCamP1 << endl;
-//        cerr << "matCamP2" << endl << matCamP2 << endl;
-//        cerr << "pt1" << endl << pt1 << endl;
-//        cerr << "pt2" << endl << pt2 << endl;
-//        cerr << "pt3wp" << endl << pt3wp << endl;
-//        cerr << endl;
+        //        cerr << "matCamP1" << endl << matCamP1 << endl;
+        //        cerr << "matCamP2" << endl << matCamP2 << endl;
+        //        cerr << "pt1" << endl << pt1 << endl;
+        //        cerr << "pt2" << endl << pt2 << endl;
+        //        cerr << "pt3wp" << endl << pt3wp << endl;
+        //        cerr << endl;
 
     }
 
@@ -793,5 +793,105 @@ cv::Mat SolverOrb::ComputeCamMatP(PtrKeyFrame pKf, cv::Mat matCam) {
     Mat P = matCam*Tcw.rowRange(0,3);
     return P;
 }
+
+//!
+//! \brief SolverOrb::OptimizeSlam
+//! TODO!
+//!
+//void SolverOrb::OptimizeSlam() {
+//    // Set optimizer
+//    SparseOptimizer optimizer;
+//    bool bOptVerbose = true;
+//    InitOptimizerCalib(optimizer, bOptVerbose);
+
+//    // Set keyframe vertices
+//    map<PtrKeyFrame,int> mappKf2IdOpt;
+//    for (auto ptr : mpDataset->GetKfSet()) {
+//        PtrKeyFrame pKf = ptr;
+//        AddVertexSE2(optimizer, toG2oSE2(pKf->GetPoseBase()), idVertexMax);
+//        mappKf2IdOpt[pKf] = idVertexMax++;
+//    }
+
+//    // Set mark vertices
+//    map<PtrMark,int> mappMk2IdOpt;
+//    for (auto ptr : mpDataset->GetMkSet()) {
+//        PtrMark pMk = ptr;
+//        // NEED TO ADD INIT MK POSE HERE !!!
+//        g2o::Vector3D pose = toG2oVector3D(pMk->GetPose().tvec);
+
+//        AddVertexPointXYZ(optimizer, pose, idVertexMax);
+//        mappMk2IdOpt[pMk] = idVertexMax++;
+//        // DEBUG
+//        //        cerr << "mkId: " << pMk->GetId() << endl;
+//        //        cerr << "mkTvec: " << pMk->GetPose().tvec << endl;
+//        //        cerr << "pose: " << pose << endl;
+//    }
+
+//    // Set odometry edges
+//    for (auto ptr : mpDataset->GetMsrOdoSet()) {
+//        PtrMsrSe2Kf2Kf pMsrOdo = ptr;
+//        PtrKeyFrame pKf0 = pMsrOdo->pKfHead;
+//        PtrKeyFrame pKf1 = pMsrOdo->pKfTail;
+//        int id0 = mappKf2IdOpt[pKf0];
+//        int id1 = mappKf2IdOpt[pKf1];
+//        g2o::SE2 measure = toG2oSE2(pMsrOdo->se2);
+//        g2o::Matrix3D info = toEigenMatrixXd(pMsrOdo->info);
+//        AddEdgeSE2(optimizer, id0, id1, measure, info);
+
+//        // DEBUG
+//        //        cerr << info << endl;
+//        //        cerr << pMsrOdo->info << endl;
+//    }
+
+//    // Set mark measurement edges
+//    for (auto ptr : mpDataset->GetMsrMkSet()) {
+//        PtrMsrPt3Kf2Mk pMsrMk = ptr;
+//        PtrKeyFrame pKf = pMsrMk->pKf;
+//        PtrMark pMk = pMsrMk->pMk;
+
+//        int idKf = mappKf2IdOpt[pKf];
+//        int idMk = mappMk2IdOpt[pMk];
+
+//        g2o::Vector3D measure = toG2oVector3D(pMsrMk->measure);
+//        g2o::Matrix3D info = toEigenMatrixXd(pMsrMk->info);
+
+//        AddEdgeXYZCalibCamOdo(optimizer, idKf, idMk, 0, measure, info);
+
+//        // DEBUG
+//        //        cerr << info << endl;
+//        //        cerr << pMsrMk->measure << endl;
+//        //        cerr << measure << endl;
+//        //        cerr << pMsrMk->info << endl;
+//    }
+
+//    // Do optimize
+//    optimizer.initializeOptimization();
+//    optimizer.optimize(100);
+
+//    // Refresh calibration results
+//    g2o::VertexSE3* v = static_cast<g2o::VertexSE3*>(optimizer.vertex(0));
+//    Isometry3D Iso3_bc_opt = v->estimate();
+//    mSe3cb = toSe3(Iso3_bc_opt);
+
+//    // Refresh keyframe
+//    for (auto pair : mappKf2IdOpt) {
+//        PtrKeyFrame pKf = pair.first;
+//        int idOpt = pair.second;
+//        VertexSE2* pVertex = static_cast<VertexSE2*>(optimizer.vertex(idOpt));
+//        pKf->SetPoseAllbyB(toSe2(pVertex->estimate()), mSe3cb);
+//    }
+
+//    // Refresh landmark
+//    for (auto pair : mappMk2IdOpt) {
+//        PtrMark pMk = pair.first;
+//        int idOpt = pair.second;
+//        VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
+//        Mat tvec_wm = toCvMatf(pVertex->estimate());
+//        pMk->SetPoseTvec(tvec_wm);
+
+//        // DEBUG:
+//        //        cerr << "tvec_wm: " << tvec_wm.t() << endl;
+//    }
+//}
 
 }
