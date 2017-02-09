@@ -5,28 +5,55 @@
 
 namespace calibcamodo {
 
-class MeasurePoolOrbMp
-{
+//!
+//! \brief The MeasurePoolPt3Kf2Mk class
+//!
+class MeasurePoolPt3Kf2Mk {
 public:
-    MeasurePoolOrbMp() = default;
+    MeasurePoolPt3Kf2Mk() = default;
+
+    bool AddMsr(PtrMsrPt3Kf2Mk _pMsr);
+
+    std::set<PtrMsrPt3Kf2Mk> GetMsrAll() const { return msetMsr; }
+    std::set<PtrMsrPt3Kf2Mk> GetMsrByKf(PtrKeyFrame _pKf) const;
+    std::set<PtrMsrPt3Kf2Mk> GetMsrByMk(PtrMark _pMk) const;
+    PtrMsrPt3Kf2Mk GetMsrByKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const;
+    std::set<PtrMark> GetMkByKf(PtrKeyFrame _pKf) const;
+    std::set<PtrKeyFrame> GetKfByMk(PtrMark _pMk) const;
+
+private:
+    std::set<PtrMsrPt3Kf2Mk> msetMsr;
+    std::multimap<PtrKeyFrame, PtrMsrPt3Kf2Mk> mmapKf2Msr;
+    std::multimap<PtrMark, PtrMsrPt3Kf2Mk> mmapMk2Msr;
+};
+
+//!
+//! \brief The MeasurePoolUVKf2Mp class
+//!
+class MeasurePoolUVKf2Mp {
+public:
+    MeasurePoolUVKf2Mp() = default;
+
     bool AddMsr(PtrMsrUVKf2Mp _pMsr);
 //    bool DelMsr(PtrMsrUVKf2Mp _pMsr);
 
-    std::set<PtrMsrUVKf2Mp> GetMsrAll() { return msetMsrMp; }
-    std::set<PtrMsrUVKf2Mp> GetMsrByKf(PtrKeyFrame _pKf);
-    std::set<PtrMsrUVKf2Mp> GetMsrByMp(PtrMapPoint _pMp);
-    PtrMsrUVKf2Mp GetMsrByKfId(PtrKeyFrame _pKf, int _idKp);
-    PtrMsrUVKf2Mp GetMsrByKfMp(PtrKeyFrame _pKf, PtrMapPoint _pMp);
-    std::set<PtrKeyFrame> GetKfByMp(PtrMapPoint _pMp);
-    std::set<PtrMapPoint> GetMpByKf(PtrKeyFrame _pKf);
+    std::set<PtrMsrUVKf2Mp> GetMsrAll() const { return msetMsr; }
+    std::set<PtrMsrUVKf2Mp> GetMsrByKf(PtrKeyFrame _pKf) const;
+    std::set<PtrMsrUVKf2Mp> GetMsrByMp(PtrMapPoint _pMp) const;
+    PtrMsrUVKf2Mp GetMsrByKfId(PtrKeyFrame _pKf, int _idKp) const;
+    PtrMsrUVKf2Mp GetMsrByKfMp(PtrKeyFrame _pKf, PtrMapPoint _pMp) const;
+    std::set<PtrKeyFrame> GetKfByMp(PtrMapPoint _pMp) const;
+    std::set<PtrMapPoint> GetMpByKf(PtrKeyFrame _pKf) const;
 
 private:
-    std::set<PtrMsrUVKf2Mp> msetMsrMp;
+    std::set<PtrMsrUVKf2Mp> msetMsr;
     std::map<std::pair<PtrKeyFrame, int>, PtrMsrUVKf2Mp> mmapKfId2Msr;
     std::map<std::pair<PtrKeyFrame, PtrMapPoint>, PtrMsrUVKf2Mp> mmapKfMp2Msr;
     std::multimap<PtrKeyFrame, PtrMsrUVKf2Mp> mmapKf2Msr;
     std::multimap<PtrMapPoint, PtrMsrUVKf2Mp> mmapMp2Msr;
 };
+
+
 
 }
 

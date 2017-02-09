@@ -162,51 +162,51 @@ PtrKeyFrame Dataset::GetKfOdoLast(PtrKeyFrame _pKf) const {
         return nullptr;
 }
 
-bool Dataset::AddMsrMk(PtrMsrPt3Kf2Mk _ptr) {
-    assert(msetMsrMk.count(_ptr) == 0);
-    msetMsrMk.insert(_ptr);
-    mmapKf2MsrMk.emplace(_ptr->pKf, _ptr);
-    mmapMk2MsrMk.emplace(_ptr->pMk, _ptr);
-    return true;
-}
+//bool Dataset::AddMsrMk(PtrMsrPt3Kf2Mk _ptr) {
+//    assert(msetMsrMk.count(_ptr) == 0);
+//    msetMsrMk.insert(_ptr);
+//    mmapKf2MsrMk.emplace(_ptr->pKf, _ptr);
+//    mmapMk2MsrMk.emplace(_ptr->pMk, _ptr);
+//    return true;
+//}
 
-std::set<PtrMsrPt3Kf2Mk> Dataset::GetMsrMkbyKf(PtrKeyFrame _pKf) const {
-    set<PtrMsrPt3Kf2Mk> setpMsrRet;
-    auto iter_lowerbound = mmapKf2MsrMk.lower_bound(_pKf);
-    auto iter_upperbound = mmapKf2MsrMk.upper_bound(_pKf);
-    for (auto iter = iter_lowerbound; iter != iter_upperbound; iter++) {
-        setpMsrRet.insert((*iter).second);
-    }
-    return setpMsrRet;
-}
+//std::set<PtrMsrPt3Kf2Mk> Dataset::GetMsrMkByKf(PtrKeyFrame _pKf) const {
+//    set<PtrMsrPt3Kf2Mk> setpMsrRet;
+//    auto iter_lowerbound = mmapKf2MsrMk.lower_bound(_pKf);
+//    auto iter_upperbound = mmapKf2MsrMk.upper_bound(_pKf);
+//    for (auto iter = iter_lowerbound; iter != iter_upperbound; iter++) {
+//        setpMsrRet.insert((*iter).second);
+//    }
+//    return setpMsrRet;
+//}
 
-std::set<PtrMsrPt3Kf2Mk> Dataset::GetMsrMkbyMk(PtrMark _pMk) const {
-    set<PtrMsrPt3Kf2Mk> setpMsrRet;
-    auto iter_lowerbound = mmapMk2MsrMk.lower_bound(_pMk);
-    auto iter_upperbound = mmapMk2MsrMk.upper_bound(_pMk);
-    for (auto iter = iter_lowerbound; iter != iter_upperbound; iter++) {
-        setpMsrRet.insert((*iter).second);
-    }
-    return setpMsrRet;
-}
+//std::set<PtrMsrPt3Kf2Mk> Dataset::GetMsrMkByMk(PtrMark _pMk) const {
+//    set<PtrMsrPt3Kf2Mk> setpMsrRet;
+//    auto iter_lowerbound = mmapMk2MsrMk.lower_bound(_pMk);
+//    auto iter_upperbound = mmapMk2MsrMk.upper_bound(_pMk);
+//    for (auto iter = iter_lowerbound; iter != iter_upperbound; iter++) {
+//        setpMsrRet.insert((*iter).second);
+//    }
+//    return setpMsrRet;
+//}
 
-std::set<PtrMark> Dataset::GetMkbyKf(PtrKeyFrame _pKf) const {
-    set<PtrMsrPt3Kf2Mk> setpMsrRet = GetMsrMkbyKf(_pKf);
-    set<PtrMark> setpMkRet;
-    for(auto pMsr : setpMsrRet) {
-        setpMkRet.insert(static_cast<PtrMsrPt3Kf2Mk>(pMsr)->pMk);
-    }
-    return setpMkRet;
-}
+//std::set<PtrMark> Dataset::GetMkByKf(PtrKeyFrame _pKf) const {
+//    set<PtrMsrPt3Kf2Mk> setpMsrRet = GetMsrMkByKf(_pKf);
+//    set<PtrMark> setpMkRet;
+//    for(auto pMsr : setpMsrRet) {
+//        setpMkRet.insert(static_cast<PtrMsrPt3Kf2Mk>(pMsr)->pMk);
+//    }
+//    return setpMkRet;
+//}
 
-std::set<PtrKeyFrame> Dataset::GetKfbyMk(PtrMark _pMk) const {
-    set<PtrMsrPt3Kf2Mk> setpMsrRet = GetMsrMkbyMk(_pMk);
-    set<PtrKeyFrame> setpKfRet;
-    for(auto pMsr : setpMsrRet) {
-        setpKfRet.insert(static_cast<PtrMsrPt3Kf2Mk>(pMsr)->pKf);
-    }
-    return setpKfRet;
-}
+//std::set<PtrKeyFrame> Dataset::GetKfbyMk(PtrMark _pMk) const {
+//    set<PtrMsrPt3Kf2Mk> setpMsrRet = GetMsrMkByMk(_pMk);
+//    set<PtrKeyFrame> setpKfRet;
+//    for(auto pMsr : setpMsrRet) {
+//        setpKfRet.insert(static_cast<PtrMsrPt3Kf2Mk>(pMsr)->pKf);
+//    }
+//    return setpKfRet;
+//}
 
 bool Dataset::ParseOdoData(const string _str, Se2& _odo, int& _id) {
     vector<string> vec_str = SplitString(_str, " ");
@@ -334,16 +334,16 @@ void Dataset::LoadImage(int _id, cv::Mat& _img) {
 //    }
 //}
 
-PtrMsrPt3Kf2Mk Dataset::GetMsrMkbyKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const {
-    auto iter_lowerbound = mmapKf2MsrMk.lower_bound(_pKf);
-    auto iter_upperbound = mmapKf2MsrMk.upper_bound(_pKf);
-    for (auto iter = iter_lowerbound; iter != iter_upperbound; iter++) {
-        PtrMsrPt3Kf2Mk pMsrMk = (*iter).second;
-        if(pMsrMk->pMk == _pMk)
-            return pMsrMk;
-    }
-    return nullptr;
-}
+//PtrMsrPt3Kf2Mk Dataset::GetMsrMkByKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const {
+//    auto iter_lowerbound = mmapKf2MsrMk.lower_bound(_pKf);
+//    auto iter_upperbound = mmapKf2MsrMk.upper_bound(_pKf);
+//    for (auto iter = iter_lowerbound; iter != iter_upperbound; iter++) {
+//        PtrMsrPt3Kf2Mk pMsrMk = (*iter).second;
+//        if(pMsrMk->pMk == _pMk)
+//            return pMsrMk;
+//    }
+//    return nullptr;
+//}
 
 //void Dataset::InitKf(Se3 _se3bc) {
 //    for(auto ptr : msetpKf) {

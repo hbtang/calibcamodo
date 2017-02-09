@@ -260,7 +260,7 @@ void MapPublish::PublishMapPointsAruco() {
         mMps.points.push_back(msg_p);
     }
 
-    set<PtrMsrPt3Kf2Mk> setMsrMk = mpDataset->GetMsrMkSet();
+    set<PtrMsrPt3Kf2Mk> setMsrMk = mpDataset->GetMsrMkAll();
     for (auto ptr : setMsrMk) {
         PtrMsrPt3Kf2Mk pMsrMk = ptr;
         PtrKeyFrame pKf = pMsrMk->pKf;

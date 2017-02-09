@@ -24,17 +24,6 @@ public:
     set<PtrFrame> SelectFrame() const;
     virtual void CreateKeyFrames() {}
 
-//    virtual void CreateMsrOdos();
-//    virtual void CreateMarks() {}
-//    virtual void CreateMsrMks() {}
-
-//    void InitKf(Se3 _se3bc);
-//    void InitMk();
-//    void InitAll(Se3 _se3bc) {
-//        InitKf(_se3bc);
-//        InitMk();
-//    }
-
     // Functions on Frame
     inline const std::set<PtrFrame>& GetFrameSet() const { return msetpFrame; }
     inline const std::map<int, PtrFrame>& GetFrameMap() const { return mmapId2pFrame; }
@@ -73,16 +62,24 @@ public:
 
 
     // Functions on Pt3 Mark Measure
-    bool AddMsrMk(PtrMsrPt3Kf2Mk ptr);
-    inline const std::set<PtrMsrPt3Kf2Mk> & GetMsrMkSet() const { return msetMsrMk; }    
-    std::set<PtrMsrPt3Kf2Mk> GetMsrMkbyKf(PtrKeyFrame _pKf) const;
-    std::set<PtrMsrPt3Kf2Mk> GetMsrMkbyMk(PtrMark _pMk) const;
-    PtrMsrPt3Kf2Mk GetMsrMkbyKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const;
-    std::set<PtrMark> GetMkbyKf(PtrKeyFrame _pKf) const;
-    std::set<PtrKeyFrame> GetKfbyMk(PtrMark _pMk) const;
+    bool AddMsrMk(PtrMsrPt3Kf2Mk _pMsr) { return mmsrplMk.AddMsr(_pMsr); }
+    std::set<PtrMsrPt3Kf2Mk> GetMsrMkAll() const { return mmsrplMk.GetMsrAll(); }
+    std::set<PtrMsrPt3Kf2Mk> GetMsrMkByKf(PtrKeyFrame _pKf) const { return mmsrplMk.GetMsrByKf(_pKf); }
+    std::set<PtrMsrPt3Kf2Mk> GetMsrMkByMk(PtrMark _pMk) const { return mmsrplMk.GetMsrByMk(_pMk); }
+    PtrMsrPt3Kf2Mk GetMsrMkByKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const { return mmsrplMk.GetMsrByKfMk(_pKf, _pMk); }
+    std::set<PtrMark> GetMkByKf(PtrKeyFrame _pKf) const { return mmsrplMk.GetMkByKf(_pKf); }
+    std::set<PtrKeyFrame> GetKfbyMk(PtrMark _pMk) const { return mmsrplMk.GetKfByMk(_pMk); }
 
     // Functions on UV Mappoint Measure
-    bool AddMsrMp(PtrMsrUVKf2Mp _pMsr) { return mmsrplOrbMp.AddMsr(_pMsr); }
+    bool AddMsrMp(PtrMsrUVKf2Mp _pMsr) { return mmsrplMp.AddMsr(_pMsr); }
+    std::set<PtrMsrUVKf2Mp> GetMsrMpAll() const { return mmsrplMp.GetMsrAll(); }
+    std::set<PtrMsrUVKf2Mp> GetMsrMpByKf(PtrKeyFrame _pKf) const { return mmsrplMp.GetMsrByKf(_pKf); }
+    std::set<PtrMsrUVKf2Mp> GetMsrMpByMp(PtrMapPoint _pMp) const { return mmsrplMp.GetMsrByMp(_pMp); }
+    PtrMsrUVKf2Mp GetMsrMpByKfId(PtrKeyFrame _pKf, int _idKp) const { return mmsrplMp.GetMsrByKfId(_pKf, _idKp); }
+    PtrMsrUVKf2Mp GetMsrMpByKfMp(PtrKeyFrame _pKf, PtrMapPoint _pMp) const { return mmsrplMp.GetMsrByKfMp(_pKf, _pMp); }
+    std::set<PtrKeyFrame> GetKfByMp(PtrMapPoint _pMp) const { return mmsrplMp.GetKfByMp(_pMp); }
+    std::set<PtrMapPoint> GetMpByKf(PtrKeyFrame _pKf) const { return mmsrplMp.GetMpByKf(_pKf); }
+
 
     //! IO Functions
     std::vector<std::string> SplitString(const std::string _str, const std::string _separator);
@@ -113,12 +110,14 @@ protected:
     std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfHead2MsrOdo;
     std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfTail2MsrOdo;
     // Mark
-    std::set<PtrMsrPt3Kf2Mk> msetMsrMk;
-    std::multimap<PtrKeyFrame ,PtrMsrPt3Kf2Mk> mmapKf2MsrMk;
-    std::multimap<PtrMark, PtrMsrPt3Kf2Mk> mmapMk2MsrMk;
+    MeasurePoolPt3Kf2Mk mmsrplMk;
+
+//    std::set<PtrMsrPt3Kf2Mk> msetMsrMk;
+//    std::multimap<PtrKeyFrame ,PtrMsrPt3Kf2Mk> mmapKf2MsrMk;
+//    std::multimap<PtrMark, PtrMsrPt3Kf2Mk> mmapMk2MsrMk;
 
     // MapPoint
-    MeasurePoolOrbMp mmsrplOrbMp;
+    MeasurePoolUVKf2Mp mmsrplMp;
 
     //! Configures
 

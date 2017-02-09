@@ -117,7 +117,7 @@ void SolverAruco::CreateMarks() {
 void SolverAruco::RefreshMksPose() {
     for(auto ptr : mpDatasetAruco->GetMkSet()) {
         PtrMark pMk = ptr;
-        set<PtrMsrPt3Kf2Mk> setpMsr = mpDatasetAruco->GetMsrMkbyMk(pMk);
+        set<PtrMsrPt3Kf2Mk> setpMsr = mpDatasetAruco->GetMsrMkByMk(pMk);
         if(!setpMsr.empty()) {
             PtrKeyFrame pKf = (*setpMsr.cbegin())->pKf;
             Se3 se3wc = pKf->GetPoseCamera();
@@ -176,7 +176,7 @@ void SolverInitmk::DoCalib() {
 
 void SolverInitmk::ComputeGrndPlane(Mat &nvec_cg) {
 
-    const set<PtrMsrPt3Kf2Mk> & setMsrMk = mpDataset->GetMsrMkSet();
+    const set<PtrMsrPt3Kf2Mk> & setMsrMk = mpDataset->GetMsrMkAll();
 
     int numLclIdMk = 0;
     int numLclIdKf = 0;
@@ -286,7 +286,7 @@ void SolverInitmk::ComputeCamProjFrame(const Mat &nvec_cg, Mat &rvec_dc, Mat &tv
 double SolverInitmk::Compute2DExtrinsic(const Mat &rvec_dc, const Mat &tvec_dc, Mat &rvec_bd, Mat &tvec_bd) {
 
     const set<PtrMsrSe2Kf2Kf>& setMsrOdo = mpDataset->GetMsrOdoSet();
-    const set<PtrMsrPt3Kf2Mk>& setMsrMk = mpDataset->GetMsrMkSet();
+    const set<PtrMsrPt3Kf2Mk>& setMsrMk = mpDataset->GetMsrMkAll();
 
     double threshSmallRotation = 1.0/5000;
 
@@ -422,8 +422,8 @@ double SolverInitmk::Compute2DExtrinsic(const Mat &rvec_dc, const Mat &tvec_dc, 
 int SolverInitmk::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrPt3Kf2Mk, PtrMsrPt3Kf2Mk>> &_setpairMsrMk) {
     // Find covisible mark from two keyframe, consider the ordered set
     _setpairMsrMk.clear();
-    set<PtrMark> setpMk1 = mpDataset->GetMkbyKf(_pKf1);
-    set<PtrMark> setpMk2 = mpDataset->GetMkbyKf(_pKf2);
+    set<PtrMark> setpMk1 = mpDataset->GetMkByKf(_pKf1);
+    set<PtrMark> setpMk2 = mpDataset->GetMkByKf(_pKf2);
     set<PtrMark> setpMkCovis;
     for (auto iterMk1 = setpMk1.begin(), iterMk2 = setpMk2.begin();
          iterMk1 != setpMk1.end() && iterMk2 != setpMk2.end(); ) {
@@ -442,8 +442,8 @@ int SolverInitmk::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2
     }
 
     for(auto pMkCovis : setpMkCovis) {
-        PtrMsrPt3Kf2Mk pMsrMk1 = mpDataset->GetMsrMkbyKfMk(_pKf1, pMkCovis);
-        PtrMsrPt3Kf2Mk pMsrMk2 = mpDataset->GetMsrMkbyKfMk(_pKf2, pMkCovis);
+        PtrMsrPt3Kf2Mk pMsrMk1 = mpDataset->GetMsrMkByKfMk(_pKf1, pMkCovis);
+        PtrMsrPt3Kf2Mk pMsrMk2 = mpDataset->GetMsrMkByKfMk(_pKf2, pMkCovis);
         assert(pMsrMk1 && pMsrMk2);
         _setpairMsrMk.insert(make_pair(pMsrMk1,pMsrMk2));
     }
@@ -508,7 +508,7 @@ void SolverOptMk::DoCalib() {
     }
 
     //! Set mark measurement edges
-    for (auto ptr : mpDataset->GetMsrMkSet()) {
+    for (auto ptr : mpDataset->GetMsrMkAll()) {
         PtrMsrPt3Kf2Mk pMsrMk = ptr;
         PtrKeyFrame pKf = pMsrMk->pKf;
         PtrMark pMk = pMsrMk->pMk;
