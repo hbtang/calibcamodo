@@ -14,9 +14,9 @@ void InitOptimizerSlam(Optimizer &opt, bool verbose){
     opt.setVerbose(verbose);
 }
 
-CamPara* AddCamPara(Optimizer &opt, const cv::Mat &K, int id){
+g2o::CameraParameters* AddCamPara(Optimizer &opt, const cv::Mat &K, int id){
     Eigen::Vector2d principal_point(K.at<float>(0,2), K.at<float>(1,2));
-    CamPara* campr = new CamPara(K.at<float>(0,0), principal_point, 0.);
+    g2o::CameraParameters* campr = new g2o::CameraParameters(K.at<float>(0,0), principal_point, 0.);
     campr->setId(id);
     opt.addParameter(campr);
     return campr;
@@ -25,6 +25,19 @@ CamPara* AddCamPara(Optimizer &opt, const cv::Mat &K, int id){
 g2o::ParameterSE3Offset* AddParaSE3Offset(Optimizer &opt, const g2o::Isometry3D& se3offset, int id){
     g2o::ParameterSE3Offset * para = new g2o::ParameterSE3Offset();
     para->setOffset(se3offset);
+    para->setId(id);
+    opt.addParameter(para);
+    return para;
+}
+
+g2o::ParameterCamera* AddParaCamera(Optimizer &opt, const cv::Mat& K, const g2o::Isometry3D& se3offset, int id) {
+    g2o::ParameterCamera* para = new g2o::ParameterCamera();
+    para->setOffset(se3offset);
+    float fx = K.at<float>(0,0);
+    float fy = K.at<float>(1,1);
+    float cx = K.at<float>(0,2);
+    float cy = K.at<float>(1,2);
+    para->setKcam(fx, fy, cx, cy);
     para->setId(id);
     opt.addParameter(para);
     return para;
@@ -163,9 +176,9 @@ g2o::EdgeSE3PointXYZ* AddEdgeSE3XYZ(Optimizer &opt, int idse3, int idxyz, int pa
     return e;
 }
 
-g2o::EdgeXYZCalibCamOdo* AddEdgeXYZCalibCamOdo(Optimizer &opt, int idKf, int idMk, int idCalib,
+g2o::EdgeOptMk* AddEdgeXYZCalibCamOdo(Optimizer &opt, int idKf, int idMk, int idCalib,
                                                const g2o::Vector3D &measure, const g2o::Matrix3D &info) {
-    g2o::EdgeXYZCalibCamOdo* e = new g2o::EdgeXYZCalibCamOdo();
+    g2o::EdgeOptMk* e = new g2o::EdgeOptMk();
     e->vertices()[0] = opt.vertex(idKf);
     e->vertices()[1] = opt.vertex(idMk);
     e->vertices()[2] = opt.vertex(idCalib);

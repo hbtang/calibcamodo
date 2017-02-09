@@ -651,6 +651,7 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
             PtrMapPoint pMp = mpDatasetOrb->GetMpByKfId(pKf1, id1);
             if (pMp) {
                 // use old mappoint
+//                cerr << "find old mappoint!" << endl;
             }
             else {
                 // add new mappoint
@@ -677,7 +678,6 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
         //        cerr << "pt2" << endl << pt2 << endl;
         //        cerr << "pt3wp" << endl << pt3wp << endl;
         //        cerr << endl;
-
     }
 
     // debug
@@ -818,58 +818,54 @@ cv::Mat SolverOrb::ComputeCamMatP(PtrKeyFrame pKf, cv::Mat matCam) {
 //! \brief SolverOrb::OptimizeSlam
 //! TODO!
 //!
-//void SolverOrb::OptimizeSlam() {
-//    // Set optimizer
-//    SparseOptimizer optimizer;
-//    bool bOptVerbose = true;
-//    InitOptimizerCalib(optimizer, bOptVerbose);
+void SolverOrb::OptimizeSlam() {
 
-//    // Set keyframe vertices
-//    map<PtrKeyFrame,int> mappKf2IdOpt;
-//    for (auto ptr : mpDataset->GetKfSet()) {
-//        PtrKeyFrame pKf = ptr;
-//        AddVertexSE2(optimizer, toG2oSE2(pKf->GetPoseBase()), idVertexMax);
-//        mappKf2IdOpt[pKf] = idVertexMax++;
-//    }
+    // Init optimizer
+    SparseOptimizer optimizer;
+    bool bOptVerbose = true;
+    InitOptimizerSlam(optimizer, bOptVerbose);
 
-//    // Set mark vertices
-//    map<PtrMark,int> mappMk2IdOpt;
-//    for (auto ptr : mpDataset->GetMkSet()) {
-//        PtrMark pMk = ptr;
-//        // NEED TO ADD INIT MK POSE HERE !!!
-//        g2o::Vector3D pose = toG2oVector3D(pMk->GetPose().tvec);
+    // Add Parameters
+    ParameterCamera* paramCamera = AddParaCamera(optimizer, mpDatasetOrb->mCamMatrix, toG2oIsometry3D(mSe3cb), 0);
 
-//        AddVertexPointXYZ(optimizer, pose, idVertexMax);
-//        mappMk2IdOpt[pMk] = idVertexMax++;
-//        // DEBUG
-//        //        cerr << "mkId: " << pMk->GetId() << endl;
-//        //        cerr << "mkTvec: " << pMk->GetPose().tvec << endl;
-//        //        cerr << "pose: " << pose << endl;
-//    }
+    int idVertexMax = 0;
+    // Add keyframe vertices
+    map<PtrKeyFrame, int> mapKf2IdOpt;
+    for (auto ptr : mpDataset->GetKfSet()) {
+        PtrKeyFrame pKf = ptr;
+        SE2 pose = toG2oSE2(pKf->GetPoseBase());
+        AddVertexSE2(optimizer, pose, idVertexMax);
+        mapKf2IdOpt[pKf] = idVertexMax++;
+    }
 
-//    // Set odometry edges
-//    for (auto ptr : mpDataset->GetMsrOdoSet()) {
-//        PtrMsrSe2Kf2Kf pMsrOdo = ptr;
-//        PtrKeyFrame pKf0 = pMsrOdo->pKfHead;
-//        PtrKeyFrame pKf1 = pMsrOdo->pKfTail;
-//        int id0 = mappKf2IdOpt[pKf0];
-//        int id1 = mappKf2IdOpt[pKf1];
-//        g2o::SE2 measure = toG2oSE2(pMsrOdo->se2);
-//        g2o::Matrix3D info = toEigenMatrixXd(pMsrOdo->info);
-//        AddEdgeSE2(optimizer, id0, id1, measure, info);
+    // Add mappoint vertices
+    map<PtrMapPoint,int> mapMp2IdOpt;
+    for (auto ptr : mpDataset->GetMpSet()) {
+        PtrMapPoint pMp = ptr;
+        Vector3D pose = toG2oVector3D(pMp->GetPos().tvec());
+        AddVertexPointXYZ(optimizer, pose, idVertexMax);
+        mapMp2IdOpt[pMp] = idVertexMax++;
+    }
 
-//        // DEBUG
-//        //        cerr << info << endl;
-//        //        cerr << pMsrOdo->info << endl;
-//    }
+    // Add odometry edges
+    for (auto ptr : mpDataset->GetMsrOdoSet()) {
+        PtrMsrSe2Kf2Kf pMsrOdo = ptr;
+        PtrKeyFrame pKf0 = pMsrOdo->pKfHead;
+        PtrKeyFrame pKf1 = pMsrOdo->pKfTail;
+        int id0 = mapKf2IdOpt[pKf0];
+        int id1 = mapKf2IdOpt[pKf1];
+        g2o::SE2 measure = toG2oSE2(pMsrOdo->se2);
+        g2o::Matrix3D info = toEigenMatrixXd(pMsrOdo->info);
+        AddEdgeSE2(optimizer, id0, id1, measure, info);
+    }
 
-//    // Set mark measurement edges
+    // Set mark measurement edges
 //    for (auto ptr : mpDataset->GetMsrMkSet()) {
 //        PtrMsrPt3Kf2Mk pMsrMk = ptr;
 //        PtrKeyFrame pKf = pMsrMk->pKf;
 //        PtrMark pMk = pMsrMk->pMk;
 
-//        int idKf = mappKf2IdOpt[pKf];
+//        int idKf = mapKf2IdOpt[pKf];
 //        int idMk = mappMk2IdOpt[pMk];
 
 //        g2o::Vector3D measure = toG2oVector3D(pMsrMk->measure);
@@ -894,7 +890,7 @@ cv::Mat SolverOrb::ComputeCamMatP(PtrKeyFrame pKf, cv::Mat matCam) {
 //    mSe3cb = toSe3(Iso3_bc_opt);
 
 //    // Refresh keyframe
-//    for (auto pair : mappKf2IdOpt) {
+//    for (auto pair : mapKf2IdOpt) {
 //        PtrKeyFrame pKf = pair.first;
 //        int idOpt = pair.second;
 //        VertexSE2* pVertex = static_cast<VertexSE2*>(optimizer.vertex(idOpt));
@@ -912,6 +908,6 @@ cv::Mat SolverOrb::ComputeCamMatP(PtrKeyFrame pKf, cv::Mat matCam) {
 //        // DEBUG:
 //        //        cerr << "tvec_wm: " << tvec_wm.t() << endl;
 //    }
-//}
+}
 
 }
