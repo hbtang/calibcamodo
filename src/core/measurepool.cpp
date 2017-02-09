@@ -198,6 +198,11 @@ std::set<PtrMapPoint> MeasurePoolUVKf2Mp::GetMpByKf(PtrKeyFrame _pKf) const {
     return setMpRet;
 }
 
+PtrMapPoint MeasurePoolUVKf2Mp::GetMpByKfId(PtrKeyFrame _pKf, int _idKp) const {
+    PtrMsrUVKf2Mp pMsr = GetMsrByKfId(_pKf, _idKp);
+    return pMsr ? pMsr->pMp : nullptr;
+}
+
 }
 
 

@@ -5,12 +5,11 @@
 #include "config.h"
 #include "cvmath.h"
 
-namespace calibcamodo {
-
 using namespace cv;
 using namespace std;
 using namespace g2o;
 
+namespace calibcamodo {
 //!
 //! \brief Solver::Solver
 //! \param _pDataset
@@ -70,6 +69,9 @@ void Solver::RefreshKfsPose() {
     }
 }
 
+}
+
+namespace calibcamodo {
 
 SolverAruco::SolverAruco(DatasetAruco* _pDatasetAruco):
     Solver(_pDatasetAruco) {
@@ -134,12 +136,15 @@ void SolverAruco::RefreshAllPose() {
     RefreshMksPose();
 }
 
+}
+
+
+namespace calibcamodo {
 
 SolverInitmk::SolverInitmk(DatasetAruco *_pDatasetAruco):
     SolverAruco(_pDatasetAruco) {
 
 }
-
 
 void SolverInitmk::DoCalib() {
 
@@ -451,6 +456,11 @@ int SolverInitmk::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2
     return 0;
 }
 
+}
+
+
+namespace calibcamodo {
+
 SolverOptMk::SolverOptMk(DatasetAruco *_pDataset):
     SolverAruco(_pDataset) {
 
@@ -558,7 +568,9 @@ void SolverOptMk::DoCalib() {
     }
 }
 
+}
 
+namespace calibcamodo {
 
 //! SolverOrb
 //!
@@ -594,10 +606,10 @@ void SolverOrb::CreateMapPoints() {
         // debug ...
         //        DrawMatches(pKf1, pKf2, mapOrbMatches, "raw-match");
         //        DrawMatches(pKf1, pKf2, mapOrbMatchesGood1, "good-match-1");
-        DrawMatches(pKf1, pKf2, mapOrbMatchesGood2, "good-match-2");
-        cerr << "-- number of raw matches: " << mapOrbMatches.size();
-        cerr << "-- number of good matches 1: " << mapOrbMatchesGood1.size();
-        cerr << "-- number of good matches 2: " << mapOrbMatchesGood2.size();
+//        DrawMatches(pKf1, pKf2, mapOrbMatchesGood2, "good-match-2");
+        cerr << " -- number of raw matches: " << mapOrbMatches.size();
+        cerr << " -- number of good matches 1: " << mapOrbMatchesGood1.size();
+        cerr << " -- number of good matches 2: " << mapOrbMatchesGood2.size();
         cerr << endl;
         // debug end
 
@@ -609,7 +621,7 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
                                   const std::map<int, int>& match) {
     Mat matCamP1 = ComputeCamMatP(pKf1, mpDatasetOrb->mCamMatrix);
     Mat matCamP2 = ComputeCamMatP(pKf2, mpDatasetOrb->mCamMatrix);
-    std::map<int, int> match_mpcandidate;
+    std::map<int, int> matchMpPlaxGood;
     for(auto pair : match) {
         int id1 = pair.first;
         int id2 = pair.second;
@@ -633,11 +645,19 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
 
         // check if parallax good, and create mappoint
         if (checkParallax(pt3wo1, pt3wo2, pt3wp)) {
-            match_mpcandidate[id1] = id2;
 
-            // insert mappoint
-            PtrMapPointOrb pMp = make_shared<MapPointOrb>(Pt3(pt3wp));
-            mpDatasetOrb->AddMpOrb(pMp);
+            matchMpPlaxGood[id1] = id2;
+
+            PtrMapPoint pMp = mpDatasetOrb->GetMpByKfId(pKf1, id1);
+            if (pMp) {
+                // use old mappoint
+            }
+            else {
+                // add new mappoint
+                PtrMapPointOrb pMpOrb = make_shared<MapPointOrb>(Pt3(pt3wp));
+                mpDatasetOrb->AddMpOrb(pMpOrb);
+                pMp = pMpOrb;
+            }
 
             Mat info = (Mat_<float>(2,2) << 1,0,0,1);
             PtrMsrUVKf2Mp pMsr1 = make_shared<MeasureUVKf2Mp>(
@@ -661,7 +681,7 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
     }
 
     // debug
-    cerr << " -- number of mappoint candidates: " << match_mpcandidate.size() << endl;
+    cerr << " -- number of mappoint candidates: " << matchMpPlaxGood.size() << endl;
 
 }
 

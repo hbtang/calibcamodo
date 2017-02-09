@@ -25,11 +25,10 @@ public:
     virtual void CreateKeyFrames() {}
 
     // Functions on Frame
-    inline const std::set<PtrFrame>& GetFrameSet() const { return msetpFrame; }
-    inline const std::map<int, PtrFrame>& GetFrameMap() const { return mmapId2pFrame; }
+    const std::set<PtrFrame>& GetFrameSet() const { return msetpFrame; }
+    const std::map<int, PtrFrame>& GetFrameMap() const { return mmapId2pFrame; }
     PtrFrame GetFrame(int _id) const;
     bool AddFrame(PtrFrame _ptr);
-
 
     // Functions on KeyFrame
     inline const std::set<PtrKeyFrame> & GetKfSet() const { return msetpKf; }
@@ -37,10 +36,9 @@ public:
     PtrKeyFrame GetKf(int _id) const;
     bool AddKf(PtrKeyFrame _ptr);
 
-
     // Functions on Mark
-    inline const std::set<PtrMark> & GetMkSet() const { return msetpMk; }
-    inline const std::map<int, PtrMark>& GetMkMap() const { return mmapId2pMk; }
+    const std::set<PtrMark> & GetMkSet() const { return msetpMk; }
+    const std::map<int, PtrMark>& GetMkMap() const { return mmapId2pMk; }
     PtrMark GetMk(int _id) const;
     bool AddMk(PtrMark _ptr);
 
@@ -79,7 +77,7 @@ public:
     PtrMsrUVKf2Mp GetMsrMpByKfMp(PtrKeyFrame _pKf, PtrMapPoint _pMp) const { return mmsrplMp.GetMsrByKfMp(_pKf, _pMp); }
     std::set<PtrKeyFrame> GetKfByMp(PtrMapPoint _pMp) const { return mmsrplMp.GetKfByMp(_pMp); }
     std::set<PtrMapPoint> GetMpByKf(PtrKeyFrame _pKf) const { return mmsrplMp.GetMpByKf(_pKf); }
-
+    PtrMapPoint GetMpByKfId(PtrKeyFrame _pKf, int _idKp) const { return mmsrplMp.GetMpByKfId(_pKf, _idKp); }
 
     //! IO Functions
     std::vector<std::string> SplitString(const std::string _str, const std::string _separator);
@@ -103,14 +101,9 @@ protected:
     std::set<PtrMapPoint> msetpMp;
     std::map<int, PtrMapPoint> mmapId2pMp;
 
-
     //! Measures
     // Odometry
     MeasurePoolSe2Kf2Kf mmsrplOdo;
-
-//    std::set<PtrMsrSe2Kf2Kf> msetMsrOdo;
-//    std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfHead2MsrOdo;
-//    std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfTail2MsrOdo;
     // Mark
     MeasurePoolPt3Kf2Mk mmsrplMk;
     // MapPoint
@@ -127,28 +120,15 @@ protected:
 
     double mThreshOdoLin;
     double mThreshOdoRot;
-//    double mOdoLinErrR;
-//    double mOdoLinErrMin;
-//    double mOdoRotErrR;
-//    double mOdoRotErrRLin;
-//    double mOdoRotErrMin;
-//    double mAmkZErrRZ;
-//    double mAmkZErrMin;
-//    double mAmkXYErrRZ;
-//    double mAmkXYErrMin;
 };
 
 class DatasetAruco : public Dataset {
-
-//    friend class SolverAruco;
 
 public:
     DatasetAruco();
     ~DatasetAruco() = default;
 
     void CreateKeyFrames();
-//    void CreateMarks();
-//    void CreateMsrMks() {}
 
     // Functions on MkAruco
     inline const std::set<PtrMarkAruco> GetMkArucoSet() { return msetpMkAruco; }
@@ -212,7 +192,6 @@ protected:
     // storage of orb-mappoints
     std::set<PtrMapPointOrb> msetpMpOrb;
     std::map<int, PtrMapPointOrb> mmapId2pMpOrb;
-
 
 };
 

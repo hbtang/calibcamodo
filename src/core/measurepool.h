@@ -66,6 +66,7 @@ public:
     PtrMsrUVKf2Mp GetMsrByKfMp(PtrKeyFrame _pKf, PtrMapPoint _pMp) const;
     std::set<PtrKeyFrame> GetKfByMp(PtrMapPoint _pMp) const;
     std::set<PtrMapPoint> GetMpByKf(PtrKeyFrame _pKf) const;
+    PtrMapPoint GetMpByKfId(PtrKeyFrame _pKf, int _idKp) const;
 
 private:
     std::set<PtrMsrUVKf2Mp> msetMsr;
