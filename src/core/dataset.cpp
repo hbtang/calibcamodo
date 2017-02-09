@@ -115,52 +115,52 @@ bool Dataset::AddMp(PtrMapPoint _ptr) {
     return true;
 }
 
-bool Dataset::AddMsrOdo(PtrMsrSe2Kf2Kf _ptr) {
-    assert(msetMsrOdo.count(_ptr) == 0);
-    assert(mmapKfHead2MsrOdo.count(_ptr->pKfHead) == 0);
-    assert(mmapKfTail2MsrOdo.count(_ptr->pKfTail) == 0);
+//bool Dataset::AddMsrOdo(PtrMsrSe2Kf2Kf _ptr) {
+//    assert(msetMsrOdo.count(_ptr) == 0);
+//    assert(mmapKfHead2MsrOdo.count(_ptr->pKfHead) == 0);
+//    assert(mmapKfTail2MsrOdo.count(_ptr->pKfTail) == 0);
 
-    msetMsrOdo.insert(_ptr);
-    mmapKfHead2MsrOdo[_ptr->pKfHead] = _ptr;
-    mmapKfTail2MsrOdo[_ptr->pKfTail] = _ptr;
-    return true;
-}
+//    msetMsrOdo.insert(_ptr);
+//    mmapKfHead2MsrOdo[_ptr->pKfHead] = _ptr;
+//    mmapKfTail2MsrOdo[_ptr->pKfTail] = _ptr;
+//    return true;
+//}
 
-PtrMsrSe2Kf2Kf Dataset::GetMsrOdobyKfHead(PtrKeyFrame _pKf) const {
-    PtrMsrSe2Kf2Kf pRet = nullptr;
-    if(mmapKfHead2MsrOdo.count(_pKf))
-        pRet = mmapKfHead2MsrOdo.at(_pKf);
-    return pRet;
-}
+//PtrMsrSe2Kf2Kf Dataset::GetMsrOdoByKfHead(PtrKeyFrame _pKf) const {
+//    PtrMsrSe2Kf2Kf pRet = nullptr;
+//    if(mmapKfHead2MsrOdo.count(_pKf))
+//        pRet = mmapKfHead2MsrOdo.at(_pKf);
+//    return pRet;
+//}
 
-PtrMsrSe2Kf2Kf Dataset::GetMsrOdobyKfTail(PtrKeyFrame _pKf) const {
-    PtrMsrSe2Kf2Kf pRet = nullptr;
-    if(mmapKfTail2MsrOdo.count(_pKf))
-        pRet = mmapKfTail2MsrOdo.at(_pKf);
-    return pRet;
-}
+//PtrMsrSe2Kf2Kf Dataset::GetMsrOdoByKfTail(PtrKeyFrame _pKf) const {
+//    PtrMsrSe2Kf2Kf pRet = nullptr;
+//    if(mmapKfTail2MsrOdo.count(_pKf))
+//        pRet = mmapKfTail2MsrOdo.at(_pKf);
+//    return pRet;
+//}
 
-void Dataset::ClearMsrOdo() {
-    msetMsrOdo.clear();
-    mmapKfHead2MsrOdo.clear();
-    mmapKfTail2MsrOdo.clear();
-}
+//void Dataset::ClearMsrOdo() {
+//    msetMsrOdo.clear();
+//    mmapKfHead2MsrOdo.clear();
+//    mmapKfTail2MsrOdo.clear();
+//}
 
-PtrKeyFrame Dataset::GetKfOdoNext(PtrKeyFrame _pKf) const {
-    PtrMsrSe2Kf2Kf pMsr = GetMsrOdobyKfHead(_pKf);
-    if(pMsr)
-        return pMsr->pKfTail;
-    else
-        return nullptr;
-}
+//PtrKeyFrame Dataset::GetKfOdoNext(PtrKeyFrame _pKf) const {
+//    PtrMsrSe2Kf2Kf pMsr = GetMsrOdoByKfHead(_pKf);
+//    if(pMsr)
+//        return pMsr->pKfTail;
+//    else
+//        return nullptr;
+//}
 
-PtrKeyFrame Dataset::GetKfOdoLast(PtrKeyFrame _pKf) const {
-    PtrMsrSe2Kf2Kf pMsr = GetMsrOdobyKfTail(_pKf);
-    if(pMsr)
-        return pMsr->pKfHead;
-    else
-        return nullptr;
-}
+//PtrKeyFrame Dataset::GetKfOdoLast(PtrKeyFrame _pKf) const {
+//    PtrMsrSe2Kf2Kf pMsr = GetMsrOdoByKfTail(_pKf);
+//    if(pMsr)
+//        return pMsr->pKfHead;
+//    else
+//        return nullptr;
+//}
 
 //bool Dataset::AddMsrMk(PtrMsrPt3Kf2Mk _ptr) {
 //    assert(msetMsrMk.count(_ptr) == 0);

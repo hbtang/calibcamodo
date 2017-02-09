@@ -52,13 +52,13 @@ public:
 
 
     // Functions on Odometry Measure
-    bool AddMsrOdo(PtrMsrSe2Kf2Kf _ptr);
-    void ClearMsrOdo();
-    inline const std::set<PtrMsrSe2Kf2Kf> & GetMsrOdoSet() const { return msetMsrOdo; }
-    PtrMsrSe2Kf2Kf GetMsrOdobyKfHead(PtrKeyFrame _pKf) const;
-    PtrMsrSe2Kf2Kf GetMsrOdobyKfTail(PtrKeyFrame _pKf) const;
-    PtrKeyFrame GetKfOdoNext(PtrKeyFrame _pKf) const;
-    PtrKeyFrame GetKfOdoLast(PtrKeyFrame _pKf) const;
+    bool AddMsrOdo(PtrMsrSe2Kf2Kf _pMsr) { return mmsrplOdo.AddMsr(_pMsr); }
+    void ClearMsrOdo() { mmsrplOdo.ClearAll(); }
+    std::set<PtrMsrSe2Kf2Kf> GetMsrOdoSet() const { return mmsrplOdo.GetMsrAll(); }
+    PtrMsrSe2Kf2Kf GetMsrOdoByKfHead(PtrKeyFrame _pKf) const { return mmsrplOdo.GetMsrOdoByKfHead(_pKf); }
+    PtrMsrSe2Kf2Kf GetMsrOdoByKfTail(PtrKeyFrame _pKf) const { return mmsrplOdo.GetMsrOdoByKfTail(_pKf); }
+    PtrKeyFrame GetKfOdoNext(PtrKeyFrame _pKf) const { return mmsrplOdo.GetKfOdoLast(_pKf); }
+    PtrKeyFrame GetKfOdoLast(PtrKeyFrame _pKf) const { return mmsrplOdo.GetKfOdoNext(_pKf); }
 
 
     // Functions on Pt3 Mark Measure
@@ -106,16 +106,13 @@ protected:
 
     //! Measures
     // Odometry
-    std::set<PtrMsrSe2Kf2Kf> msetMsrOdo;
-    std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfHead2MsrOdo;
-    std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfTail2MsrOdo;
+    MeasurePoolSe2Kf2Kf mmsrplOdo;
+
+//    std::set<PtrMsrSe2Kf2Kf> msetMsrOdo;
+//    std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfHead2MsrOdo;
+//    std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfTail2MsrOdo;
     // Mark
     MeasurePoolPt3Kf2Mk mmsrplMk;
-
-//    std::set<PtrMsrPt3Kf2Mk> msetMsrMk;
-//    std::multimap<PtrKeyFrame ,PtrMsrPt3Kf2Mk> mmapKf2MsrMk;
-//    std::multimap<PtrMark, PtrMsrPt3Kf2Mk> mmapMk2MsrMk;
-
     // MapPoint
     MeasurePoolUVKf2Mp mmsrplMp;
 

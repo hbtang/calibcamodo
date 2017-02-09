@@ -2,6 +2,54 @@
 
 using namespace std;
 
+namespace calibcamodo {
+
+bool MeasurePoolSe2Kf2Kf::AddMsr(PtrMsrSe2Kf2Kf _pMsr) {
+    PtrKeyFrame pKfHead = _pMsr->pKfHead;
+    PtrKeyFrame pKfTail = _pMsr->pKfTail;
+
+    if(msetMsr.count(_pMsr) != 0)
+        return false;
+
+    msetMsr.insert(_pMsr);
+    mmapKfHead2Msr.emplace(pKfHead, _pMsr);
+    mmapKfTail2Msr.emplace(pKfTail, _pMsr);
+    return true;
+}
+
+void MeasurePoolSe2Kf2Kf::ClearAll() {
+    msetMsr.clear();
+    mmapKfHead2Msr.clear();
+    mmapKfTail2Msr.clear();
+}
+
+PtrMsrSe2Kf2Kf MeasurePoolSe2Kf2Kf::GetMsrOdoByKfHead(PtrKeyFrame _pKf) const {
+    PtrMsrSe2Kf2Kf pRet = nullptr;
+    if(mmapKfHead2Msr.count(_pKf))
+        pRet = mmapKfHead2Msr.at(_pKf);
+    return pRet;
+}
+
+PtrMsrSe2Kf2Kf MeasurePoolSe2Kf2Kf::GetMsrOdoByKfTail(PtrKeyFrame _pKf) const {
+    PtrMsrSe2Kf2Kf pRet = nullptr;
+    if(mmapKfTail2Msr.count(_pKf))
+        pRet = mmapKfTail2Msr.at(_pKf);
+    return pRet;
+}
+
+PtrKeyFrame MeasurePoolSe2Kf2Kf::GetKfOdoNext(PtrKeyFrame _pKf) const {
+    PtrMsrSe2Kf2Kf pMsr = GetMsrOdoByKfHead(_pKf);
+    return pMsr ? pMsr->pKfTail : nullptr;
+}
+
+
+PtrKeyFrame MeasurePoolSe2Kf2Kf::GetKfOdoLast(PtrKeyFrame _pKf) const {
+    PtrMsrSe2Kf2Kf pMsr = GetMsrOdoByKfTail(_pKf);
+    return pMsr ? pMsr->pKfTail : nullptr;
+}
+
+}
+
 //! MeasurePoolPt3Kf2Mk
 namespace calibcamodo {
 

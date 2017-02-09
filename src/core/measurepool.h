@@ -6,6 +6,28 @@
 namespace calibcamodo {
 
 //!
+//! \brief The MeasurePoolSe2Kf2Kf class
+//!
+class MeasurePoolSe2Kf2Kf {
+public:
+    MeasurePoolSe2Kf2Kf() = default;
+
+    bool AddMsr(PtrMsrSe2Kf2Kf _pMsr);
+    void ClearAll();
+
+    std::set<PtrMsrSe2Kf2Kf> GetMsrAll() const { return msetMsr; }
+    PtrMsrSe2Kf2Kf GetMsrOdoByKfHead(PtrKeyFrame _pKf) const;
+    PtrMsrSe2Kf2Kf GetMsrOdoByKfTail(PtrKeyFrame _pKf) const;
+    PtrKeyFrame GetKfOdoNext(PtrKeyFrame _pKf) const;
+    PtrKeyFrame GetKfOdoLast(PtrKeyFrame _pKf) const;
+
+private:
+    std::set<PtrMsrSe2Kf2Kf> msetMsr;
+    std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfHead2Msr;
+    std::map<PtrKeyFrame, PtrMsrSe2Kf2Kf> mmapKfTail2Msr;
+};
+
+//!
 //! \brief The MeasurePoolPt3Kf2Mk class
 //!
 class MeasurePoolPt3Kf2Mk {
