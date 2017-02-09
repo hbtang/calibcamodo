@@ -573,7 +573,7 @@ SolverOrb::SolverOrb(DatasetOrb* _pDataset):
 }
 
 
-void SolverOrb::BuildDataset() {
+void SolverOrb::CreateMapPoint() {
 
     // match orb-keypoints between neigbour keyframes
     std::map<int, PtrKeyFrameOrb> mapId2pKfOrb = mpDatasetOrb->GetKfOrbMap();
@@ -593,8 +593,8 @@ void SolverOrb::BuildDataset() {
         RejectOutlierRansac(pKf1, pKf2, mapOrbMatchesGood1, mapOrbMatchesGood2);
 
         // debug ...
-        DrawMatches(pKf1, pKf2, mapOrbMatches, "raw-match");
-        DrawMatches(pKf1, pKf2, mapOrbMatchesGood1, "good-match-1");
+//        DrawMatches(pKf1, pKf2, mapOrbMatches, "raw-match");
+//        DrawMatches(pKf1, pKf2, mapOrbMatchesGood1, "good-match-1");
         DrawMatches(pKf1, pKf2, mapOrbMatchesGood2, "good-match-2");
         cerr << "-- number of raw matches: " << mapOrbMatches.size();
         cerr << "-- number of good matches 1: " << mapOrbMatchesGood1.size();
@@ -714,7 +714,7 @@ void SolverOrb::DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<i
     }
 
     imshow(imgtitle, imgMatch);
-    waitKey(10);
+    waitKey(1);
 }
 
 

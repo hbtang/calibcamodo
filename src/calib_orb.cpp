@@ -56,40 +56,17 @@ int main(int argc, char **argv) {
     datasetOrb.CreateKeyFrames();
     cerr << "DatasetOrb: dataset created." << endl << endl;
 
+    //! Init mappublisher with ros rviz
+    MapPublish mappublish(&datasetOrb);
+
     //! Solver
     SolverOrb solverOrb(&datasetOrb);
     solverOrb.RefreshKfsPose();
-    solverOrb.BuildDataset();
-//    SolverInitmk solverInitmk(&datasetOrb);
-//    cerr << "DatasetOrb: creating measurement odometry ..." << endl;
-//    solverInitmk.CreateMsrOdos();
+    solverOrb.CreateMsrOdos();
+    solverOrb.CreateMapPoint();
 
-    // TODO: create mappoints and measurements ...
-
-
-
-//    //! Calibrate by SolverInitmk
-//    cerr << "SolverInitmk: init solver ..." << endl;
-//    SolverInitmk solverInitmk(&datasetOrb);
-//    solverInitmk.DoCalib();
-//    Se3 se3_cb = solverInitmk.GetSe3cb();
-//    cerr << "SolverInitmk: result = " << se3_cb << endl << endl;
-
-//    //! Calibrate by SolverOptmk
-//    cerr << "SolverOptmk: init solver ..." << endl;
-//    datasetOrb.InitAll(se3_cb);
-
-//    //! Debug: Show something here, with ros viewer
-//    MapPublish mappublish(&datasetOrb);
-//    mappublish.run();
-
-//    SolverOptMk solverOptmk(&datasetOrb);
-//    solverOptmk.SetSe3cb(se3_cb);
-//    solverOptmk.DoCalib();
-//    se3_cb = solverOptmk.GetSe3cb();
-//    cerr << "SolverOptmk: result = " << se3_cb << endl;
-
-//    mappublish.run();
+    //! Show results
+    mappublish.run(10, 1);
 
     return 0;
 }

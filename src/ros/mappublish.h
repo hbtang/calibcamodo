@@ -26,11 +26,12 @@ public:
 
     Dataset* mpDataset;
 
-    void run(int _numIter = 10);
+    void run(int _numIter = 10, int flag = 0);
 
     void SetDataset(Dataset* pDataset) { mpDataset = pDataset; }
 
-    void PublishMapPoints();
+    void PublishMapPointsAruco();
+    void PublishMapPointsOrb();
     void PublishKeyFrames();
 
 private:

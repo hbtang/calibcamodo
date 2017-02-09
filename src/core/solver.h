@@ -105,7 +105,7 @@ public:
     SolverOrb(DatasetOrb* _pDataset);
 
     void DoCalib() {}
-    void BuildDataset();
+    void CreateMapPoint();
 
     // functions: find good matches of orb-features between 2 keyframes
     void MatchKeyPointOrb(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match);
