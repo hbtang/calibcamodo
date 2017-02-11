@@ -47,7 +47,8 @@ g2o::EdgeProjectXYZ2UV* AddEdgeXYZ2UV(Optimizer &opt, int id0, int id1, int para
 g2o::EdgeSE3* AddEdgeSE3(Optimizer &opt, int id0, int id1, const g2o::Isometry3D &measure, const g2o::Matrix6d& info);
 g2o::EdgeSE2* AddEdgeSE2(Optimizer &opt, int id0, int id1, const g2o::SE2 &measure, const g2o::Matrix3D &info);
 g2o::EdgeSE3PointXYZ* AddEdgeSE3XYZ(Optimizer &opt, int idse3, int idxyz, int paraSE3OffsetId, const g2o::Vector3D& measure, const g2o::Matrix3D &info, double thHuber);
-g2o::EdgeOptMk* AddEdgeXYZCalibCamOdo(Optimizer &opt, int idKf, int idMk, int idCalib, const g2o::Vector3D &measure, const g2o::Matrix3D &info);
+g2o::EdgeOptMk* AddEdgeOptMk(Optimizer &opt, int idKf, int idMk, int idCalib, const g2o::Vector3D &measure, const g2o::Matrix3D &info);
+g2o::EdgeVSlam* AddEdgeVSlam(Optimizer &opt, int idKf, int idMp, int idParam, const g2o::Vector2D &measure, const g2o::Matrix2D &info);
 
 g2o::Isometry3D EstimateVertexSE3(Optimizer &opt, int id);
 Eigen::Vector3d EstimateVertexXYZ(Optimizer &opt, int id);

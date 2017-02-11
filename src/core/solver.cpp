@@ -1,7 +1,6 @@
 #include "solver.h"
 #include "adapter.h"
 #include "mark.h"
-#include "g2o/g2o_api.h"
 #include "config.h"
 #include "cvmath.h"
 
@@ -529,7 +528,7 @@ void SolverOptMk::DoCalib() {
         g2o::Vector3D measure = toG2oVector3D(pMsrMk->measure);
         g2o::Matrix3D info = toEigenMatrixXd(pMsrMk->info);
 
-        AddEdgeXYZCalibCamOdo(optimizer, idKf, idMk, 0, measure, info);
+        AddEdgeOptMk(optimizer, idKf, idMk, 0, measure, info);
 
         // DEBUG
         //        cerr << info << endl;
@@ -606,7 +605,7 @@ void SolverOrb::CreateMapPoints() {
         // debug ...
         //        DrawMatches(pKf1, pKf2, mapOrbMatches, "raw-match");
         //        DrawMatches(pKf1, pKf2, mapOrbMatchesGood1, "good-match-1");
-//        DrawMatches(pKf1, pKf2, mapOrbMatchesGood2, "good-match-2");
+        //        DrawMatches(pKf1, pKf2, mapOrbMatchesGood2, "good-match-2");
         cerr << " -- number of raw matches: " << mapOrbMatches.size();
         cerr << " -- number of good matches 1: " << mapOrbMatchesGood1.size();
         cerr << " -- number of good matches 2: " << mapOrbMatchesGood2.size();
@@ -631,8 +630,8 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
         Point2f pt1Un = kp1Un.pt;
         Point2f pt2Un = kp2Un.pt;
 
-        KeyPoint kp1 = pKf1->mvecKeyPointUndist[id1];
-        KeyPoint kp2 = pKf2->mvecKeyPointUndist[id2];
+        KeyPoint kp1 = pKf1->mvecKeyPoint[id1];
+        KeyPoint kp2 = pKf2->mvecKeyPoint[id2];
         Point2f pt1 = kp1.pt;
         Point2f pt2 = kp2.pt;
 
@@ -664,7 +663,7 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
             PtrMsrUVKf2Mp pMsr1 = make_shared<MeasureUVKf2Mp>(
                         pt1, pt1Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf1, pMp, id1);
             PtrMsrUVKf2Mp pMsr2 = make_shared<MeasureUVKf2Mp>(
-                        pt2, pt2Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf1, pMp, id2);
+                        pt2, pt2Un, info, mpDatasetOrb->mCamMatrix, mpDatasetOrb->mDistCoeff, pKf2, pMp, id2);
 
             mpDatasetOrb->AddMsrMp(pMsr1);
             mpDatasetOrb->AddMsrMp(pMsr2);
@@ -826,7 +825,8 @@ void SolverOrb::OptimizeSlam() {
     InitOptimizerSlam(optimizer, bOptVerbose);
 
     // Add Parameters
-    ParameterCamera* paramCamera = AddParaCamera(optimizer, mpDatasetOrb->mCamMatrix, toG2oIsometry3D(mSe3cb), 0);
+    int idParamCamera = 0;
+    ParameterCamera* paramCamera = AddParaCamera(optimizer, mpDatasetOrb->mCamMatrix, toG2oIsometry3D(mSe3cb), idParamCamera);
 
     int idVertexMax = 0;
     // Add keyframe vertices
@@ -848,6 +848,7 @@ void SolverOrb::OptimizeSlam() {
     }
 
     // Add odometry edges
+    vector<g2o::EdgeSE2*> vecpEdgeOdo;
     for (auto ptr : mpDataset->GetMsrOdoSet()) {
         PtrMsrSe2Kf2Kf pMsrOdo = ptr;
         PtrKeyFrame pKf0 = pMsrOdo->pKfHead;
@@ -856,58 +857,94 @@ void SolverOrb::OptimizeSlam() {
         int id1 = mapKf2IdOpt[pKf1];
         g2o::SE2 measure = toG2oSE2(pMsrOdo->se2);
         g2o::Matrix3D info = toEigenMatrixXd(pMsrOdo->info);
-        AddEdgeSE2(optimizer, id0, id1, measure, info);
+        g2o::EdgeSE2* pEdgeOdo = AddEdgeSE2(optimizer, id0, id1, measure, info);
+        vecpEdgeOdo.push_back(pEdgeOdo);
     }
 
     // Set mark measurement edges
-//    for (auto ptr : mpDataset->GetMsrMkSet()) {
-//        PtrMsrPt3Kf2Mk pMsrMk = ptr;
-//        PtrKeyFrame pKf = pMsrMk->pKf;
-//        PtrMark pMk = pMsrMk->pMk;
+    vector<g2o::EdgeVSlam*> vecpEdgeVSlam;
+    for (auto ptr : mpDataset->GetMsrMpAll()) {
+        PtrMsrUVKf2Mp pMsrMp = ptr;
+        PtrKeyFrame pKf = pMsrMp->pKf;
+        PtrMapPoint pMp = pMsrMp->pMp;
+        int idKf = mapKf2IdOpt[pKf];
+        int idMp = mapMp2IdOpt[pMp];
+        g2o::Vector2D measure = toG2oVector2D(pMsrMp->measure);
+        g2o::Matrix2D info = toEigenMatrixXd(pMsrMp->info);
+        g2o::EdgeVSlam* pEdgeVSlam = AddEdgeVSlam(optimizer, idKf, idMp, idParamCamera, measure, info);
+        vecpEdgeVSlam.push_back(pEdgeVSlam);
+    }
 
-//        int idKf = mapKf2IdOpt[pKf];
-//        int idMk = mappMk2IdOpt[pMk];
+    PrintEdgeInfo(vecpEdgeOdo, vecpEdgeVSlam);
 
-//        g2o::Vector3D measure = toG2oVector3D(pMsrMk->measure);
-//        g2o::Matrix3D info = toEigenMatrixXd(pMsrMk->info);
+    // Do optimize
+    optimizer.initializeOptimization();
+    optimizer.optimize(15);
 
-//        AddEdgeXYZCalibCamOdo(optimizer, idKf, idMk, 0, measure, info);
+    PrintEdgeInfo(vecpEdgeOdo, vecpEdgeVSlam);
 
-//        // DEBUG
-//        //        cerr << info << endl;
-//        //        cerr << pMsrMk->measure << endl;
-//        //        cerr << measure << endl;
-//        //        cerr << pMsrMk->info << endl;
-//    }
+    //    // Refresh calibration results
+    //    g2o::VertexSE3* v = static_cast<g2o::VertexSE3*>(optimizer.vertex(0));
+    //    Isometry3D Iso3_bc_opt = v->estimate();
+    //    mSe3cb = toSe3(Iso3_bc_opt);
 
-//    // Do optimize
-//    optimizer.initializeOptimization();
-//    optimizer.optimize(100);
+    //    // Refresh keyframe
+    //    for (auto pair : mapKf2IdOpt) {
+    //        PtrKeyFrame pKf = pair.first;
+    //        int idOpt = pair.second;
+    //        VertexSE2* pVertex = static_cast<VertexSE2*>(optimizer.vertex(idOpt));
+    //        pKf->SetPoseAllbyB(toSe2(pVertex->estimate()), mSe3cb);
+    //    }
 
-//    // Refresh calibration results
-//    g2o::VertexSE3* v = static_cast<g2o::VertexSE3*>(optimizer.vertex(0));
-//    Isometry3D Iso3_bc_opt = v->estimate();
-//    mSe3cb = toSe3(Iso3_bc_opt);
+    //    // Refresh landmark
+    //    for (auto pair : mappMk2IdOpt) {
+    //        PtrMark pMk = pair.first;
+    //        int idOpt = pair.second;
+    //        VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
+    //        Mat tvec_wm = toCvMatf(pVertex->estimate());
+    //        pMk->SetPoseTvec(tvec_wm);
 
-//    // Refresh keyframe
-//    for (auto pair : mapKf2IdOpt) {
-//        PtrKeyFrame pKf = pair.first;
-//        int idOpt = pair.second;
-//        VertexSE2* pVertex = static_cast<VertexSE2*>(optimizer.vertex(idOpt));
-//        pKf->SetPoseAllbyB(toSe2(pVertex->estimate()), mSe3cb);
-//    }
+    //        // DEBUG:
+    //        //        cerr << "tvec_wm: " << tvec_wm.t() << endl;
+    //    }
+}
 
-//    // Refresh landmark
-//    for (auto pair : mappMk2IdOpt) {
-//        PtrMark pMk = pair.first;
-//        int idOpt = pair.second;
-//        VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
-//        Mat tvec_wm = toCvMatf(pVertex->estimate());
-//        pMk->SetPoseTvec(tvec_wm);
+void SolverOrb::PrintEdgeInfo(const std::vector<g2o::EdgeSE2*>& vecpEdgeOdo, std::vector<g2o::EdgeVSlam*>& vecpEdgeVSlam) {
+    // print odometry edge information ...
 
-//        // DEBUG:
-//        //        cerr << "tvec_wm: " << tvec_wm.t() << endl;
-//    }
+    cerr << "debug: show g2o edge info ..." << endl;
+
+    for(auto pEdgeOdo : vecpEdgeOdo) {
+        pEdgeOdo->computeError();
+
+        SE2 err = static_cast<g2o::SE2>(pEdgeOdo->error());
+        g2o::VertexSE2 *v0 = static_cast<g2o::VertexSE2*>(pEdgeOdo->vertices()[0]);
+        g2o::VertexSE2 *v1 = static_cast<g2o::VertexSE2*>(pEdgeOdo->vertices()[1]);
+
+        cerr << "odoedge:" << " id0=" << v0->id() << " id1=" << v1->id();
+        cerr << " chi2=" << pEdgeOdo->chi2();
+        cerr << " err.x=" << err.toVector()(0);
+        cerr << " err.y=" << err.toVector()(1);
+        cerr << " err.theta=" << err.toVector()(2);
+        cerr << endl;
+    }
+
+    // print vslam edge infomation ...
+    for(auto pEdgeVSlam : vecpEdgeVSlam) {
+        pEdgeVSlam->computeError();
+
+        Vector2D err = static_cast<g2o::Vector2D>(pEdgeVSlam->error());
+        g2o::VertexSE2 *v0 = static_cast<g2o::VertexSE2*>(pEdgeVSlam->vertices()[0]);
+        g2o::VertexPointXYZ *v1 = static_cast<g2o::VertexPointXYZ*>(pEdgeVSlam->vertices()[1]);
+
+        cerr << "vslamedge:" << " id0=" << v0->id() << " id1=" << v1->id();
+        cerr << " chi2=" << pEdgeVSlam->chi2();
+        cerr << " err.u=" << err(0);
+        cerr << " err.v=" << err(1);
+        cerr << endl;
+    }
+
+    cerr << endl;
 }
 
 }

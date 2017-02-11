@@ -65,7 +65,10 @@ int main(int argc, char **argv) {
     solverOrb.CreateMsrOdos();
     solverOrb.CreateMapPoints();
 
+
     //! Show results
+    mappublish.run(10, 1);
+    solverOrb.OptimizeSlam();
     mappublish.run(10, 1);
 
     return 0;

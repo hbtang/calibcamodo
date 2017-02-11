@@ -6,6 +6,7 @@
 #include "frame.h"
 #include "type.h"
 #include "orb/ORBmatcher.h"
+#include "g2o/g2o_api.h"
 
 
 namespace calibcamodo {
@@ -138,9 +139,12 @@ private:
     DatasetOrb* mpDatasetOrb;
     ORBmatcher mOrbMatcher;
 
-    // debug functions:
-    void DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match, std::string imgtitle = "debug");
+    // low level functions
     cv::Mat ComputeCamMatP(PtrKeyFrame pKf, cv::Mat matCam);
+
+    // debug functions
+    void DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match, std::string imgtitle = "debug");
+    void PrintEdgeInfo(const std::vector<g2o::EdgeSE2*>& vecpEdgeOdo, std::vector<g2o::EdgeVSlam*>& vecpEdgeVSlam);
 };
 
 

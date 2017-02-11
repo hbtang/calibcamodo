@@ -88,7 +88,7 @@ void AddVertexPointXYZ(Optimizer &opt, const g2o::Vector3D &xyz, int id, bool ma
     v->setMarginalized(marginal);
     opt.addVertex(v);
     // DEBUG
-//    cerr << xyz << endl;
+    //    cerr << xyz << endl;
 }
 
 g2o::EdgeSE3Expmap* AddEdgeSE3Expmap(Optimizer &opt, int id0, int id1,
@@ -146,16 +146,16 @@ g2o::EdgeSE2* AddEdgeSE2(Optimizer &opt, int id0, int id1,
     opt.addEdge(e);
 
     // DEBUG
-//    e->computeError();
-//    cerr << e->error() << endl;
-//    g2o::VertexSE2 *v0 = static_cast<g2o::VertexSE2*>(e->vertices()[0]);
-//    g2o::VertexSE2 *v1 = static_cast<g2o::VertexSE2*>(e->vertices()[1]);
-//    SE2 val0 = v0->estimate();
-//    SE2 val1 = v1->estimate();
-//    cerr << val0.toIsometry().matrix() << endl;
-//    cerr << val1.toIsometry().matrix() << endl;
-//    cerr << endl;
-//    cerr << e->chi2() << endl;
+    //    e->computeError();
+    //    cerr << e->error() << endl;
+    //    g2o::VertexSE2 *v0 = static_cast<g2o::VertexSE2*>(e->vertices()[0]);
+    //    g2o::VertexSE2 *v1 = static_cast<g2o::VertexSE2*>(e->vertices()[1]);
+    //    SE2 val0 = v0->estimate();
+    //    SE2 val1 = v1->estimate();
+    //    cerr << val0.toIsometry().matrix() << endl;
+    //    cerr << val1.toIsometry().matrix() << endl;
+    //    cerr << endl;
+    //    cerr << e->chi2() << endl;
 
     return e;
 }
@@ -176,8 +176,8 @@ g2o::EdgeSE3PointXYZ* AddEdgeSE3XYZ(Optimizer &opt, int idse3, int idxyz, int pa
     return e;
 }
 
-g2o::EdgeOptMk* AddEdgeXYZCalibCamOdo(Optimizer &opt, int idKf, int idMk, int idCalib,
-                                               const g2o::Vector3D &measure, const g2o::Matrix3D &info) {
+g2o::EdgeOptMk* AddEdgeOptMk(Optimizer &opt, int idKf, int idMk, int idCalib,
+                             const g2o::Vector3D &measure, const g2o::Matrix3D &info) {
     g2o::EdgeOptMk* e = new g2o::EdgeOptMk();
     e->vertices()[0] = opt.vertex(idKf);
     e->vertices()[1] = opt.vertex(idMk);
@@ -187,21 +187,39 @@ g2o::EdgeOptMk* AddEdgeXYZCalibCamOdo(Optimizer &opt, int idKf, int idMk, int id
     opt.addEdge(e);
 
     // DEBUG
-    e->computeError();
-//    cerr << "init error=" << e->error() << endl << endl;
-//    g2o::VertexSE2 *v0 = static_cast<g2o::VertexSE2*>(e->vertices()[0]);
-//    g2o::VertexPointXYZ *v1 = static_cast<g2o::VertexPointXYZ*>(e->vertices()[1]);
-//    g2o::VertexSE3 *v2 = static_cast<g2o::VertexSE3*>(e->vertices()[2]);
-//    SE2 val0 = v0->estimate();
-//    Vector3D val1 = v1->estimate();
-//    Isometry3D val2 = v2->estimate();
-//    cerr << val0.toIsometry().matrix() << endl;
-//    cerr << val1 << endl;
-//    cerr << val2.matrix() << endl;
-//    cerr << e->chi2() << endl;
-//    cerr << "---" << endl;
+    //    e->computeError();
+    //    cerr << "init error=" << e->error() << endl << endl;
+    //    g2o::VertexSE2 *v0 = static_cast<g2o::VertexSE2*>(e->vertices()[0]);
+    //    g2o::VertexPointXYZ *v1 = static_cast<g2o::VertexPointXYZ*>(e->vertices()[1]);
+    //    g2o::VertexSE3 *v2 = static_cast<g2o::VertexSE3*>(e->vertices()[2]);
+    //    SE2 val0 = v0->estimate();
+    //    Vector3D val1 = v1->estimate();
+    //    Isometry3D val2 = v2->estimate();
+    //    cerr << val0.toIsometry().matrix() << endl;
+    //    cerr << val1 << endl;
+    //    cerr << val2.matrix() << endl;
+    //    cerr << e->chi2() << endl;
+    //    cerr << "---" << endl;
+    //    cerr << " idKf: " << idKf << " idMk: " << idMk << " chi2: " << e->chi2() << endl;
 
-//    cerr << " idKf: " << idKf << " idMk: " << idMk << " chi2: " << e->chi2() << endl;
+    return e;
+}
+
+g2o::EdgeVSlam* AddEdgeVSlam(Optimizer &opt, int idKf, int idMp, int idParam, const g2o::Vector2D &measure, const g2o::Matrix2D &info) {
+    g2o::EdgeVSlam* e = new g2o::EdgeVSlam();
+    e->vertices()[0] = opt.vertex(idKf);
+    e->vertices()[1] = opt.vertex(idMp);
+    e->setMeasurement(measure);
+    e->setInformation(info);
+    e->setParameterId(0, idParam);
+    opt.addEdge(e);
+
+    // debug
+//    e->computeError();
+//    Vector2D error = e->error();
+//    cerr << " -- erru = " << error(0) << " -- errv = " << error(1)
+//         << " -- idKf = " << idKf << " -- idMp = " << idMp
+//         << endl;
 
     return e;
 }
