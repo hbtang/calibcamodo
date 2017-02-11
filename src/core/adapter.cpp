@@ -102,6 +102,15 @@ g2o::Vector3D toG2oVector3D(const cv::Mat &cvmat) {
     return v;
 }
 
+g2o::Vector2D toG2oVector2D(const cv::Mat& cvmat) {
+    Mat mat;
+    cvmat.convertTo(mat, CV_32FC1);
+    g2o::Vector2D v;
+    for(int i = 0; i<2; i++)
+        v(i) = mat.at<float>(i);
+    return v;
+}
+
 // below from ORB_SLAM: https://github.com/raulmur/ORB_SLAM
 std::vector<cv::Mat> toDescriptorVector(const cv::Mat &Descriptors)
 {

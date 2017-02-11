@@ -1,5 +1,4 @@
 #include "edge_calibcamodo.h"
-#include "g2o/types/slam3d/parameter_camera.h"
 #include <Eigen/LU>
 
 using namespace Eigen;
@@ -46,6 +45,9 @@ namespace g2o {
 EdgeVSlam::EdgeVSlam() :
     BaseBinaryEdge<2, Vector2D, VertexSE2, VertexPointXYZ>() {
     resize(2);
+    paramCam = 0;
+    resizeParameters(1);
+    installParameter(paramCam, 0);
 }
 
 void EdgeVSlam::computeError() {

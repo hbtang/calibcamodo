@@ -129,8 +129,13 @@ bool MeasurePoolUVKf2Mp::AddMsr(PtrMsrUVKf2Mp _pMsr) {
     pair<PtrKeyFrame, int> pairKfId(pKf, idKp);
     pair<PtrKeyFrame, PtrMapPoint> pairKfMp(pKf, pMp);
 
-    assert(msetMsr.count(_pMsr) == 0);
-    if(msetMsr.count(_pMsr) != 0){
+//    assert(msetMsr.count(_pMsr) == 0);
+//    assert(mmapKfId2Msr.count(pairKfId) == 0);
+//    assert(mmapKfMp2Msr.count(pairKfMp) == 0);
+
+    if (msetMsr.count(_pMsr) != 0 ||
+            mmapKfId2Msr.count(pairKfId) != 0 ||
+            mmapKfMp2Msr.count(pairKfMp) != 0) {
         return false;
     }
 

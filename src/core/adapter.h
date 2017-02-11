@@ -59,6 +59,7 @@ g2o::SE3Quat toG2oSE3Quat(const g2o::Isometry3D&  iso);
 g2o::SE3Quat toG2oSE3Quat(const cv::Mat &cvT);
 g2o::Matrix6d toG2oMatrix6f(const cv::Mat& cvMat6f);
 g2o::Vector3D toG2oVector3D(const cv::Mat &cvmat);
+g2o::Vector2D toG2oVector2D(const cv::Mat& cvmat);
 
 
 // other functions

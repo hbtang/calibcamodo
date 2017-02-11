@@ -6,6 +6,7 @@
 #include "g2o/types/slam2d/vertex_se2.h"
 #include "g2o/types/slam3d/vertex_se3.h"
 #include "g2o/types/slam3d/vertex_pointxyz.h"
+#include "g2o/types/slam3d/parameter_camera.h"
 
 
 namespace g2o {
@@ -32,6 +33,10 @@ public:
 
     virtual bool read(std::istream& is) { return false; }
     virtual bool write(std::ostream& os) const { return false; }
+
+private:
+    const ParameterCamera* paramCam;
+
 };
 
 } // end namespace
