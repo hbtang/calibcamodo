@@ -144,7 +144,8 @@ private:
 
     // debug functions
     void DrawMatches(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2, std::map<int, int>& match, std::string imgtitle = "debug");
-    void PrintEdgeInfo(const std::vector<g2o::EdgeSE2*>& vecpEdgeOdo, std::vector<g2o::EdgeVSlam*>& vecpEdgeVSlam);
+    void PrintEdgeInfoOdo(const std::vector<g2o::EdgeSE2*>& vecpEdgeOdo);
+    void PrintEdgeInfoVSlam(const std::vector<g2o::EdgeVSlam*>& vecpEdgeVSlam);
 };
 
 

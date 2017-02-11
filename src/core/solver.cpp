@@ -606,10 +606,10 @@ void SolverOrb::CreateMapPoints() {
         //        DrawMatches(pKf1, pKf2, mapOrbMatches, "raw-match");
         //        DrawMatches(pKf1, pKf2, mapOrbMatchesGood1, "good-match-1");
         //        DrawMatches(pKf1, pKf2, mapOrbMatchesGood2, "good-match-2");
-        cerr << " -- number of raw matches: " << mapOrbMatches.size();
-        cerr << " -- number of good matches 1: " << mapOrbMatchesGood1.size();
-        cerr << " -- number of good matches 2: " << mapOrbMatchesGood2.size();
-        cerr << endl;
+        //        cerr << " -- number of raw matches: " << mapOrbMatches.size();
+        //        cerr << " -- number of good matches 1: " << mapOrbMatchesGood1.size();
+        //        cerr << " -- number of good matches 2: " << mapOrbMatchesGood2.size();
+        //        cerr << endl;
         // debug end
 
         InitMapPointTrian(pKf1, pKf2, mapOrbMatchesGood2);
@@ -650,7 +650,7 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
             PtrMapPoint pMp = mpDatasetOrb->GetMpByKfId(pKf1, id1);
             if (pMp) {
                 // use old mappoint
-//                cerr << "find old mappoint!" << endl;
+                //                cerr << "find old mappoint!" << endl;
             }
             else {
                 // add new mappoint
@@ -680,7 +680,7 @@ void SolverOrb::InitMapPointTrian(PtrKeyFrameOrb pKf1, PtrKeyFrameOrb pKf2,
     }
 
     // debug
-    cerr << " -- number of mappoint candidates: " << matchMpPlaxGood.size() << endl;
+    //    cerr << " -- number of mappoint candidates: " << matchMpPlaxGood.size() << endl;
 
 }
 
@@ -826,7 +826,7 @@ void SolverOrb::OptimizeSlam() {
 
     // Add Parameters
     int idParamCamera = 0;
-    ParameterCamera* paramCamera = AddParaCamera(optimizer, mpDatasetOrb->mCamMatrix, toG2oIsometry3D(mSe3cb), idParamCamera);
+    AddParaCamera(optimizer, mpDatasetOrb->mCamMatrix, toG2oIsometry3D(mSe3cb), idParamCamera);
 
     int idVertexMax = 0;
     // Add keyframe vertices
@@ -875,44 +875,41 @@ void SolverOrb::OptimizeSlam() {
         vecpEdgeVSlam.push_back(pEdgeVSlam);
     }
 
-    PrintEdgeInfo(vecpEdgeOdo, vecpEdgeVSlam);
+    // Debug: show edge info...
+    //    PrintEdgeInfoOdo(vecpEdgeOdo);
+    //    PrintEdgeInfoVSlam(vecpEdgeVSlam);
 
     // Do optimize
     optimizer.initializeOptimization();
     optimizer.optimize(15);
 
-    PrintEdgeInfo(vecpEdgeOdo, vecpEdgeVSlam);
+    // Debug: show edge info...
+    //    PrintEdgeInfoOdo(vecpEdgeOdo);
+    //    PrintEdgeInfoVSlam(vecpEdgeVSlam);
 
-    //    // Refresh calibration results
-    //    g2o::VertexSE3* v = static_cast<g2o::VertexSE3*>(optimizer.vertex(0));
-    //    Isometry3D Iso3_bc_opt = v->estimate();
-    //    mSe3cb = toSe3(Iso3_bc_opt);
+    // Refresh all keyframes
+    for (auto pair : mapKf2IdOpt) {
+        PtrKeyFrame pKf = pair.first;
+        int idOpt = pair.second;
+        VertexSE2* pVertex = static_cast<VertexSE2*>(optimizer.vertex(idOpt));
+        pKf->SetPoseAllbyB(toSe2(pVertex->estimate()), mSe3cb);
+    }
 
-    //    // Refresh keyframe
-    //    for (auto pair : mapKf2IdOpt) {
-    //        PtrKeyFrame pKf = pair.first;
-    //        int idOpt = pair.second;
-    //        VertexSE2* pVertex = static_cast<VertexSE2*>(optimizer.vertex(idOpt));
-    //        pKf->SetPoseAllbyB(toSe2(pVertex->estimate()), mSe3cb);
-    //    }
-
-    //    // Refresh landmark
-    //    for (auto pair : mappMk2IdOpt) {
-    //        PtrMark pMk = pair.first;
-    //        int idOpt = pair.second;
-    //        VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
-    //        Mat tvec_wm = toCvMatf(pVertex->estimate());
-    //        pMk->SetPoseTvec(tvec_wm);
-
-    //        // DEBUG:
-    //        //        cerr << "tvec_wm: " << tvec_wm.t() << endl;
-    //    }
+    // Refresh all mappoints
+    for (auto pair : mapMp2IdOpt) {
+        PtrMapPoint pMp = pair.first;
+        int idOpt = pair.second;
+        VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
+        Mat tvec_wm = toCvMatf(pVertex->estimate());
+        pMp->SetPos(Pt3(tvec_wm));
+        // DEBUG:
+        //        cerr << "tvec_wm: " << tvec_wm.t() << endl;
+    }
 }
 
-void SolverOrb::PrintEdgeInfo(const std::vector<g2o::EdgeSE2*>& vecpEdgeOdo, std::vector<g2o::EdgeVSlam*>& vecpEdgeVSlam) {
+void SolverOrb::PrintEdgeInfoOdo(const std::vector<g2o::EdgeSE2*>& vecpEdgeOdo) {
     // print odometry edge information ...
-
-    cerr << "debug: show g2o edge info ..." << endl;
+    cerr << "debug: show odo edge info..." << endl;
 
     for(auto pEdgeOdo : vecpEdgeOdo) {
         pEdgeOdo->computeError();
@@ -929,7 +926,12 @@ void SolverOrb::PrintEdgeInfo(const std::vector<g2o::EdgeSE2*>& vecpEdgeOdo, std
         cerr << endl;
     }
 
+    cerr << endl;
+}
+
+void SolverOrb::PrintEdgeInfoVSlam(const std::vector<g2o::EdgeVSlam*>& vecpEdgeVSlam) {
     // print vslam edge infomation ...
+    cerr << "debug: show vslam edge info..." << endl;
     for(auto pEdgeVSlam : vecpEdgeVSlam) {
         pEdgeVSlam->computeError();
 
