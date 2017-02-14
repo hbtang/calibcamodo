@@ -224,6 +224,20 @@ g2o::EdgeVSlam* AddEdgeVSlam(Optimizer &opt, int idKf, int idMp, int idParam, co
     return e;
 }
 
+g2o::EdgeVSclam* AddEdgeVSclam(Optimizer &opt, int idKf, int idMp, int idCamOffset, int idCamParam,
+                               const g2o::Vector2D &measure, const g2o::Matrix2D &info) {
+    g2o::EdgeVSclam* e = new g2o::EdgeVSclam();
+    e->vertices()[0] = opt.vertex(idKf);
+    e->vertices()[1] = opt.vertex(idMp);
+    e->vertices()[2] = opt.vertex(idCamOffset);
+    e->setMeasurement(measure);
+    e->setInformation(info);
+    e->setParameterId(0, idCamParam);
+    opt.addEdge(e);
+    return e;
+}
+
+
 g2o::Vector3D EstimateVertexSBAXYZ(Optimizer &opt, int id){
     g2o::VertexSBAPointXYZ* v = static_cast<g2o::VertexSBAPointXYZ*>
             (opt.vertex(id));

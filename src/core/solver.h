@@ -133,7 +133,7 @@ public:
 
     // functions: solve global optimization for slam or sclam
     void OptimizeSlam();
-    void OptimizeCalibSlam();
+    void OptimizeSclam();
 
 private:
     DatasetOrb* mpDatasetOrb;

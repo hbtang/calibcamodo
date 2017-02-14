@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     image_transport::Publisher pub = it.advertise("/camera/image_raw",1);
 
     //! Init config
-    Config::InitConfig(strFolderPathMain);
+    Config::InitConfig(strFolderPathMain);    
 
     //! Init dataset
     cerr << "DatasetOrb: init ..." << endl;
@@ -60,16 +60,25 @@ int main(int argc, char **argv) {
     MapPublish mappublish(&datasetOrb);
 
     //! Solver
+    cerr << "SolverOrb: init..." << endl;
     SolverOrb solverOrb(&datasetOrb);
     solverOrb.RefreshKfsPose();
     solverOrb.CreateMsrOdos();
     solverOrb.CreateMapPoints();
-
-
-    //! Show results
     mappublish.run(10, 1);
+    cerr << "solverOrb: result.init = " << solverOrb.GetSe3cb() << endl;
+
+    //! Do vslam
+    cerr << "SolverOrb: do vslam..." << endl;
     solverOrb.OptimizeSlam();
     mappublish.run(10, 1);
+    cerr << "solverOrb: result.vslam = " << solverOrb.GetSe3cb() << endl;
+
+    //! Do vsclam
+    cerr << "SolverOrb: do vsclam..." << endl;
+    solverOrb.OptimizeSclam();
+    mappublish.run(10, 1);
+    cerr << "solverOrb: result.vsclam = " << solverOrb.GetSe3cb() << endl;
 
     return 0;
 }

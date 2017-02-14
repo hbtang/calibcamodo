@@ -49,6 +49,13 @@ public:
         _measurement = m;
     }
 
+//    virtual void linearizeOplus() {
+//        BaseMultiEdge<2, Vector2D>::linearizeOplus();
+//        std::cerr << "_jacobianOplus[0]" << std::endl << _jacobianOplus[0] << std::endl;
+//        std::cerr << "_jacobianOplus[1]" << std::endl << _jacobianOplus[1] << std::endl;
+//        std::cerr << "_jacobianOplus[2]" << std::endl << _jacobianOplus[2] << std::endl;
+//    }
+
     virtual bool read(std::istream& is) { return false; }
     virtual bool write(std::ostream& os) const { return false; }
 

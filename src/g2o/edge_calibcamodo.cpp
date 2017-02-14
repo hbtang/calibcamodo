@@ -144,7 +144,7 @@ namespace g2o {
 
 EdgeVSclam::EdgeVSclam() :
     BaseMultiEdge<2, Vector2D>() {
-    resize(2);
+    resize(3);
     _camParam = 0;
     resizeParameters(1);
     installParameter(_camParam, 0);
