@@ -55,11 +55,16 @@ g2o::SE2 toG2oSE2(const Se2 &in);
 g2o::Isometry3D toG2oIsometry3D(const cv::Mat& T);
 g2o::Isometry3D toG2oIsometry3D(const g2o::SE3Quat& se3quat);
 g2o::Isometry3D toG2oIsometry3D(const Se3& _se3);
-g2o::SE3Quat toG2oSE3Quat(const g2o::Isometry3D&  iso);
+g2o::SE3Quat toG2oSE3Quat(const g2o::Isometry3D& iso);
 g2o::SE3Quat toG2oSE3Quat(const cv::Mat &cvT);
-g2o::Matrix6d toG2oMatrix6f(const cv::Mat& cvMat6f);
+g2o::SE3Quat toG2oSE3Quat(const g2o::SE2& se2);
+g2o::Matrix6d toG2oMatrix6d(const cv::Mat& cvMat6f);
 g2o::Vector3D toG2oVector3D(const cv::Mat &cvmat);
 g2o::Vector2D toG2oVector2D(const cv::Mat& cvmat);
+
+
+// Convert to transformation matrix in eigen
+g2o::Matrix4D toTransMat(const g2o::SE3Quat& se3);
 
 
 // other functions

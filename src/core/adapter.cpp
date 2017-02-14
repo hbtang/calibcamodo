@@ -69,6 +69,18 @@ g2o::SE3Quat toG2oSE3Quat(const g2o::Isometry3D &iso){
     return g2o::internal::toSE3Quat(iso);
 }
 
+g2o::SE3Quat toG2oSE3Quat(const g2o::SE2& se2) {
+    g2o::Vector3D v2 = se2.toVector();
+    double x = v2(0);
+    double y = v2(1);
+    double theta = v2(2);
+    g2o::Matrix3D R = g2o::Matrix3D::Identity();
+    R.block<2,2>(0,0) << cos(theta),-sin(theta),sin(theta),cos(theta);
+    g2o::Vector3D t;
+    t << x,y,0;
+    return g2o::SE3Quat(R,t);
+}
+
 
 cv::Mat toCvMatf(const g2o::Matrix6d& m) {
     cv::Mat mat(6, 6, CV_32FC1);
@@ -79,7 +91,7 @@ cv::Mat toCvMatf(const g2o::Matrix6d& m) {
 }
 
 
-g2o::Matrix6d toG2oMatrix6f(const cv::Mat &cvMat6f){
+g2o::Matrix6d toG2oMatrix6d(const cv::Mat &cvMat6f){
     g2o::Matrix6d m = g2o::Matrix6d::Zero();
     for(int i = 0; i < 6; i++)
         for(int j = 0; j < 6; j++)
@@ -289,6 +301,13 @@ Se3 toSe3(const g2o::Isometry3D &in) {
 Se2 toSe2(const g2o::SE2 &in) {
     g2o::Vector3D v = in.toVector();
     return Se2(v(0), v(1), v(2));
+}
+
+g2o::Matrix4D toTransMat(const g2o::SE3Quat& se3) {
+    g2o::Matrix4D T = g2o::Matrix4D::Identity();
+    T.block<3,3>(0,0) = se3.rotation().toRotationMatrix();
+    T.block<3,1>(0,3) = se3.translation();
+    return T;
 }
 
 }

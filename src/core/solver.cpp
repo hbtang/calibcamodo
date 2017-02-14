@@ -881,7 +881,7 @@ void SolverOrb::OptimizeSlam() {
 
     // Do optimize
     optimizer.initializeOptimization();
-    optimizer.optimize(15);
+    optimizer.optimize(30);
 
     // Debug: show edge info...
     //    PrintEdgeInfoOdo(vecpEdgeOdo);

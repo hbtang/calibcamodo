@@ -30,6 +30,7 @@ public:
     void setMeasurement(const Vector2D& m) {
         _measurement = m;
     }
+    virtual void linearizeOplus();
 
     virtual bool read(std::istream& is) { return false; }
     virtual bool write(std::ostream& os) const { return false; }
