@@ -7,6 +7,7 @@
 #include "g2o/types/slam3d/vertex_se3.h"
 #include "g2o/types/slam3d/vertex_pointxyz.h"
 #include "g2o/types/slam3d/parameter_camera.h"
+#include "g2o/types/sba/types_six_dof_expmap.h"
 
 
 namespace g2o {
@@ -38,6 +39,21 @@ public:
 private:
     const ParameterCamera* paramCam;
 
+};
+
+class EdgeVSclam : public BaseMultiEdge<2, Vector2D> {
+public:
+    EdgeVSclam();
+    void computeError();
+    void setMeasurement(const Vector2D& m) {
+        _measurement = m;
+    }
+
+    virtual bool read(std::istream& is) { return false; }
+    virtual bool write(std::ostream& os) const { return false; }
+
+private:
+    const CameraParameters* _camParam;
 };
 
 } // end namespace

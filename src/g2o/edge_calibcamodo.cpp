@@ -88,52 +88,80 @@ void EdgeVSlam::computeError() {
 
 void EdgeVSlam::linearizeOplus() {
 
-//    BaseBinaryEdge<2, Vector2D, VertexSE2, VertexPointXYZ>::linearizeOplus();
+    BaseBinaryEdge<2, Vector2D, VertexSE2, VertexPointXYZ>::linearizeOplus();
 //    cerr << "base::_jacobianOplusXi" << endl << _jacobianOplusXi << endl;
 //    cerr << "base::_jacobianOplusXj" << endl << _jacobianOplusXj << endl;
 
-    const ParameterCamera* paramCam
-            = static_cast<const ParameterCamera*>(parameter(0));
+//    const ParameterCamera* paramCam
+//            = static_cast<const ParameterCamera*>(parameter(0));
+//    const VertexSE2* baseFrame = static_cast<const VertexSE2*>(_vertices[0]);
+//    const VertexPointXYZ* markPoint = static_cast<const VertexPointXYZ*>(_vertices[1]);
+
+//    SE3Quat se3bc = toG2oSE3Quat(paramCam->offset());
+//    SE3Quat se3cb = se3bc.inverse();
+//    Matrix4D Tcb = toTransMat(se3cb);
+
+//    Vector3D pwm = markPoint->estimate();
+//    SE2 se2wb = baseFrame->estimate();
+//    SE3Quat se3wb = toG2oSE3Quat(se2wb);
+//    SE3Quat se3bw = se3wb.inverse();
+
+//    Matrix<double,4,6,Eigen::ColMajor> J_pcm_xiwb_bar = - Tcb * dcircle(se3bw*pwm) * JJl(se3bw);
+//    Matrix<double,3,6,Eigen::ColMajor> J_pcm_xiwb = J_pcm_xiwb_bar.topRows(3);
+//    Matrix<double,3,3,Eigen::ColMajor> J_pcm_v3wb = J_pcm_xiwb * JacobianSE3SE2(se3wb);
+
+
+////    cerr << "Tcb" << endl << Tcb << endl;
+////    cerr << "dcircle(se3bw*pwm)" << endl << dcircle(se3bw*pwm) << endl;
+////    cerr << "JJl(se3bw)" << endl << JJl(se3bw) << endl;
+////    cerr << "J_pcm_xiwb" << endl << J_pcm_xiwb << endl;
+////    cerr << "J_pcm_v3wb" << endl << J_pcm_v3wb << endl;
+////    cerr << "JacobianSE3SE2(se3wb)" << endl << JacobianSE3SE2(se3wb) << endl;
+
+//    Vector3D pcm = se3cb*se3bw*pwm;
+//    Matrix3D K = paramCam->Kcam();
+//    Matrix<double,2,3,Eigen::ColMajor> J_uv_pcm = JacobianUV2XYZ(pcm, K);
+
+//    SE3Quat se3cw = se3cb*se3bw;
+//    Matrix3D Rcw = toG2oIsometry3D(se3cw).rotation();
+
+//    _jacobianOplusXi = J_uv_pcm*J_pcm_v3wb;
+//    _jacobianOplusXj = J_uv_pcm*Rcw;
+
+////    double tmp = _jacobianOplusXi(0,0);
+////    if(std::isnan(tmp)) {
+////        cerr << "nan!" << endl;
+////    }
+////    cerr << "derived::_jacobianOplusXi" << endl << _jacobianOplusXi << endl;
+////    cerr << "derived::_jacobianOplusXj" << endl << _jacobianOplusXj << endl;
+
+    return;
+}
+
+}
+
+namespace g2o {
+
+EdgeVSclam::EdgeVSclam() :
+    BaseMultiEdge<2, Vector2D>() {
+    resize(2);
+    _camParam = 0;
+    resizeParameters(1);
+    installParameter(_camParam, 0);
+}
+
+void EdgeVSclam::computeError() {
+    const CameraParameters* camParam
+            = static_cast<const CameraParameters*>(parameter(0));
     const VertexSE2* baseFrame = static_cast<const VertexSE2*>(_vertices[0]);
     const VertexPointXYZ* markPoint = static_cast<const VertexPointXYZ*>(_vertices[1]);
+    const VertexSE3* cameraOffset = static_cast<const VertexSE3*>(_vertices[2]);
 
-    SE3Quat se3bc = toG2oSE3Quat(paramCam->offset());
-    SE3Quat se3cb = se3bc.inverse();
-    Matrix4D Tcb = toTransMat(se3cb);
-
+    SE3Quat se3wb = toG2oSE3Quat(baseFrame->estimate());
+    SE3Quat se3bc = toG2oSE3Quat(cameraOffset->estimate());
     Vector3D pwm = markPoint->estimate();
-    SE2 se2wb = baseFrame->estimate();
-    SE3Quat se3wb = toG2oSE3Quat(se2wb);
-    SE3Quat se3bw = se3wb.inverse();
-
-    Matrix<double,4,6,Eigen::ColMajor> J_pcm_xiwb_bar = - Tcb * dcircle(se3bw*pwm) * JJl(se3bw);
-    Matrix<double,3,6,Eigen::ColMajor> J_pcm_xiwb = J_pcm_xiwb_bar.topRows(3);
-    Matrix<double,3,3,Eigen::ColMajor> J_pcm_v3wb = J_pcm_xiwb * JacobianSE3SE2(se3wb);
-
-
-//    cerr << "Tcb" << endl << Tcb << endl;
-//    cerr << "dcircle(se3bw*pwm)" << endl << dcircle(se3bw*pwm) << endl;
-//    cerr << "JJl(se3bw)" << endl << JJl(se3bw) << endl;
-//    cerr << "J_pcm_xiwb" << endl << J_pcm_xiwb << endl;
-//    cerr << "J_pcm_v3wb" << endl << J_pcm_v3wb << endl;
-//    cerr << "JacobianSE3SE2(se3wb)" << endl << JacobianSE3SE2(se3wb) << endl;
-
-    Vector3D pcm = se3cb*se3bw*pwm;
-    Matrix3D K = paramCam->Kcam();
-    Matrix<double,2,3,Eigen::ColMajor> J_uv_pcm = JacobianUV2XYZ(pcm, K);
-
-    SE3Quat se3cw = se3cb*se3bw;
-    Matrix3D Rcw = toG2oIsometry3D(se3cw).rotation();
-
-    _jacobianOplusXi = J_uv_pcm*J_pcm_v3wb;
-    _jacobianOplusXj = J_uv_pcm*Rcw;
-
-//    double tmp = _jacobianOplusXi(0,0);
-//    if(std::isnan(tmp)) {
-//        cerr << "nan!" << endl;
-//    }
-//    cerr << "derived::_jacobianOplusXi" << endl << _jacobianOplusXi << endl;
-//    cerr << "derived::_jacobianOplusXj" << endl << _jacobianOplusXj << endl;
+    SE3Quat se3cw = (se3wb*se3bc).inverse();
+    _error = camParam->cam_map(se3cw.map(pwm)) - _measurement;
 
     return;
 }
