@@ -15,10 +15,16 @@ public:
     void SetPos(Pt3 _in) { mPt3wp = _in; }
     Pt3  GetPos() const  { return mPt3wp; }
 
+    const cv::Mat& GetCov() const { return mCovMat; }
+    void SetCov( cv::Mat& _matCov ) { mCovMat = _matCov.clone(); }
+
 protected:
     int mId;
     Pt3 mPt3wp;    
     static int mIdNext;
+
+    // 3-by-3 covariance matrix, for mPt3wp
+    cv::Mat mCovMat;
 };
 
 class MapPointOrb: public MapPoint {

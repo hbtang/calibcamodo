@@ -56,14 +56,20 @@ public:
     KeyFrame(const Frame &_f);    
 
     void SetPoseAllbyB(Se2 _wb, Se3 _bc);
-    inline void SetPoseBase(Se2 _in) { mSe2wb = _in; }
-    inline Se2 GetPoseBase() const { return mSe2wb; }
-    inline void SetPoseCamera(Se3 _in) { mSe3wc = _in; }
-    inline Se3 GetPoseCamera() const { return mSe3wc; }
+    void SetPoseBase(Se2 _in) { mSe2wb = _in; }
+    Se2 GetPoseBase() const { return mSe2wb; }
+    void SetPoseCamera(Se3 _in) { mSe3wc = _in; }
+    Se3 GetPoseCamera() const { return mSe3wc; }
+
+    const cv::Mat& GetCov() const { return mCovMat; }
+    void SetCov( cv::Mat& _matCov ) { mCovMat = _matCov.clone(); }
 
 protected:
     Se2 mSe2wb;
     Se3 mSe3wc;
+
+    // 3-by-3 covariance matrix
+    cv::Mat mCovMat;
 };
 
 class KeyFrameAruco : public KeyFrame {
