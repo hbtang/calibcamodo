@@ -25,6 +25,9 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 
+#include "maker_orb.h"
+#include "solver_vsclam.h"
+
 using namespace std;
 using namespace cv;
 using namespace aruco;
@@ -59,26 +62,42 @@ int main(int argc, char **argv) {
     //! Init mappublisher with ros rviz
     MapPublish mappublish(&datasetOrb);
 
-    //! Solver
-    cerr << "SolverOrb: init..." << endl;
-    SolverOrb solverOrb(&datasetOrb);
-    solverOrb.RefreshKfsPose();
-    solverOrb.CreateMsrOdos();
-    solverOrb.CreateMapPoints();
-    mappublish.run(10, 1);
-    cerr << "solverOrb: result.init = " << solverOrb.GetSe3cb() << endl;
 
-    //! Do vslam
-    cerr << "SolverOrb: do vslam..." << endl;
-    solverOrb.OptimizeSlam();
-    mappublish.run(10, 1);
-    cerr << "solverOrb: result.vslam = " << solverOrb.GetSe3cb() << endl;
+    // DEBUG ...
+    cerr << "solverOrb: result.init = " << datasetOrb.GetCamOffset() << endl;
 
-    //! Do vsclam
-    cerr << "SolverOrb: do vsclam..." << endl;
-    solverOrb.OptimizeSclam();
+    MakerOrb makerOrb(&datasetOrb);
+    makerOrb.DoMake();
     mappublish.run(10, 1);
-    cerr << "solverOrb: result.vsclam = " << solverOrb.GetSe3cb() << endl;
+
+    SolverVsclam solverVsclam(&datasetOrb);
+    solverVsclam.DoCalib();
+    mappublish.run(10, 1);
+
+    cerr << "solverOrb: result.vsclam = " << datasetOrb.GetCamOffset() << endl;
+
+
+
+//    //! Solver
+//    cerr << "SolverOrb: init..." << endl;
+//    SolverOrb solverOrb(&datasetOrb);
+//    solverOrb.RefreshKfsPose();
+//    solverOrb.CreateMsrOdos();
+//    solverOrb.CreateMapPoints();
+//    mappublish.run(10, 1);
+//    cerr << "solverOrb: result.init = " << solverOrb.GetSe3cb() << endl;
+
+//    //! Do vslam
+//    cerr << "SolverOrb: do vslam..." << endl;
+//    solverOrb.OptimizeSlam();
+//    mappublish.run(10, 1);
+//    cerr << "solverOrb: result.vslam = " << solverOrb.GetSe3cb() << endl;
+
+//    //! Do vsclam
+//    cerr << "SolverOrb: do vsclam..." << endl;
+//    solverOrb.OptimizeSclam();
+//    mappublish.run(10, 1);
+//    cerr << "solverOrb: result.vsclam = " << solverOrb.GetSe3cb() << endl;
 
     return 0;
 }

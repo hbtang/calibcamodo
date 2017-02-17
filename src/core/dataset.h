@@ -79,12 +79,25 @@ public:
     std::set<PtrMapPoint> GetMpByKf(PtrKeyFrame _pKf) const { return mmsrplMp.GetMpByKf(_pKf); }
     PtrMapPoint GetMpByKfId(PtrKeyFrame _pKf, int _idKp) const { return mmsrplMp.GetMpByKfId(_pKf, _idKp); }
 
+    // Functions on Parameters
+    Se3 GetCamOffset() { return mSe3bc; }
+    void SetCamOffset(Se3 _se3cb) { mSe3bc = _se3cb; }
+    const cv::Mat& GetCamMat() const { return mCamMatrix; }
+    const cv::Mat& GetCamDist() const { return mDistCoeff; }
+
+
     //! IO Functions
     std::vector<std::string> SplitString(const std::string _str, const std::string _separator);
     bool ParseOdoData(const std::string _str, Se2& _odo, int& _id);
     void LoadImage(int _id, cv::Mat& _img);
 
 protected:
+
+    //! Parameters
+    Se3 mSe3bc;
+    // camera intrinsic parameters
+    cv::Mat mCamMatrix;
+    cv::Mat mDistCoeff;
 
     //! Elements
     // Frame
@@ -120,6 +133,18 @@ protected:
 
     double mThreshOdoLin;
     double mThreshOdoRot;
+
+
+    // todo: for online filter
+public:
+    void InitFilter();
+    PtrKeyFrame GetKfNow() const { return pKfNow; }
+    PtrKeyFrame GetKfLast() const { return pKfLast; }
+    bool RenewKfNow();
+
+protected:
+    PtrKeyFrame pKfNow;
+    PtrKeyFrame pKfLast;
 };
 
 class DatasetAruco : public Dataset {
@@ -181,10 +206,6 @@ protected:
     ORBextractor mOrbExtractor;
     ORBVocabulary mOrbVocalubary;
 
-    // camera intrinsic parameters
-    cv::Mat mCamMatrix;
-    cv::Mat mDistCoeff;
-
     // storage of orb-keyframes
     std::set<PtrKeyFrameOrb> msetpKfOrb;
     std::map<int, PtrKeyFrameOrb> mmapId2pKfOrb;
@@ -194,6 +215,8 @@ protected:
     std::map<int, PtrMapPointOrb> mmapId2pMpOrb;
 
 };
+
+
 
 }
 #endif

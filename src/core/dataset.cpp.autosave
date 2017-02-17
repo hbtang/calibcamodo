@@ -367,12 +367,7 @@ PtrMapPointOrb DatasetOrb::GetMpOrb(int _id) const {
 
 }
 
-namespace calibcamodo {
 
-DatasetOrbFilter::DatasetOrbFilter() :
-    DatasetOrb(), mpKfOrbNow(nullptr), mpKfOrbLast(nullptr) {}
-
-}
 
 
 

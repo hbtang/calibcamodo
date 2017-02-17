@@ -12,9 +12,6 @@
 
 namespace calibcamodo {
 
-const int FRAME_GRID_ROWS = 48;
-const int FRAME_GRID_COLS = 64;
-
 class ORBextractor;
 class ORBmatcher;
 
@@ -68,7 +65,7 @@ protected:
     Se2 mSe2wb;
     Se3 mSe3wc;
 
-    // 3-by-3 covariance matrix
+    // 3-by-3 covariance matrix, for mSe2wb
     cv::Mat mCovMat;
 };
 
@@ -116,14 +113,6 @@ public:
     bool mbBowVecExist;
     DBoW2::FeatureVector mFeatVec;
     DBoW2::BowVector mBowVec;
-
-
-//    //! TODO: for orb-matcher by window
-//    vector<size_t> GetFeaturesInArea(const float &x, const float  &y, const float  &r, const int minLevel=-1, const int maxLevel=-1) const;
-//    bool PosInGrid(cv::KeyPoint &kp, int &posX, int &posY);
-//    static float mfGridElementWidthInv;
-//    static float mfGridElementHeightInv;
-//    std::vector<std::size_t> mGrid[FRAME_GRID_COLS][FRAME_GRID_ROWS];
 
 };
 

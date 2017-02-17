@@ -25,8 +25,8 @@ cv::Mat Config::CAMERA_MATRIX;
 cv::Mat Config::DISTORTION_COEFFICIENTS;
 
 //!Camera Extrinsic
-cv::Mat Config::RVEC_BC;
-cv::Mat Config::TVEC_BC;
+cv::Mat Config::RVEC_BC = (Mat_<float>(3,1) << 0,0,0);
+cv::Mat Config::TVEC_BC = (Mat_<float>(3,1) << 0,0,0);
 
 //! Dataset
 double Config::DATASET_THRESH_KF_ODOLIN;
@@ -70,9 +70,11 @@ void Config::InitConfig(std::string _strfolderpathmain) {
 
     Mat rvec_bc, tvec_bc;
     file["RVEC_BC"] >> rvec_bc;
-    rvec_bc.convertTo(RVEC_BC, CV_32FC1);
+    if(!rvec_bc.empty())
+        rvec_bc.convertTo(RVEC_BC, CV_32FC1);
     file["TVEC_BC"] >> tvec_bc;
-    tvec_bc.convertTo(TVEC_BC, CV_32FC1);
+    if(!tvec_bc.empty())
+        tvec_bc.convertTo(TVEC_BC, CV_32FC1);
 
     file["MARK_SIZE"] >> MARK_SIZE;
 

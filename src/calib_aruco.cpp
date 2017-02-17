@@ -25,6 +25,10 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 
+#include "maker_aruco.h"
+#include "solver_initmk.h"
+#include "solver_optmk.h"
+
 using namespace std;
 using namespace cv;
 using namespace aruco;
@@ -33,10 +37,8 @@ using namespace calibcamodo;
 int main(int argc, char **argv) {
 
     string strFolderPathMain = argv[1];
-    //    int numFrame = atoi(argv[2]);
-    //    double markerSize = atof(argv[3]);
 
-    //! Init ros
+    // Init ros
     ros::init(argc, argv, "pub");
     ros::start();
     ros::NodeHandle nh;
@@ -44,10 +46,10 @@ int main(int argc, char **argv) {
     image_transport::ImageTransport it(nh);
     image_transport::Publisher pub = it.advertise("/camera/image_raw",1);
 
-    //! Init config
+    // Init config
     Config::InitConfig(strFolderPathMain);
 
-    //! Init dataset
+    // Init dataset
     DatasetAruco datasetAruco;
     cerr << "Dataset: creating frames ..." << endl;
     datasetAruco.CreateFrames();
@@ -55,38 +57,27 @@ int main(int argc, char **argv) {
     datasetAruco.CreateKeyFrames();
     cerr << "Dataset: dataset created." << endl << endl;
 
-    //! Init mappublisher with ros rviz
+    // Init mappublisher with ros rviz
     MapPublish mappublish(&datasetAruco);
 
 
-    //! Calibrate by SolverInitmk
-    cerr << "SolverInitmk: init solver ..." << endl;
-    SolverInitmk solverInitmk(&datasetAruco);
+    // Set the problem in dataset by makerAruco
+    MakerAruco makerAruco(&datasetAruco);
+    makerAruco.DoMake();
+    mappublish.run(10, 0);
 
-    cerr << "SolverInitmk: creating measurement odometry ..." << endl;
-    solverInitmk.CreateMsrOdos();
+    // Calibrate by SolverInitMk
+    SolverInitMk solverInitMk(&datasetAruco);
+    solverInitMk.DoCalib();
+    cerr << "solverInitMk: result = " << datasetAruco.GetCamOffset() << endl << endl;
+    makerAruco.InitKfMkPose();
+    mappublish.run(10, 0);
 
-    cerr << "SolverInitmk: creating aruco mark and measurements ..." << endl;
-    solverInitmk.CreateMarks();
-
-    cerr << "SolverInitmk: do calibration with inimk algorithm ..." << endl;
-    solverInitmk.DoCalib();
-
-    cerr << "SolverInitmk: result = " << solverInitmk.GetSe3cb() << endl << endl;
-
-    //! Calibrate by SolverOptmk
-    cerr << "SolverOptMk: init solver ..." << endl;
-    SolverOptMk solverOptmk(&datasetAruco);
-    solverOptmk.SetSe3cb(solverInitmk.GetSe3cb());
-
-    cerr << "SolverOptMk: refresh pose of all kfs and mps in dataset ..." << endl;
-    solverOptmk.RefreshAllPose();
-    mappublish.run();
-
-    cerr << "SolverOptMk: do calibration with optmk algorithm ..." << endl;
-    solverOptmk.DoCalib();
-    cerr << "SolverOptMk: result = " << solverOptmk.GetSe3cb() << endl;
-    mappublish.run();
+    // Calibrate by SolverOptMk
+    SolverOptMk solverOptMk(&datasetAruco);
+    solverOptMk.DoCalib();
+    cerr << "solverInitMk: result = " << datasetAruco.GetCamOffset() << endl << endl;
+    mappublish.run(10, 0);
 
     return 0;
 }
