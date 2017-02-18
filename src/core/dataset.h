@@ -15,6 +15,7 @@ namespace calibcamodo {
 
 class Dataset {
 //    friend class Solver;
+    friend class MakerOnlineBase;
 
 public:
     Dataset();
@@ -144,6 +145,7 @@ public:
 
 
 protected:
+    bool mbIfInitFilter;
     PtrKeyFrame mpKfNow;
     PtrKeyFrame mpKfLast;
 };

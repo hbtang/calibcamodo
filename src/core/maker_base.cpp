@@ -50,8 +50,8 @@ void MakerBase::InitKfPose() {
         Se2 se2odo = pKf->GetOdo();
         Se2 se2wb = se2odo;
         Se3 se3wb = Se3(se2wb);
-        Se3 se3cb = mpDataset->GetCamOffset();
-        Se3 se3wc = se3wb + se3cb;
+        Se3 se3bc = mpDataset->GetCamOffset();
+        Se3 se3wc = se3wb + se3bc;
 
         pKf->SetPoseBase(se2odo);
         pKf->SetPoseCamera(se3wc);

@@ -8,7 +8,7 @@ using namespace aruco;
 namespace calibcamodo {
 
 Dataset::Dataset():
-    mpKfNow(nullptr), mpKfLast(nullptr){
+    mpKfNow(nullptr), mpKfLast(nullptr), mbIfInitFilter(false) {
 
     mNumFrame = Config::NUM_FRAME;
 
@@ -212,6 +212,7 @@ bool Dataset::InitKfForFilter() {
     mpKfLast = iter1->second;
     mpKfNow = iter2->second;
 
+    mbIfInitFilter = true;
     return true;
 }
 

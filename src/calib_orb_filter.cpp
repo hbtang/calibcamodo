@@ -10,8 +10,7 @@
 #include "core/adapter.h"
 #include "core/type.h"
 #include "core/config.h"
-#include "core/maker_orb.h"
-#include "core/solver_vsclam.h"
+#include "core/makeronline_orb.h"
 
 #include "ros/mappublish.h"
 
@@ -62,13 +61,13 @@ int main(int argc, char **argv) {
     MapPublish mappublish(&datasetOrb);
 
     // DEBUG...
+    MakerOnlineOrb makerOnlineOrb(&datasetOrb);
     int count = 0;
-    datasetOrb.InitKfForFilter();
-    while(datasetOrb.RenewKfForFilter()) {
-        cerr << "do renew filter, count = " << count++ << endl;
+    while(makerOnlineOrb.RenewKfNow()) {
+        cerr << "loop count = " << count++ << endl;
     }
-    cerr << "end loop." << endl;
 
+    mappublish.run(10, 1);
 
     return 0;
 }
