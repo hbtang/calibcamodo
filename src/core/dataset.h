@@ -3,7 +3,8 @@
 
 #include "type.h"
 #include "frame.h"
-#include "mark.h"
+#include "mapmark.h"
+#include "mappoint.h"
 #include "measure.h"
 #include "measurepool.h"
 

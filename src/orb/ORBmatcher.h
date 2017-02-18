@@ -26,10 +26,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-#include "frame.h"
-#include "mark.h"
-//#include "point.h"
-//#include "measure.h"
+#include "core/frame.h"
 
 namespace calibcamodo {
 

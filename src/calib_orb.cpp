@@ -3,14 +3,16 @@
 #include <fstream>
 #include <string>
 
-#include "dataset.h"
-#include "frame.h"
-#include "measure.h"
-#include "mark.h"
-#include "solver.h"
-#include "adapter.h"
-#include "type.h"
-#include "config.h"
+#include "core/dataset.h"
+#include "core/frame.h"
+#include "core/measure.h"
+#include "core/mapmark.h"
+#include "core/adapter.h"
+#include "core/type.h"
+#include "core/config.h"
+#include "core/maker_orb.h"
+#include "core/solver_vsclam.h"
+
 #include "ros/mappublish.h"
 
 #include <ros/ros.h>
@@ -20,13 +22,10 @@
 #include <geometry_msgs/Pose.h>
 #include <sensor_msgs/Image.h>
 #include <visualization_msgs/Marker.h>
-//#include <tf/transform_broadcaster.h>
-//#include <tf/transform_datatypes.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 
-#include "maker_orb.h"
-#include "solver_vsclam.h"
+
 
 using namespace std;
 using namespace cv;

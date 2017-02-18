@@ -1,7 +1,4 @@
 #include "dataset.h"
-#include "frame.h"
-#include "measure.h"
-#include "mark.h"
 #include "config.h"
 
 using namespace std;
@@ -367,12 +364,7 @@ PtrMapPointOrb DatasetOrb::GetMpOrb(int _id) const {
 
 }
 
-namespace calibcamodo {
 
-DatasetOrbFilter::DatasetOrbFilter() :
-    DatasetOrb(), mpKfOrbNow(nullptr), mpKfOrbLast(nullptr) {}
-
-}
 
 
 

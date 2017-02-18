@@ -1,4 +1,4 @@
-#include "point.h"
+#include "mappoint.h"
 
 namespace calibcamodo {
 

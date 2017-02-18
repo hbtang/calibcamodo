@@ -32,7 +32,6 @@ CATKIN_PACKAGE()
 
 INCLUDE_DIRECTORIES(
     ./src/
-    ./src/core/
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${catkin_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIRS}

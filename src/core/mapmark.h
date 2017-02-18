@@ -1,5 +1,5 @@
-#ifndef MARK_H
-#define MARK_H
+#ifndef MAPMARK_H
+#define MAPMARK_H
 
 #include "type.h"
 #include <opencv2/core/core.hpp>

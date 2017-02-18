@@ -1,5 +1,5 @@
-#ifndef POINT_H
-#define POINT_H
+#ifndef MAPPOINT_H
+#define MAPPOINT_H
 
 #include "type.h"
 #include "opencv2/core/core.hpp"

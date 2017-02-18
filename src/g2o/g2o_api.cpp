@@ -1,5 +1,5 @@
 #include "g2o_api.h"
-#include "adapter.h"
+#include "core/adapter.h"
 
 namespace calibcamodo{
 

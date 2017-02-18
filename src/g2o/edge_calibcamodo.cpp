@@ -1,7 +1,9 @@
 #include "edge_calibcamodo.h"
 #include "g2o_math.h"
-#include <Eigen/LU>
+
 #include "core/adapter.h"
+
+#include <Eigen/LU>
 
 using namespace Eigen;
 using namespace std;

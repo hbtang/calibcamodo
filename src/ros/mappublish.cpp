@@ -1,8 +1,9 @@
 #include "mappublish.h"
-#include "config.h"
-#include "frame.h"
-#include "mark.h"
-#include "adapter.h"
+#include "core/config.h"
+#include "core/frame.h"
+#include "core/mapmark.h"
+#include "core/mappoint.h"
+#include "core/adapter.h"
 
 using namespace std;
 using namespace cv;

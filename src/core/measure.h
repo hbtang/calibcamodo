@@ -4,8 +4,8 @@
 #include <opencv2/core/core.hpp>
 #include "type.h"
 #include "frame.h"
-#include "mark.h"
-#include "point.h"
+#include "mapmark.h"
+#include "mappoint.h"
 
 namespace calibcamodo {
 

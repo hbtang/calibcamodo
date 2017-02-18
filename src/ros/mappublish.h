@@ -13,7 +13,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 
-#include "dataset.h"
+#include "core/dataset.h"
 
 namespace calibcamodo {
 

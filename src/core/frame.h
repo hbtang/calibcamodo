@@ -2,7 +2,6 @@
 #define FRAME_H
 
 #include "type.h"
-//#include "measure.h"
 #include "aruco/aruco.h"
 
 #include "Thirdparty/DBoW2/DBoW2/BowVector.h"

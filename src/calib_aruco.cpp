@@ -3,14 +3,17 @@
 #include <fstream>
 #include <string>
 
-#include "dataset.h"
-#include "frame.h"
-#include "measure.h"
-#include "mark.h"
-#include "solver.h"
-#include "adapter.h"
-#include "type.h"
-#include "config.h"
+#include "core/dataset.h"
+#include "core/frame.h"
+#include "core/measure.h"
+#include "core/mapmark.h"
+#include "core/maker_aruco.h"
+#include "core/solver_initmk.h"
+#include "core/solver_optmk.h"
+#include "core/adapter.h"
+#include "core/type.h"
+#include "core/config.h"
+
 #include "ros/mappublish.h"
 
 #include <ros/ros.h>
@@ -24,10 +27,6 @@
 //#include <tf/transform_datatypes.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
-
-#include "maker_aruco.h"
-#include "solver_initmk.h"
-#include "solver_optmk.h"
 
 using namespace std;
 using namespace cv;
