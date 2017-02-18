@@ -23,7 +23,7 @@ public:
     // Function interface
     void CreateFrames();
     set<PtrFrame> SelectFrame() const;
-    virtual void CreateKeyFrames() {}
+    virtual void CreateKeyFrames() = 0;
 
     // Functions on Frame
     const std::set<PtrFrame>& GetFrameSet() const { return msetpFrame; }
@@ -110,7 +110,6 @@ protected:
     // Mark
     std::set<PtrMapMark> msetpMk;
     std::map<int, PtrMapMark> mmapId2pMk;
-
     // MapPoint
     std::set<PtrMapPoint> msetpMp;
     std::map<int, PtrMapPoint> mmapId2pMp;
@@ -138,8 +137,8 @@ protected:
 
     // todo: for online filter
 public:
-    void InitFilter();
-    bool RenewKfNow();
+    bool InitKfForFilter();
+    bool RenewKfForFilter();
     PtrKeyFrame GetKfNow() const { return mpKfNow; }
     PtrKeyFrame GetKfLast() const { return mpKfLast; }
 

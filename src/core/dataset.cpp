@@ -201,6 +201,35 @@ void Dataset::LoadImage(int _id, cv::Mat& _img) {
     _img = imread(strImgPath);
 }
 
+//! functions for filter, return false if failed
+bool Dataset::InitKfForFilter() {
+    if(mmapId2pKf.size() < 2)
+        return false;
+
+    auto iter1 = mmapId2pKf.cbegin();
+    auto iter2 = iter1; ++iter2;
+
+    mpKfLast = iter1->second;
+    mpKfNow = iter2->second;
+
+    return true;
+}
+
+bool Dataset::RenewKfForFilter() {
+    int idNow = mpKfNow->GetId();
+
+    auto iterNow = mmapId2pKf.find(idNow);
+    auto iterLast = iterNow++;
+
+    if(iterNow == mmapId2pKf.cend() || iterLast == mmapId2pKf.cend())
+        return false;
+    else {
+        mpKfNow = iterNow->second;
+        mpKfLast = iterLast->second;
+        return true;
+    }
+}
+
 }
 
 

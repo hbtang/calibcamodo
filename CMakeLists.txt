@@ -95,3 +95,12 @@ TARGET_LINK_LIBRARIES(calib_orb
     calibcamodo
     ${LINK_LIBS}
 )
+
+ADD_EXECUTABLE(
+    calib_orb_filter
+    ./src/calib_orb_filter.cpp
+)
+TARGET_LINK_LIBRARIES(calib_orb_filter
+    calibcamodo
+    ${LINK_LIBS}
+)
