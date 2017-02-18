@@ -49,12 +49,12 @@ void SolverInitMk::ComputeGrndPlane(Mat &nvec_cg) {
 
     int numLclIdMk = 0;
     int numLclIdKf = 0;
-    map<PtrMark, int> mapMk2LclId;
+    map<PtrMapMark, int> mapMk2LclId;
     map<PtrKeyFrame, int> mapKf2LclId;
 
     for (auto ptrmeasure : setMsrMk) {
         PtrKeyFrame pKf = ptrmeasure->pKf;
-        PtrMark pMk = ptrmeasure->pMk;
+        PtrMapMark pMk = ptrmeasure->pMk;
         if(!mapMk2LclId.count(pMk))
             mapMk2LclId[pMk] = numLclIdMk++;
         if(!mapKf2LclId.count(pKf))
@@ -68,7 +68,7 @@ void SolverInitMk::ComputeGrndPlane(Mat &nvec_cg) {
     for (auto ptr : setMsrMk) {
         PtrMsrPt3Kf2Mk pMsrMk = ptr;
         PtrKeyFrame pKf = pMsrMk->pKf;
-        PtrMark pMk = pMsrMk->pMk;
+        PtrMapMark pMk = pMsrMk->pMk;
 
         int lclIdMk = mapMk2LclId[pMk];
         int lclIdKf = mapKf2LclId[pKf];
@@ -291,13 +291,13 @@ double SolverInitMk::Compute2DExtrinsic(const Mat &rvec_dc, const Mat &tvec_dc, 
 int SolverInitMk::FindCovisMark(const PtrKeyFrame _pKf1, const PtrKeyFrame _pKf2, set<pair<PtrMsrPt3Kf2Mk, PtrMsrPt3Kf2Mk>> &_setpairMsrMk) {
     // Find covisible mark from two keyframe, consider the ordered set
     _setpairMsrMk.clear();
-    set<PtrMark> setpMk1 = mpDataset->GetMkByKf(_pKf1);
-    set<PtrMark> setpMk2 = mpDataset->GetMkByKf(_pKf2);
-    set<PtrMark> setpMkCovis;
+    set<PtrMapMark> setpMk1 = mpDataset->GetMkByKf(_pKf1);
+    set<PtrMapMark> setpMk2 = mpDataset->GetMkByKf(_pKf2);
+    set<PtrMapMark> setpMkCovis;
     for (auto iterMk1 = setpMk1.begin(), iterMk2 = setpMk2.begin();
          iterMk1 != setpMk1.end() && iterMk2 != setpMk2.end(); ) {
         if (*iterMk1 == *iterMk2) {
-            PtrMark pMkCovis = *iterMk1;
+            PtrMapMark pMkCovis = *iterMk1;
             setpMkCovis.insert(pMkCovis);
             iterMk1++;
             iterMk2++;

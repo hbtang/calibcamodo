@@ -6,12 +6,12 @@
 
 namespace calibcamodo {
 
-class Mark {
+class MapMark {
 public:
-    Mark() = default;
-    ~Mark() = default;
-    Mark(int _id);
-    Mark(const Mark &_mk);
+    MapMark() = default;
+    ~MapMark() = default;
+    MapMark(int _id);
+    MapMark(const MapMark &_mk);
 
     inline void SetId(int _id) { mId = _id; }
     inline int GetId() const { return mId; }
@@ -30,21 +30,21 @@ protected:
     Se3 mSe3wm;
 };
 
-class MarkAruco : public Mark {
+class MapMarkAruco : public MapMark {
 public:
-    MarkAruco() = default;
-    ~MarkAruco() = default;
-    MarkAruco(int _id, int _arucoId, double _markSize);
-    MarkAruco(const Mark &_mk);
-    MarkAruco(const MarkAruco &_mk);
+    MapMarkAruco() = default;
+    ~MapMarkAruco() = default;
+    MapMarkAruco(int _id, int _arucoId, double _markSize);
+    MapMarkAruco(const MapMark &_mk);
+    MapMarkAruco(const MapMarkAruco &_mk);
 
 protected:
     int mArucoId;
     double mMarkSize;
 };
 
-typedef std::shared_ptr<Mark> PtrMark;
-typedef std::shared_ptr<MarkAruco> PtrMarkAruco;
+typedef std::shared_ptr<MapMark> PtrMapMark;
+typedef std::shared_ptr<MapMarkAruco> PtrMapMarkAruco;
 
 }
 #endif

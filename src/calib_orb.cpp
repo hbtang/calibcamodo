@@ -76,27 +76,5 @@ int main(int argc, char **argv) {
     cerr << "solverOrb: result.vsclam = " << datasetOrb.GetCamOffset() << endl;
 
 
-
-//    //! Solver
-//    cerr << "SolverOrb: init..." << endl;
-//    SolverOrb solverOrb(&datasetOrb);
-//    solverOrb.RefreshKfsPose();
-//    solverOrb.CreateMsrOdos();
-//    solverOrb.CreateMapPoints();
-//    mappublish.run(10, 1);
-//    cerr << "solverOrb: result.init = " << solverOrb.GetSe3cb() << endl;
-
-//    //! Do vslam
-//    cerr << "SolverOrb: do vslam..." << endl;
-//    solverOrb.OptimizeSlam();
-//    mappublish.run(10, 1);
-//    cerr << "solverOrb: result.vslam = " << solverOrb.GetSe3cb() << endl;
-
-//    //! Do vsclam
-//    cerr << "SolverOrb: do vsclam..." << endl;
-//    solverOrb.OptimizeSclam();
-//    mappublish.run(10, 1);
-//    cerr << "solverOrb: result.vsclam = " << solverOrb.GetSe3cb() << endl;
-
     return 0;
 }

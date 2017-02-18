@@ -55,7 +55,7 @@ namespace calibcamodo {
 
 bool MeasurePoolPt3Kf2Mk::AddMsr(PtrMsrPt3Kf2Mk _pMsr) {
     PtrKeyFrame pKf = _pMsr->pKf;
-    PtrMark pMk = _pMsr->pMk;
+    PtrMapMark pMk = _pMsr->pMk;
 
     if(msetMsr.count(_pMsr) != 0)
         return false;
@@ -76,7 +76,7 @@ std::set<PtrMsrPt3Kf2Mk> MeasurePoolPt3Kf2Mk::GetMsrByKf(PtrKeyFrame _pKf) const
     return setpMsrRet;
 }
 
-std::set<PtrMsrPt3Kf2Mk> MeasurePoolPt3Kf2Mk::GetMsrByMk(PtrMark _pMk) const {
+std::set<PtrMsrPt3Kf2Mk> MeasurePoolPt3Kf2Mk::GetMsrByMk(PtrMapMark _pMk) const {
     set<PtrMsrPt3Kf2Mk> setpMsrRet;
     auto iter_lowerbound = mmapMk2Msr.lower_bound(_pMk);
     auto iter_upperbound = mmapMk2Msr.upper_bound(_pMk);
@@ -86,7 +86,7 @@ std::set<PtrMsrPt3Kf2Mk> MeasurePoolPt3Kf2Mk::GetMsrByMk(PtrMark _pMk) const {
     return setpMsrRet;
 }
 
-PtrMsrPt3Kf2Mk MeasurePoolPt3Kf2Mk::GetMsrByKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const {
+PtrMsrPt3Kf2Mk MeasurePoolPt3Kf2Mk::GetMsrByKfMk(PtrKeyFrame _pKf, PtrMapMark _pMk) const {
     auto iter_lowerbound = mmapMk2Msr.lower_bound(_pMk);
     auto iter_upperbound = mmapMk2Msr.upper_bound(_pMk);
     for (auto iter = iter_lowerbound; iter != iter_upperbound; iter++) {
@@ -97,16 +97,16 @@ PtrMsrPt3Kf2Mk MeasurePoolPt3Kf2Mk::GetMsrByKfMk(PtrKeyFrame _pKf, PtrMark _pMk)
     return nullptr;
 }
 
-std::set<PtrMark> MeasurePoolPt3Kf2Mk::GetMkByKf(PtrKeyFrame _pKf) const {
+std::set<PtrMapMark> MeasurePoolPt3Kf2Mk::GetMkByKf(PtrKeyFrame _pKf) const {
     set<PtrMsrPt3Kf2Mk> setMsr = GetMsrByKf(_pKf);
-    set<PtrMark> setMkRet;
+    set<PtrMapMark> setMkRet;
     for (auto pMsr : setMsr) {
         setMkRet.insert(static_cast<PtrMsrPt3Kf2Mk>(pMsr)->pMk);
     }
     return setMkRet;
 }
 
-std::set<PtrKeyFrame> MeasurePoolPt3Kf2Mk::GetKfByMk(PtrMark _pMk) const {
+std::set<PtrKeyFrame> MeasurePoolPt3Kf2Mk::GetKfByMk(PtrMapMark _pMk) const {
     set<PtrMsrPt3Kf2Mk> setMsr = GetMsrByMk(_pMk);
     set<PtrKeyFrame> setKfRet;
     for (auto pMsr : setMsr) {

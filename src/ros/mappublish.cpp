@@ -215,29 +215,6 @@ void MapPublish::PublishMapPointsOrb() {
         mMps.points.push_back(msg_p);
     }
 
-    // set visible graph
-    //    set<PtrMsrPt3Kf2Mk> setMsrMk = mpDataset->GetMsrMkSet();
-    //    for (auto ptr : setMsrMk) {
-    //        PtrMsrPt3Kf2Mk pMsrMk = ptr;
-    //        PtrKeyFrame pKf = pMsrMk->pKf;
-    //        PtrMark pMk = pMsrMk->pMk;
-
-
-    //        geometry_msgs::Point msgs_o_kf;
-    //        msgs_o_kf.x = pKf->GetPoseCamera().tvec.at<float>(0)/mScaleRatio;
-    //        msgs_o_kf.y = pKf->GetPoseCamera().tvec.at<float>(1)/mScaleRatio;
-    //        msgs_o_kf.z = pKf->GetPoseCamera().tvec.at<float>(2)/mScaleRatio;
-    //        geometry_msgs::Point msgs_o_mk;
-    //        msgs_o_mk.x = pMk->GetPose().tvec.at<float>(0)/mScaleRatio;
-    //        msgs_o_mk.y = pMk->GetPose().tvec.at<float>(1)/mScaleRatio;
-    //        msgs_o_mk.z = pMk->GetPose().tvec.at<float>(2)/mScaleRatio;
-
-    //        mVisGraph.points.push_back(msgs_o_kf);
-    //        mVisGraph.points.push_back(msgs_o_mk);
-    //    }
-
-
-
     mMps.header.stamp = ros::Time::now();
     publisher.publish(mMps);
 
@@ -251,9 +228,9 @@ void MapPublish::PublishMapPointsAruco() {
     mMps.points.clear();
     mVisGraph.points.clear();
 
-    set<PtrMark> setMk = mpDataset->GetMkSet();
+    set<PtrMapMark> setMk = mpDataset->GetMkSet();
     for (auto ptr : setMk) {
-        PtrMark pMk = ptr;
+        PtrMapMark pMk = ptr;
         geometry_msgs::Point msg_p;
         msg_p.x = pMk->GetPose().tvec.at<float>(0)/mScaleRatio;
         msg_p.y = pMk->GetPose().tvec.at<float>(1)/mScaleRatio;
@@ -265,7 +242,7 @@ void MapPublish::PublishMapPointsAruco() {
     for (auto ptr : setMsrMk) {
         PtrMsrPt3Kf2Mk pMsrMk = ptr;
         PtrKeyFrame pKf = pMsrMk->pKf;
-        PtrMark pMk = pMsrMk->pMk;
+        PtrMapMark pMk = pMsrMk->pMk;
 
 
         geometry_msgs::Point msgs_o_kf;

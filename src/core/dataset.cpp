@@ -7,7 +7,8 @@ using namespace aruco;
 
 namespace calibcamodo {
 
-Dataset::Dataset() {
+Dataset::Dataset():
+    mpKfNow(nullptr), mpKfLast(nullptr){
 
     mNumFrame = Config::NUM_FRAME;
 
@@ -66,14 +67,14 @@ bool Dataset::AddKf(PtrKeyFrame _ptr) {
     return true;
 }
 
-PtrMark Dataset::GetMk(int _id) const {
-    PtrMark pRet = nullptr;
+PtrMapMark Dataset::GetMk(int _id) const {
+    PtrMapMark pRet = nullptr;
     if(mmapId2pMk.count(_id))
         pRet = mmapId2pMk.at(_id);
     return pRet;
 }
 
-bool Dataset::AddMk(PtrMark _ptr) {
+bool Dataset::AddMk(PtrMapMark _ptr) {
     if (msetpMk.count(_ptr))
         return false;
     int id = _ptr->GetId();
@@ -250,7 +251,7 @@ PtrKeyFrameAruco DatasetAruco::GetKfAruco(int _id) const {
         return nullptr;
 }
 
-bool DatasetAruco::AddMkAruco(PtrMarkAruco _pMkAruco) {
+bool DatasetAruco::AddMkAruco(PtrMapMarkAruco _pMkAruco) {
     if(!AddMk(_pMkAruco))
         return false;
     if(msetpMkAruco.count(_pMkAruco))
@@ -263,7 +264,7 @@ bool DatasetAruco::AddMkAruco(PtrMarkAruco _pMkAruco) {
     return true;
 }
 
-PtrMarkAruco DatasetAruco::GetMkAruco(int _id) const {
+PtrMapMarkAruco DatasetAruco::GetMkAruco(int _id) const {
     if(mmapId2pMkAruco.count(_id))
         return mmapId2pMkAruco.at(_id);
     else

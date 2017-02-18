@@ -132,12 +132,12 @@ MeasurePt3Kf2Mk::MeasurePt3Kf2Mk(const MeasurePt3Kf2Mk &_m):
 
 }
 
-MeasurePt3Kf2Mk::MeasurePt3Kf2Mk(const cv::Mat &_measure, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk):
+MeasurePt3Kf2Mk::MeasurePt3Kf2Mk(const cv::Mat &_measure, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMapMark _pMk):
     MeasurePt3(_measure, _info), pKf(_pKf), pMk(_pMk){
 
 }
 
-MeasurePt3Kf2Mk::MeasurePt3Kf2Mk(Pt3 _pt3, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk):
+MeasurePt3Kf2Mk::MeasurePt3Kf2Mk(Pt3 _pt3, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMapMark _pMk):
     MeasurePt3(_pt3, _info), pKf(_pKf), pMk(_pMk){
 
 }

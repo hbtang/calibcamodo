@@ -33,9 +33,9 @@ void SolverOptMk::DoCalib() {
     }
 
     //! Set mark vertices
-    map<PtrMark,int> mappMk2IdOpt;
+    map<PtrMapMark,int> mappMk2IdOpt;
     for (auto ptr : mpDataset->GetMkSet()) {
-        PtrMark pMk = ptr;
+        PtrMapMark pMk = ptr;
         //! NEED TO ADD INIT MK POSE HERE !!!
         g2o::Vector3D pose = toG2oVector3D(pMk->GetPose().tvec);
 
@@ -67,7 +67,7 @@ void SolverOptMk::DoCalib() {
     for (auto ptr : mpDataset->GetMsrMkAll()) {
         PtrMsrPt3Kf2Mk pMsrMk = ptr;
         PtrKeyFrame pKf = pMsrMk->pKf;
-        PtrMark pMk = pMsrMk->pMk;
+        PtrMapMark pMk = pMsrMk->pMk;
 
         int idKf = mappKf2IdOpt[pKf];
         int idMk = mappMk2IdOpt[pMk];
@@ -105,7 +105,7 @@ void SolverOptMk::DoCalib() {
 
     //! Refresh landmark
     for (auto pair : mappMk2IdOpt) {
-        PtrMark pMk = pair.first;
+        PtrMapMark pMk = pair.first;
         int idOpt = pair.second;
         VertexPointXYZ* pVertex = static_cast<VertexPointXYZ*>(optimizer.vertex(idOpt));
         Mat tvec_wm = toCvMatf(pVertex->estimate());

@@ -38,15 +38,15 @@ public:
 
     std::set<PtrMsrPt3Kf2Mk> GetMsrAll() const { return msetMsr; }
     std::set<PtrMsrPt3Kf2Mk> GetMsrByKf(PtrKeyFrame _pKf) const;
-    std::set<PtrMsrPt3Kf2Mk> GetMsrByMk(PtrMark _pMk) const;
-    PtrMsrPt3Kf2Mk GetMsrByKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const;
-    std::set<PtrMark> GetMkByKf(PtrKeyFrame _pKf) const;
-    std::set<PtrKeyFrame> GetKfByMk(PtrMark _pMk) const;
+    std::set<PtrMsrPt3Kf2Mk> GetMsrByMk(PtrMapMark _pMk) const;
+    PtrMsrPt3Kf2Mk GetMsrByKfMk(PtrKeyFrame _pKf, PtrMapMark _pMk) const;
+    std::set<PtrMapMark> GetMkByKf(PtrKeyFrame _pKf) const;
+    std::set<PtrKeyFrame> GetKfByMk(PtrMapMark _pMk) const;
 
 private:
     std::set<PtrMsrPt3Kf2Mk> msetMsr;
     std::multimap<PtrKeyFrame, PtrMsrPt3Kf2Mk> mmapKf2Msr;
-    std::multimap<PtrMark, PtrMsrPt3Kf2Mk> mmapMk2Msr;
+    std::multimap<PtrMapMark, PtrMsrPt3Kf2Mk> mmapMk2Msr;
 };
 
 //!

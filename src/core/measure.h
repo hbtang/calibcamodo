@@ -91,11 +91,11 @@ public:
     MeasureSe3Kf2Mk() = default;
     ~MeasureSe3Kf2Mk() = default;
     MeasureSe3Kf2Mk(const MeasureSe3Kf2Mk &_m);
-    MeasureSe3Kf2Mk(const cv::Mat &_measure, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk);
-    MeasureSe3Kf2Mk(const cv::Mat &_rvec, const cv::Mat &_tvec, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk);
+    MeasureSe3Kf2Mk(const cv::Mat &_measure, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMapMark _pMk);
+    MeasureSe3Kf2Mk(const cv::Mat &_rvec, const cv::Mat &_tvec, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMapMark _pMk);
 
     PtrKeyFrame pKf;
-    PtrMark pMk;
+    PtrMapMark pMk;
 };
 
 class MeasurePt3Kf2Mk : public MeasurePt3 {
@@ -103,11 +103,11 @@ public:
     MeasurePt3Kf2Mk() = default;
     ~MeasurePt3Kf2Mk() = default;
     MeasurePt3Kf2Mk(const MeasurePt3Kf2Mk &_m);
-    MeasurePt3Kf2Mk(const cv::Mat &_measure, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk);
-    MeasurePt3Kf2Mk(Pt3 _pt3, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMark _pMk);
+    MeasurePt3Kf2Mk(const cv::Mat &_measure, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMapMark _pMk);
+    MeasurePt3Kf2Mk(Pt3 _pt3, const cv::Mat &_info, PtrKeyFrame _pKf, PtrMapMark _pMk);
 
     PtrKeyFrame pKf;
-    PtrMark pMk;
+    PtrMapMark pMk;
 };
 
 //! image feature

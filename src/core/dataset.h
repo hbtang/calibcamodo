@@ -38,10 +38,10 @@ public:
     bool AddKf(PtrKeyFrame _ptr);
 
     // Functions on Mark
-    const std::set<PtrMark> & GetMkSet() const { return msetpMk; }
-    const std::map<int, PtrMark>& GetMkMap() const { return mmapId2pMk; }
-    PtrMark GetMk(int _id) const;
-    bool AddMk(PtrMark _ptr);
+    const std::set<PtrMapMark> & GetMkSet() const { return msetpMk; }
+    const std::map<int, PtrMapMark>& GetMkMap() const { return mmapId2pMk; }
+    PtrMapMark GetMk(int _id) const;
+    bool AddMk(PtrMapMark _ptr);
 
     // Functions on MapPoint
     const std::set<PtrMapPoint> & GetMpSet() const { return msetpMp; }
@@ -64,10 +64,10 @@ public:
     bool AddMsrMk(PtrMsrPt3Kf2Mk _pMsr) { return mmsrplMk.AddMsr(_pMsr); }
     std::set<PtrMsrPt3Kf2Mk> GetMsrMkAll() const { return mmsrplMk.GetMsrAll(); }
     std::set<PtrMsrPt3Kf2Mk> GetMsrMkByKf(PtrKeyFrame _pKf) const { return mmsrplMk.GetMsrByKf(_pKf); }
-    std::set<PtrMsrPt3Kf2Mk> GetMsrMkByMk(PtrMark _pMk) const { return mmsrplMk.GetMsrByMk(_pMk); }
-    PtrMsrPt3Kf2Mk GetMsrMkByKfMk(PtrKeyFrame _pKf, PtrMark _pMk) const { return mmsrplMk.GetMsrByKfMk(_pKf, _pMk); }
-    std::set<PtrMark> GetMkByKf(PtrKeyFrame _pKf) const { return mmsrplMk.GetMkByKf(_pKf); }
-    std::set<PtrKeyFrame> GetKfbyMk(PtrMark _pMk) const { return mmsrplMk.GetKfByMk(_pMk); }
+    std::set<PtrMsrPt3Kf2Mk> GetMsrMkByMk(PtrMapMark _pMk) const { return mmsrplMk.GetMsrByMk(_pMk); }
+    PtrMsrPt3Kf2Mk GetMsrMkByKfMk(PtrKeyFrame _pKf, PtrMapMark _pMk) const { return mmsrplMk.GetMsrByKfMk(_pKf, _pMk); }
+    std::set<PtrMapMark> GetMkByKf(PtrKeyFrame _pKf) const { return mmsrplMk.GetMkByKf(_pKf); }
+    std::set<PtrKeyFrame> GetKfbyMk(PtrMapMark _pMk) const { return mmsrplMk.GetKfByMk(_pMk); }
 
     // Functions on UV Mappoint Measure
     bool AddMsrMp(PtrMsrUVKf2Mp _pMsr) { return mmsrplMp.AddMsr(_pMsr); }
@@ -108,8 +108,8 @@ protected:
     std::set<PtrKeyFrame> msetpKf;
     std::map<int, PtrKeyFrame> mmapId2pKf;
     // Mark
-    std::set<PtrMark> msetpMk;
-    std::map<int, PtrMark> mmapId2pMk;
+    std::set<PtrMapMark> msetpMk;
+    std::map<int, PtrMapMark> mmapId2pMk;
 
     // MapPoint
     std::set<PtrMapPoint> msetpMp;
@@ -139,13 +139,14 @@ protected:
     // todo: for online filter
 public:
     void InitFilter();
-    PtrKeyFrame GetKfNow() const { return pKfNow; }
-    PtrKeyFrame GetKfLast() const { return pKfLast; }
     bool RenewKfNow();
+    PtrKeyFrame GetKfNow() const { return mpKfNow; }
+    PtrKeyFrame GetKfLast() const { return mpKfLast; }
+
 
 protected:
-    PtrKeyFrame pKfNow;
-    PtrKeyFrame pKfLast;
+    PtrKeyFrame mpKfNow;
+    PtrKeyFrame mpKfLast;
 };
 
 class DatasetAruco : public Dataset {
@@ -157,10 +158,10 @@ public:
     void CreateKeyFrames();
 
     // Functions on MkAruco
-    inline const std::set<PtrMarkAruco> GetMkArucoSet() { return msetpMkAruco; }
-    inline const std::map<int, PtrMarkAruco> GetMkArucoMap() { return mmapId2pMkAruco; }
-    bool AddMkAruco(PtrMarkAruco _pMkAruco);
-    PtrMarkAruco GetMkAruco(int _id) const;
+    inline const std::set<PtrMapMarkAruco> GetMkArucoSet() { return msetpMkAruco; }
+    inline const std::map<int, PtrMapMarkAruco> GetMkArucoMap() { return mmapId2pMkAruco; }
+    bool AddMkAruco(PtrMapMarkAruco _pMkAruco);
+    PtrMapMarkAruco GetMkAruco(int _id) const;
 
     // Functions on KfAruco
     inline const std::set<PtrKeyFrameAruco> GetKfArucoSet() { return msetpKfAruco; }
@@ -175,8 +176,8 @@ protected:
     aruco::CameraParameters mCamParam;
     aruco::MarkerDetector mMDetector;
 
-    std::set<PtrMarkAruco> msetpMkAruco;
-    std::map<int, PtrMarkAruco> mmapId2pMkAruco;
+    std::set<PtrMapMarkAruco> msetpMkAruco;
+    std::map<int, PtrMapMarkAruco> mmapId2pMkAruco;
     std::set<PtrKeyFrameAruco> msetpKfAruco;
     std::map<int, PtrKeyFrameAruco> mmapId2pKfAruco;
 };

@@ -38,7 +38,7 @@ void MakerAruco::MakeMkAndMsrMk() {
             info.at<float>(2,2) = 1/stdz/stdz;
 
             // add new aruco mark into dataset
-            PtrMarkAruco pMkAruco = make_shared<MarkAruco>(id, id, marksize);
+            PtrMapMarkAruco pMkAruco = make_shared<MapMarkAruco>(id, id, marksize);
             if (!mpDatasetAruco->AddMkAruco(pMkAruco))
                 pMkAruco = mpDatasetAruco->GetMkAruco(id);
 
@@ -51,7 +51,7 @@ void MakerAruco::MakeMkAndMsrMk() {
 
 void MakerAruco::InitMkPose() {
     for(auto ptr : mpDatasetAruco->GetMkSet()) {
-        PtrMark pMk = ptr;
+        PtrMapMark pMk = ptr;
         set<PtrMsrPt3Kf2Mk> setpMsr = mpDatasetAruco->GetMsrMkByMk(pMk);
         if(!setpMsr.empty()) {
             PtrKeyFrame pKf = (*setpMsr.cbegin())->pKf;
