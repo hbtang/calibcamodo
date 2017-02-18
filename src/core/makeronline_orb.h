@@ -2,6 +2,7 @@
 #define MAKERONLINE_ORB_H
 
 #include "makeronline_base.h"
+#include "orb/ORBmatcher.h"
 
 namespace calibcamodo {
 
@@ -12,8 +13,15 @@ public:
 
     virtual bool DoMakeOnce();
 
+    //!
+    //! \brief Make and init new mappoints,
+    //! which are introduced by kfnow.
+    //!
+    void RenewMpNow();
+
 protected:
     DatasetOrb* mpDatasetOrb;
+    ORBmatcher mOrbMatcher;
 };
 
 }

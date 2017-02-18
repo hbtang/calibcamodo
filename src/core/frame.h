@@ -17,7 +17,7 @@ class ORBmatcher;
 class Frame {
 public:
     Frame() = default;
-     ~Frame() = default;
+    virtual ~Frame() = default;
     Frame(const Frame& _f);
     Frame& operator= (const Frame& _f);
     Frame(const cv::Mat &_im, Se2 _odo, int _id);
@@ -46,7 +46,7 @@ class KeyFrame: public Frame
 {
 public:
     KeyFrame() = default;
-    ~KeyFrame() = default;
+    virtual ~KeyFrame() = default;
     KeyFrame(const KeyFrame& _kf);
     KeyFrame& operator = (const KeyFrame& _kf);
     KeyFrame(const Frame &_f);    
@@ -71,7 +71,7 @@ protected:
 class KeyFrameAruco : public KeyFrame {
 public:
     KeyFrameAruco() = default;
-    ~KeyFrameAruco() = default;
+    virtual ~KeyFrameAruco() = default;
     KeyFrameAruco(const KeyFrameAruco& _kf);
     KeyFrameAruco& operator = (const KeyFrameAruco& _kf);
     KeyFrameAruco(const Frame &_f);
@@ -93,6 +93,8 @@ class KeyFrameOrb : public KeyFrame {
 public:
     KeyFrameOrb(const Frame& _f);
     KeyFrameOrb(const KeyFrame& _kf);
+
+    virtual ~KeyFrameOrb() = default;
 
 
     void ComputeOrb(ORBextractor& _OrbExtractor, const cv::Mat& _cammatrix, const cv::Mat& _distortion);

@@ -66,9 +66,9 @@ int main(int argc, char **argv) {
     int count = 0;
     while(makerOnlineOrb.DoMakeOnce()) {
         cerr << "loop count = " << count++ << endl;
+        if(count % 3 == 0)
+            mappublish.run(1, 1);
     }
-
-    mappublish.run(10, 1);
 
     return 0;
 }

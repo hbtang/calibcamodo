@@ -69,10 +69,10 @@ struct Pt3 {
     inline cv::Mat tvec() const { return ( cv::Mat_<float>(3,1) << x, y, z); }
 };
 
-std::ostream & operator<< (std::ostream &os, Se3 &se3);
-std::ostream & operator<< (std::ostream &os, Se3 se3);
-std::ostream & operator<< (std::ostream &os, Se2 &se2);
-std::ostream & operator<< (std::ostream &os, Se2 se2);
+std::ostream & operator<< (std::ostream &os, const Se3 &se3);
+//std::ostream & operator<< (std::ostream &os, Se3 se3);
+std::ostream & operator<< (std::ostream &os, const Se2 &se2);
+//std::ostream & operator<< (std::ostream &os, Se2 se2);
 
 // Math functions:
 const double PI = 3.1415926;

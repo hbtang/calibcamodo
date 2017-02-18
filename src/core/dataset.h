@@ -204,6 +204,13 @@ public:
     bool AddMpOrb(PtrMapPointOrb _pMpOrb);
     PtrMapPointOrb GetMpOrb(int _id) const;
 
+    PtrKeyFrameOrb GetKfOrbNow() const {
+        return dynamic_pointer_cast<KeyFrameOrb>(mpKfNow);
+    }
+    PtrKeyFrameOrb GetKfOrbLast() const {
+        return dynamic_pointer_cast<KeyFrameOrb>(mpKfLast);
+    }
+
 protected:    
     // orb algorithms
     ORBextractor mOrbExtractor;

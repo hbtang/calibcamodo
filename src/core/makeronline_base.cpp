@@ -48,6 +48,11 @@ void MakerOnlineBase::InitKfNowPose() {
     Se2 se2wbNow = se2wbLast + se2odo;
     Se3 se3bc = mpDataset->GetCamOffset();
     pKfNow->SetPoseAllbyB(se2wbNow, se3bc);
+
+    // debug
+//    cerr << "se3bc" << se3bc << endl;
+//    cerr << "se2wbNow" << se2wbNow << endl;
+    return;
 }
 
 void MakerOnlineBase::InitKfLastPoseCov() {
@@ -57,6 +62,11 @@ void MakerOnlineBase::InitKfLastPoseCov() {
     pKfLast->SetPoseAllbyB(se2odo, se3bc);
     Mat matCov = Mat::zeros(3,3,CV_32FC1);
     pKfLast->SetCov(matCov);
+
+    // debug
+//    cerr << "se3bc" << se3bc << endl;
+//    cerr << "se2odo" << se2odo << endl;
+    return;
 }
 
 void MakerOnlineBase::MakeMsrOdoNow() {

@@ -39,10 +39,12 @@ Frame::Frame(Se2 _odo, int _id) :
 //! Class KeyFrame
 KeyFrame::KeyFrame(const KeyFrame& _kf):
     Frame(_kf), mSe2wb(_kf.mSe2wb), mSe3wc(_kf.mSe3wc) {
+    mCovMat = _kf.mCovMat.clone();
 }
 
 KeyFrame& KeyFrame::operator = (const KeyFrame& _kf) {
     Frame::operator =(_kf);
+    mCovMat = _kf.mCovMat.clone();
     return *this;
 }
 
@@ -50,6 +52,7 @@ KeyFrame::KeyFrame(const Frame& _f):
     Frame(_f) {
     mSe2wb = mOdo;
     mSe3wc = Se3();
+    mCovMat = LARGE_FLOAT * Mat::eye(3,3,CV_32FC1);
 }
 
 void KeyFrame::SetPoseAllbyB(Se2 _wb, Se3 _bc) {

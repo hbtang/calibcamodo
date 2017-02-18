@@ -111,22 +111,22 @@ Se3 Se3::operator+ (const Se3 &_that) {
     return Se3(Tresult);
 }
 
-std::ostream& operator<< (std::ostream &os, Se3 &se3) {
+std::ostream& operator<< (std::ostream &os, const Se3 &se3) {
     os << "rvec:" << se3.rvec << " tvec:" << se3.tvec;
     return os;
 }
-std::ostream& operator<< (std::ostream &os, Se3 se3) {
-    os << "rvec:" << se3.rvec << " tvec:" << se3.tvec;
-    return os;
-}
-std::ostream& operator<< (std::ostream &os, Se2 &se2) {
+//std::ostream& operator<< (std::ostream &os, Se3 se3) {
+//    os << "rvec:" << se3.rvec << " tvec:" << se3.tvec;
+//    return os;
+//}
+std::ostream& operator<< (std::ostream &os, const Se2 &se2) {
     os << "[" << se2.x << "," << se2.y << "," << se2.theta << "]";
     return os;
 }
-std::ostream& operator<< (std::ostream &os, Se2 se2) {
-    os << "[" << se2.x << "," << se2.y << "," << se2.theta << "]";
-    return os;
-}
+//std::ostream& operator<< (std::ostream &os, Se2 se2) {
+//    os << "[" << se2.x << "," << se2.y << "," << se2.theta << "]";
+//    return os;
+//}
 
 //! Class Pt3
 
