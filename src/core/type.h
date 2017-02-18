@@ -8,8 +8,9 @@
 #include <map>
 #include <set>
 #include <iostream>
-
 #include <opencv2/core/core.hpp>
+
+#define LARGE_FLOAT 1e12
 
 namespace calibcamodo {
 // Data structures

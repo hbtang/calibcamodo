@@ -2,6 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <cmath>
 
 #include "core/dataset.h"
 #include "core/frame.h"
@@ -24,18 +25,18 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 
-
+#include <Eigen/Dense>
 
 using namespace std;
 using namespace cv;
-using namespace aruco;
 using namespace calibcamodo;
 
 int main(int argc, char **argv) {
 
+    float test = LARGE_FLOAT;
+
+
     string strFolderPathMain = argv[1];
-//    int numFrame = atoi(argv[2]);
-//    double markerSize = atof(argv[3]);
 
     //! Init ros
     ros::init(argc, argv, "pub");
@@ -63,7 +64,7 @@ int main(int argc, char **argv) {
     // DEBUG...
     MakerOnlineOrb makerOnlineOrb(&datasetOrb);
     int count = 0;
-    while(makerOnlineOrb.RenewKfNow()) {
+    while(makerOnlineOrb.DoMakeOnce()) {
         cerr << "loop count = " << count++ << endl;
     }
 
