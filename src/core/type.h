@@ -28,6 +28,9 @@ struct Se2{
     float dist();
     float ratio();
 
+    cv::Mat T() const;
+    cv::Mat R() const;
+
     float x;
     float y;
     float theta;

@@ -1,5 +1,5 @@
-#ifndef CVMATH_H
-#define CVMATH_H
+#ifndef MATH_CV_H
+#define MATH_CV_H
 
 #include <opencv2/core/core.hpp>
 #include "core/frame.h"

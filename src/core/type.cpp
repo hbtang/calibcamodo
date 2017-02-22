@@ -51,6 +51,18 @@ float Se2::ratio() {
     return theta/dist();
 }
 
+cv::Mat Se2::T() const {
+    Mat Tout = Mat::eye(3,3,CV_32FC1);
+    R().copyTo(Tout.rowRange(0,2).colRange(0,2));
+    return Tout;
+}
+
+cv::Mat Se2::R() const {
+    return (Mat_<float>(2,2) <<
+            cos(theta), -sin(theta),
+            sin(theta), cos(theta));
+}
+
 //! Class Se3
 
 Se3::Se3() {

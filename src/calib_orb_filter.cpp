@@ -12,6 +12,7 @@
 #include "core/type.h"
 #include "core/config.h"
 #include "core/makeronline_orb.h"
+#include "core/solveronline_ekf.h"
 
 #include "ros/mappublish.h"
 
@@ -27,14 +28,13 @@
 
 #include <Eigen/Dense>
 
+#include "core/math_opt.h"
+
 using namespace std;
 using namespace cv;
 using namespace calibcamodo;
 
 int main(int argc, char **argv) {
-
-    float test = LARGE_FLOAT;
-
 
     string strFolderPathMain = argv[1];
 
@@ -63,8 +63,11 @@ int main(int argc, char **argv) {
 
     // DEBUG...
     MakerOnlineOrb makerOnlineOrb(&datasetOrb);
+    SolverOnlineEkf solverOnlineEkf(&datasetOrb);
+
     int count = 0;
     while(makerOnlineOrb.DoMakeOnce()) {
+        solverOnlineEkf.DoFilterOnce();
         cerr << "loop count = " << count++ << endl;
         if(count % 3 == 0)
             mappublish.run(1, 1);

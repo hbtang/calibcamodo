@@ -97,6 +97,7 @@ protected:
 
     //! Parameters
     Se3 mSe3bc;
+    cv::Mat mCovSe3bc;  // order: rvec - tvec
     // camera intrinsic parameters
     cv::Mat mCamMatrix;
     cv::Mat mDistCoeff;
