@@ -27,6 +27,7 @@ Dataset::Dataset():
     mSe3bc = Se3(Config::RVEC_BC, Config::TVEC_BC);
     Mat covRvecbc = 1.0 * Mat::eye(3,3,CV_32FC1);
     Mat covTvecbc = 1e6 * Mat::eye(3,3,CV_32FC1);
+    mCovSe3bc = cv::Mat::zeros(6,6,CV_32FC1);
     covRvecbc.copyTo(mCovSe3bc.colRange(0,3).rowRange(0,3));
     covTvecbc.copyTo(mCovSe3bc.colRange(3,6).rowRange(3,6));
 
